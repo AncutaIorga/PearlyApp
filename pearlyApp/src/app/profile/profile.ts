@@ -1,11 +1,16 @@
 import { Component } from '@angular/core';
+import { UserService } from '../services/user';
+import { NavbarComponent } from '../shared/navbar/navbar';
 
 @Component({
-  selector: 'app-profile',
-  imports: [],
-  templateUrl: './profile.html',
-  styleUrl: './profile.css',
+  standalone: true,
+  imports: [NavbarComponent],
+  templateUrl: './profile.html'
 })
-export class Profile {
+export class ProfileComponent {
+  user: any;
 
+  constructor(private userService: UserService) {
+    this.user = this.userService.getUser();
+  }
 }

@@ -1,1 +1,11 @@
-<p>post-create works!</p>
+<app-navbar></app-navbar>
+
+<form (ngSubmit)="submit()">
+  <textarea
+    [(ngModel)]="text"
+    name="text"
+    placeholder="Tu logro...">
+  </textarea>
+
+  <button>Publicar</button>
+</form>

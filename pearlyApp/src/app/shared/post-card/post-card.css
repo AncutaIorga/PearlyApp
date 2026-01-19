@@ -1,0 +1,11 @@
+.card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-bottom: 1rem;
+  padding: 1rem;
+}
+
+img {
+  width: 100%;
+  border-radius: 6px;
+}

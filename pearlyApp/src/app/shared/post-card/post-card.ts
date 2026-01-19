@@ -1,11 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 @Component({
   selector: 'app-post-card',
-  imports: [],
+  standalone: true,
   templateUrl: './post-card.html',
-  styleUrl: './post-card.css',
+  styleUrl: './post-card.css'
 })
-export class PostCard {
-
+export class PostCardComponent {
+  @Input() post!: any;
 }

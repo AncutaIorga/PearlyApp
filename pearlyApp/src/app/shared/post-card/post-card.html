@@ -1,1 +1,6 @@
-<p>post-card works!</p>
+<div class="card">
+  <h3>{{ post.user }}</h3>
+  <img [src]="post.image">
+  <p>{{ post.text }}</p>
+  <span>❤️ {{ post.likes }}</span>
+</div>
