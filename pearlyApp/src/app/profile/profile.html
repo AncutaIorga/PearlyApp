@@ -1,5 +1,33 @@
 <app-navbar></app-navbar>
 
-<h2>{{ user.name }}</h2>
-<p>{{ user.bio }}</p>
-<p>Logros: {{ user.achievements }}</p>
+<div class="profile-container">
+  <div class="profile">
+    <div class="profile-header">
+      <div class="profile-avatar">
+        {{ user.name.charAt(0).toUpperCase() }}
+      </div>
+      
+      <h2>{{ user.name }}</h2>
+      <p class="bio">{{ user.bio }}</p>
+      
+      <div class="achievements-badge">
+        🏆 {{ user.achievements }} Logros conseguidos
+      </div>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="number">42</div>
+          <div class="label">Publicaciones</div>
+        </div>
+        <div class="stat-card">
+          <div class="number">128</div>
+          <div class="label">Seguidores</div>
+        </div>
+        <div class="stat-card">
+          <div class="number">89</div>
+          <div class="label">Siguiendo</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

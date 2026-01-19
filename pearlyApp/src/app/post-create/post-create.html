@@ -1,11 +1,20 @@
 <app-navbar></app-navbar>
 
-<form (ngSubmit)="submit()">
-  <textarea
-    [(ngModel)]="text"
-    name="text"
-    placeholder="Tu logro...">
-  </textarea>
-
-  <button>Publicar</button>
-</form>
+<div class="create-post-container">
+  <div class="create-post">
+    <h2>Comparte tu logro 🌟</h2>
+    <form (ngSubmit)="submit()">
+      <div class="form-group">
+        <textarea 
+          [(ngModel)]="text" 
+          name="text" 
+          placeholder="Describe tu logro saludable del día... ¿Qué has conseguido hoy?"
+          rows="6"></textarea>
+      </div>
+      
+      <div class="form-actions">
+        <button type="submit" class="btn-primary">Publicar logro</button>
+      </div>
+    </form>
+  </div>
+</div>

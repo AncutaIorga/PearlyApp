@@ -1,0 +1,10 @@
+.feed-container {
+  background: #f8f9fa;
+  min-height: calc(100vh - 64px);
+  padding: 30px 20px;
+}
+
+.feed {
+  max-width: 600px;
+  margin: 0 auto;
+}

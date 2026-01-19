@@ -8,4 +8,14 @@ import { Component, Input } from '@angular/core';
 })
 export class PostCardComponent {
   @Input() post!: any;
+  isLiked = false;
+
+  toggleLike() {
+    this.isLiked = !this.isLiked;
+    if (this.isLiked) {
+      this.post.likes++;
+    } else {
+      this.post.likes--;
+    }
+  }
 }
