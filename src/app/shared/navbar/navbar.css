@@ -1,5 +1,5 @@
 .navbar {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #F8EFE8 0%, #DED2CA 100%);
   padding: 16px 32px;
   display: flex;
   justify-content: space-between;
@@ -13,14 +13,14 @@
 .logo {
   font-size: 26px;
   font-weight: 800;
-  color: white;
+  color: #9b8e87;
   text-decoration: none;
   transition: all 0.3s ease;
 }
 
 .logo:hover {
   transform: scale(1.05);
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+  text-shadow: 0 0 20px rgb(231, 210, 210)
 }
 
 .nav-links {
@@ -31,7 +31,7 @@
 }
 
 .nav-links a {
-  color: white;
+  color: #9b8e87;
   text-decoration: none;
   font-weight: 600;
   font-size: 16px;
@@ -48,7 +48,7 @@
 .settings-btn {
   background: rgba(255, 255, 255, 0.2);
   border: none;
-  color: white;
+  color: #9b8e87;
   padding: 8px;
   border-radius: 50%;
   cursor: pointer;
@@ -67,12 +67,12 @@
   position: absolute;
   right: 0;
   top: calc(100% + 12px);
-  background: white;
+  background: #F8EFE8;
   border-radius: 12px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
   min-width: 220px;
   overflow: hidden;
-  border: 1px solid #e0e0e0;
+  border: 1px solid #F8EFE8;
   animation: slideDown 0.2s ease;
 }
 
