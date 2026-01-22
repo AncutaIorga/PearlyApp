@@ -4,5 +4,38 @@
     <a routerLink="/feed">Feed</a>
     <a routerLink="/create">Crear</a>
     <a routerLink="/profile">Perfil</a>
+    <button 
+      class="settings-btn" 
+      (click)="toggleSettings($event)"
+      aria-label="Ajustes">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M12 1v6m0 6v6m0-11a3 3 0 0 0 0 6m-5.2-8a3 3 0 0 0 4.2 4.2M6.8 19a3 3 0 0 0 4.2-4.2M19 6.8a3 3 0 0 0-4.2 4.2M19 17.2a3 3 0 0 0-4.2-4.2"/>
+      </svg>
+    </button>
+  </div>
+  
+  <div class="settings-menu" *ngIf="showSettings">
+    <button class="setting-item" (click)="handleSetting('theme')">
+      <span class="setting-icon">🎨</span>
+      <span class="setting-label">Tema</span>
+    </button>
+    <button class="setting-item" (click)="handleSetting('notifications')">
+      <span class="setting-icon">🔔</span>
+      <span class="setting-label">Notificaciones</span>
+    </button>
+    <button class="setting-item" (click)="handleSetting('privacy')">
+      <span class="setting-icon">🔒</span>
+      <span class="setting-label">Privacidad</span>
+    </button>
+    <button class="setting-item" (click)="handleSetting('account')">
+      <span class="setting-icon">👤</span>
+      <span class="setting-label">Cuenta</span>
+    </button>
+    <div class="setting-divider"></div>
+    <button class="setting-item danger" (click)="handleSetting('logout')">
+      <span class="setting-icon">🚪</span>
+      <span class="setting-label">Cerrar sesión</span>
+    </button>
   </div>
 </nav>
