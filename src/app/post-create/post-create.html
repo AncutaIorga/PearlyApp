@@ -4,6 +4,23 @@
   <div class="create-post">
     <h2>Comparte tu logro 🌟</h2>
     <form (ngSubmit)="submit()">
+      <!-- Sección de Imagen -->
+      <div class="form-group">
+        <div class="image-upload-container">
+          <input 
+            type="file" 
+            id="imageInput" 
+            accept="image/*" 
+            (change)="onImageSelected($event)">
+          
+          <div class="image-preview" *ngIf="selectedImage">
+            <img [src]="selectedImage" alt="Preview">
+            <button type="button" class="remove-image" (click)="removeImage()">✕</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sección de Descripción -->
       <div class="form-group">
         <textarea 
           [(ngModel)]="text" 
