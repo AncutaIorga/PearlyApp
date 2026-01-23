@@ -4,6 +4,7 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
 
 body {
@@ -14,6 +15,8 @@ body {
   -moz-osx-font-smoothing: grayscale;
   background: #f8f9fa;
   color: #333;
+  min-height: 100vh;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* Scrollbar personalizada */
@@ -32,6 +35,19 @@ body {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #764ba2;
+}
+
+/* Tema oscuro para scrollbar */
+[data-theme="dark"] ::-webkit-scrollbar-track {
+  background: #2d2d2d;
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: linear-gradient(135deg, #4a5fc1 0%, #5a3a7a 100%);
+}
+
+[data-theme="dark"] ::-webkit-scrollbar-thumb:hover {
+  background: #5a3a7a;
 }
 
 /* Utilidades */
@@ -53,6 +69,15 @@ body {
   }
 }
 
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
 @keyframes slideIn {
   from {
     transform: translateX(-100%);
@@ -67,4 +92,116 @@ body {
   body {
     font-size: 14px;
   }
+}
+
+/* ===== SISTEMA DE TEMA COMPLETO ===== */
+
+/* Variables de tema por defecto (light) */
+:root {
+  /* Colores principales */
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --bg-tertiary: #f0f0f0;
+  
+  /* Textos */
+  --text-primary: #333333;
+  --text-secondary: #666666;
+  --text-muted: #888888;
+  
+  /* Bordes */
+  --border-color: #e0e0e0;
+  --border-radius: 12px;
+  
+  /* Componentes específicos */
+  --card-bg: #ffffff;
+  --input-bg: #ffffff;
+  --navbar-bg: linear-gradient(135deg, #F8EFE8 0%, #DED2CA 100%);
+  --settings-menu-bg: #F8EFE8;
+  
+  /* Sombras */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.15);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.2);
+  
+  /* Botones */
+  --btn-primary-bg: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  --btn-secondary-bg: #f0f0f0;
+  --btn-danger-bg: #ffebee;
+}
+
+/* Variables para tema oscuro */
+[data-theme="dark"] {
+  /* Colores principales */
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d2d;
+  --bg-tertiary: #3a3a3a;
+  
+  /* Textos */
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --text-muted: #888888;
+  
+  /* Bordes */
+  --border-color: #404040;
+  
+  /* Componentes específicos */
+  --card-bg: #2d2d2d;
+  --input-bg: #3a3a3a;
+  --navbar-bg: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+  --settings-menu-bg: #2d2d2d;
+  
+  /* Sombras más sutiles */
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.5);
+  
+  /* Botones */
+  --btn-primary-bg: linear-gradient(135deg, #4a5fc1 0%, #5a3a7a 100%);
+  --btn-secondary-bg: #3a3a3a;
+  --btn-danger-bg: #3a1a1a;
+}
+
+/* Aplicar variables CSS a toda la app */
+body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+/* Aplicar a elementos comunes */
+input, textarea, select {
+  background-color: var(--input-bg);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+}
+
+button {
+  transition: all 0.3s ease;
+}
+
+/* Clases utilitarias para tema */
+.dark-theme {
+  color-scheme: dark;
+}
+
+.light-theme {
+  color-scheme: light;
+}
+
+/* Toast notifications */
+.toast {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: var(--btn-primary-bg);
+  color: white;
+  padding: 12px 24px;
+  border-radius: 8px;
+  z-index: 1000;
+  animation: fadeIn 0.3s;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+}
+
+.toast.fade-out {
+  animation: fadeOut 0.3s;
 }

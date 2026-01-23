@@ -1,0 +1,76 @@
+<div class="notifications-container">
+    <div class="notifications-header">
+      <button routerLink="/feed" class="back-btn">← Volver</button>
+      <h1>🔔 Notificaciones</h1>
+    </div>
+    
+    <div class="notifications-content">
+      <div class="notifications-section">
+        <h2>Preferencias</h2>
+        
+        <div class="notification-option">
+          <label>
+            <input type="checkbox" [(ngModel)]="enableNotifications" 
+                   (change)="toggleNotifications()" />
+            Notificaciones push
+          </label>
+          <p class="option-desc">Recibe notificaciones en tu dispositivo</p>
+        </div>
+        
+        <div class="notification-option">
+          <label>
+            <input type="checkbox" [(ngModel)]="emailNotifications" />
+            Notificaciones por email
+          </label>
+          <p class="option-desc">Recibe resúmenes semanales por correo</p>
+        </div>
+        
+        <div class="notification-option">
+          <label>
+            <input type="checkbox" [(ngModel)]="likeNotifications" />
+            Nuevos likes
+          </label>
+        </div>
+        
+        <div class="notification-option">
+          <label>
+            <input type="checkbox" [(ngModel)]="commentNotifications" />
+            Nuevos comentarios
+          </label>
+        </div>
+        
+        <div class="notification-option">
+          <label>
+            <input type="checkbox" [(ngModel)]="achievementNotifications" />
+            Logros desbloqueados
+          </label>
+        </div>
+      </div>
+      
+      <div class="notifications-section">
+        <h2>Frecuencia</h2>
+        <div class="frequency-selector">
+          <button [class.active]="frequency === 'realtime'" 
+                  (click)="frequency = 'realtime'">
+            ⚡ Tiempo real
+          </button>
+          <button [class.active]="frequency === 'daily'" 
+                  (click)="frequency = 'daily'">
+            📅 Resumen diario
+          </button>
+          <button [class.active]="frequency === 'weekly'" 
+                  (click)="frequency = 'weekly'">
+            📊 Resumen semanal
+          </button>
+        </div>
+      </div>
+      
+      <button class="btn-primary" (click)="saveSettings()">
+        💾 Guardar preferencias
+      </button>
+      
+      <button class="btn-secondary" (click)="testNotification()">
+        🔔 Probar notificación
+      </button>
+    </div>
+  </div>

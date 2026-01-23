@@ -1,3 +1,4 @@
+/* Variables CSS que cambiarán con el tema */
 .navbar {
   background: linear-gradient(135deg, #F8EFE8 0%, #DED2CA 100%);
   padding: 16px 32px;
@@ -8,6 +9,14 @@
   position: sticky;
   top: 0;
   z-index: 100;
+  transition: all 0.3s ease;
+}
+
+/* Tema oscuro para navbar */
+[data-theme="dark"] .navbar {
+  background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid #404040;
 }
 
 .logo {
@@ -18,9 +27,17 @@
   transition: all 0.3s ease;
 }
 
+[data-theme="dark"] .logo {
+  color: #b0b0b0;
+}
+
 .logo:hover {
   transform: scale(1.05);
-  text-shadow: 0 0 20px rgb(231, 210, 210)
+  text-shadow: 0 0 20px rgba(231, 210, 210, 0.3);
+}
+
+[data-theme="dark"] .logo:hover {
+  text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
 }
 
 .nav-links {
@@ -40,9 +57,17 @@
   border-radius: 8px;
 }
 
+[data-theme="dark"] .nav-links a {
+  color: #b0b0b0;
+}
+
 .nav-links a:hover {
   background: rgba(255, 255, 255, 0.2);
   transform: translateY(-2px);
+}
+
+[data-theme="dark"] .nav-links a:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .settings-btn {
@@ -58,9 +83,18 @@
   justify-content: center;
 }
 
+[data-theme="dark"] .settings-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: #b0b0b0;
+}
+
 .settings-btn:hover {
   background: rgba(255, 255, 255, 0.3);
   transform: rotate(90deg);
+}
+
+[data-theme="dark"] .settings-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
 }
 
 .settings-menu {
@@ -74,6 +108,13 @@
   overflow: hidden;
   border: 1px solid #F8EFE8;
   animation: slideDown 0.2s ease;
+  z-index: 1000;
+}
+
+[data-theme="dark"] .settings-menu {
+  background: #2d2d2d;
+  border: 1px solid #404040;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
 }
 
 @keyframes slideDown {
@@ -102,16 +143,32 @@
   text-align: left;
 }
 
+[data-theme="dark"] .setting-item {
+  color: #ffffff;
+}
+
 .setting-item:hover {
   background-color: #f5f5f5;
+}
+
+[data-theme="dark"] .setting-item:hover {
+  background-color: #3a3a3a;
 }
 
 .setting-item.danger {
   color: #dc3545;
 }
 
+[data-theme="dark"] .setting-item.danger {
+  color: #ff6b6b;
+}
+
 .setting-item.danger:hover {
   background-color: #fff5f5;
+}
+
+[data-theme="dark"] .setting-item.danger:hover {
+  background-color: #3a1a1a;
 }
 
 .setting-icon {
@@ -129,6 +186,10 @@
   height: 1px;
   background: #e0e0e0;
   margin: 4px 0;
+}
+
+[data-theme="dark"] .setting-divider {
+  background: #404040;
 }
 
 @media (max-width: 768px) {
@@ -152,4 +213,9 @@
   .settings-menu {
     right: -10px;
   }
+}
+
+/* Animaciones para tema */
+.theme-transition * {
+  transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
 }
