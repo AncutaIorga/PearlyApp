@@ -10,7 +10,7 @@
 }
 
 .profile-header {
-  background: white;
+  background: rgb(243, 242, 230);
   padding: 40px;
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
@@ -33,7 +33,7 @@
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #a2b895 0%, #679460 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -48,7 +48,7 @@
   margin: 0 0 12px 0;
   font-size: 28px;
   font-weight: 700;
-  color: #333;
+  color: #9c8f8f;
 }
 
 .bio {
@@ -62,7 +62,7 @@
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #a2b895 0%, #679460 100%);
   color: white;
   padding: 8px 20px;
   border-radius: 20px;
@@ -94,7 +94,7 @@
 .stat-card .number {
   font-size: 32px;
   font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #a2b895 0%, #679460 100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;

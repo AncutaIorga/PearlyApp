@@ -1,5 +1,5 @@
 .create-post-container {
-  background: #f8f9fa;
+  background: #ffffff;
   min-height: calc(100vh - 64px);
   padding: 30px 20px;
 }
@@ -8,7 +8,7 @@
   max-width: 600px;
   margin: 0 auto;
   padding: 30px;
-  background: white;
+  background: rgb(243, 242, 230);
   border-radius: 16px;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
   animation: fadeIn 0.5s ease;
@@ -29,14 +29,113 @@
   margin: 0 0 24px 0;
   font-size: 24px;
   font-weight: 700;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg, #a2b895 0%, #679460  100%);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
   background-clip: text;
 }
 
 .form-group {
-  margin-bottom: 16px;
+  margin-bottom: 24px;
+}
+
+.section-label {
+  display: block;
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
+}
+
+.image-upload-container {
+  width: 100%;
+}
+
+#imageInput {
+  width: 100%;
+  padding: 16px;
+  border: 2px solid #e1e8ed;
+  border-radius: 12px;
+  font-size: 15px;
+  font-family: inherit;
+  transition: all 0.3s ease;
+  box-sizing: border-box;
+  background: white;
+  cursor: pointer;
+}
+
+#imageInput:focus {
+  outline: none;
+  border-color: #81ad8f ;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+#imageInput::file-selector-button {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #a2b895  0%, #679460 100%);
+  color: rgb(236, 233, 233);
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  margin-right: 12px;
+  transition: all 0.3s ease;
+}
+
+#imageInput::file-selector-button:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+#imageInput::before {
+  content: 'Sube una foto de tu logro!';
+  color: #cbd5e0;
+  font-size: 15px;
+  position: absolute;
+  pointer-events: none;
+}
+
+#imageInput:valid::before {
+  content: '';
+}
+
+.image-preview {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.image-preview img {
+  width: 100%;
+  height: auto;
+  max-height: 400px;
+  object-fit: cover;
+  display: block;
+}
+
+.remove-image {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.7);
+  color: white;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.remove-image:hover {
+  background: rgba(220, 53, 69, 0.9);
+  transform: scale(1.1);
 }
 
 .create-post textarea {
@@ -55,7 +154,7 @@
 
 .create-post textarea:focus {
   outline: none;
-  border-color: #667eea;
+  border-color: #81ad8f ;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
@@ -66,8 +165,8 @@
 
 .btn-primary {
   padding: 14px 32px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: white;
+  background: linear-gradient(135deg, #a2b895 0%, #679460 100%);
+  color: rgb(236, 233, 233);
   border: none;
   border-radius: 12px;
   font-size: 16px;

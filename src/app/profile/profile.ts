@@ -6,7 +6,7 @@ import { NavbarComponent } from '../shared/navbar/navbar';
   standalone: true,
   imports: [NavbarComponent],
   templateUrl: './profile.html',
-  styleUrl: './profile.css'  // ⚠️ Agregar esta línea
+  styleUrl: './profile.css'  
 })
 export class ProfileComponent {
   user: any;
