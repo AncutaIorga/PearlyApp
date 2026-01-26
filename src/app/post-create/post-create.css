@@ -1,5 +1,5 @@
 .create-post-container {
-  background: #ffffff;
+  background: var(--bg-secondary);
   min-height: calc(100vh - 64px);
   padding: 30px 20px;
 }
@@ -8,9 +8,9 @@
   max-width: 600px;
   margin: 0 auto;
   padding: 30px;
-  background: rgb(243, 242, 230);
+  background: var(--card-bg);
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-md);
   animation: fadeIn 0.5s ease;
 }
 
@@ -43,7 +43,7 @@
   display: block;
   font-size: 16px;
   font-weight: 600;
-  color: #333;
+  color: var(--text-primary);
   margin-bottom: 12px;
 }
 
@@ -54,13 +54,14 @@
 #imageInput {
   width: 100%;
   padding: 16px;
-  border: 2px solid #e1e8ed;
+  border: 2px solid var(--border-color);
   border-radius: 12px;
   font-size: 15px;
   font-family: inherit;
   transition: all 0.3s ease;
   box-sizing: border-box;
-  background: white;
+  background: var(--input-bg);
+  color: var(--text-primary);
   cursor: pointer;
 }
 
@@ -68,6 +69,10 @@
   outline: none;
   border-color: #81ad8f ;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+[data-theme="dark"] #imageInput:focus {
+  box-shadow: 0 0 0 3px rgba(129, 173, 143, 0.3);
 }
 
 #imageInput::file-selector-button {
@@ -85,26 +90,15 @@
 
 #imageInput::file-selector-button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-}
-
-#imageInput::before {
-  content: 'Sube una foto de tu logro!';
-  color: #cbd5e0;
-  font-size: 15px;
-  position: absolute;
-  pointer-events: none;
-}
-
-#imageInput:valid::before {
-  content: '';
+  box-shadow: var(--shadow-md);
 }
 
 .image-preview {
   position: relative;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
 }
 
 .image-preview img {
@@ -138,11 +132,19 @@
   transform: scale(1.1);
 }
 
+[data-theme="dark"] .remove-image {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+[data-theme="dark"] .remove-image:hover {
+  background: rgba(220, 53, 69, 0.7);
+}
+
 .create-post textarea {
   width: 100%;
   min-height: 150px;
   padding: 16px;
-  border: 2px solid #e1e8ed;
+  border: 2px solid var(--border-color);
   border-radius: 12px;
   font-size: 15px;
   font-family: inherit;
@@ -150,12 +152,22 @@
   transition: all 0.3s ease;
   box-sizing: border-box;
   line-height: 1.5;
+  background: var(--input-bg);
+  color: var(--text-primary);
 }
 
 .create-post textarea:focus {
   outline: none;
   border-color: #81ad8f ;
   box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+[data-theme="dark"] .create-post textarea:focus {
+  box-shadow: 0 0 0 3px rgba(129, 173, 143, 0.3);
+}
+
+.create-post textarea::placeholder {
+  color: var(--text-muted);
 }
 
 .form-actions {
@@ -177,7 +189,7 @@
 
 .btn-primary:hover {
   transform: translateY(-2px);
-  box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+  box-shadow: var(--shadow-lg);
 }
 
 .btn-primary:active {

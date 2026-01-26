@@ -1,5 +1,5 @@
 .profile-container {
-  background: #f8f9fa;
+  background: var(--bg-secondary);
   min-height: calc(100vh - 64px);
   padding: 30px 20px;
 }
@@ -10,10 +10,10 @@
 }
 
 .profile-header {
-  background: rgb(243, 242, 230);
+  background: var(--card-bg);
   padding: 40px;
   border-radius: 16px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-md);
   text-align: center;
   animation: fadeIn 0.5s ease;
 }
@@ -41,19 +41,19 @@
   font-weight: 700;
   font-size: 48px;
   margin: 0 auto 20px;
-  box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+  box-shadow: var(--shadow-lg);
 }
 
 .profile-header h2 {
   margin: 0 0 12px 0;
   font-size: 28px;
   font-weight: 700;
-  color: #9c8f8f;
+  color: var(--text-primary);
 }
 
 .bio {
   margin: 8px 0;
-  color: #666;
+  color: var(--text-secondary);
   font-size: 16px;
   line-height: 1.5;
 }
@@ -68,7 +68,7 @@
   border-radius: 20px;
   font-weight: 600;
   margin-top: 16px;
-  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+  box-shadow: var(--shadow-md);
 }
 
 .stats-grid {
@@ -79,16 +79,17 @@
 }
 
 .stat-card {
-  background: #f8f9fa;
+  background: var(--bg-tertiary);
   padding: 20px;
   border-radius: 12px;
   text-align: center;
   transition: all 0.3s ease;
+  border: 1px solid var(--border-color);
 }
 
 .stat-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 .stat-card .number {
@@ -101,7 +102,7 @@
 }
 
 .stat-card .label {
-  color: #666;
+  color: var(--text-secondary);
   font-size: 14px;
   margin-top: 4px;
   font-weight: 500;
