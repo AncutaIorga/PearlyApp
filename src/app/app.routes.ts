@@ -5,8 +5,8 @@ import { LoginComponent } from './auth/login/login';
 import { RegisterComponent } from './auth/register/register';
 import { ProfileComponent } from './profile/profile';
 import { PostCreateComponent } from './post-create/post-create';
+import { ChallengesComponent } from './challenges/challenges';
 
-// IMPORTAR LOS NUEVOS COMPONENTES
 import { PrivacyComponent } from './privacy/privacy';
 import { AccountComponent } from './account/account';
 import { NotificationsComponent } from './notifications/notifications';
@@ -19,6 +19,7 @@ export const routes: Routes = [
   { path: 'register', component: RegisterComponent },
   { path: 'profile', component: ProfileComponent },
   { path: 'create', component: PostCreateComponent },
+  { path: 'challenges', component: ChallengesComponent },
 
   {path: 'privacy', component: PrivacyComponent },
   { path: 'account', component: AccountComponent },

@@ -1,0 +1,204 @@
+<app-navbar></app-navbar>
+
+<div class="challenges-page">
+  <!-- Encabezado principal -->
+  <header class="page-header">
+    <div class="header-content">
+      <h1>🧘‍♀️ Retos de Bienestar</h1>
+      <p class="header-subtitle">Cuida tu cuerpo y mente con desafíos diarios</p>
+    </div>
+    
+    <!-- Estadísticas rápidas -->
+    <div class="quick-stats">
+      <div class="stat-bubble energy">
+        <span class="stat-number">{{ energyPoints }}</span>
+        <span class="stat-label">Energía</span>
+      </div>
+      <div class="stat-bubble streak">
+        <span class="stat-number">{{ currentStreak }} 🔥</span>
+        <span class="stat-label">Racha</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Sección de balance -->
+  <section class="balance-section">
+    <div class="balance-header">
+      <h2>Tu balance mente-cuerpo</h2>
+      <span class="balance-score">{{ wellnessScore }}/100</span>
+    </div>
+    
+    <div class="balance-bars">
+      <div class="balance-bar mental">
+        <div class="bar-label">
+          <span>🧠 Salud Mental</span>
+          <span>{{ mentalHealth }}%</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" [style.width.%]="mentalHealth"></div>
+        </div>
+      </div>
+      
+      <div class="balance-bar physical">
+        <div class="bar-label">
+          <span>💪 Salud Física</span>
+          <span>{{ physicalHealth }}%</span>
+        </div>
+        <div class="bar-track">
+          <div class="bar-fill" [style.width.%]="physicalHealth"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Filtros para bienestar -->
+  <div class="simple-filters">
+    <button 
+      *ngFor="let filter of filters"
+      [class.active]="activeFilter === filter.id"
+      (click)="setFilter(filter.id)"
+      class="simple-filter-btn">
+      <span class="filter-icon">{{ getFilterIcon(filter.id) }}</span>
+      {{ filter.label }}
+    </button>
+  </div>
+
+  <!-- Retos de bienestar -->
+  <div class="challenges-cards">
+    <div 
+      *ngFor="let challenge of filteredChallenges"
+      class="challenge-card-simple"
+      [class.completed]="challenge.completed"
+      [class.in-progress]="challenge.inProgress"
+      [class.mental]="challenge.category === 'mental'"
+      [class.physical]="challenge.category === 'physical'"
+      [class.mindfulness]="challenge.category === 'mindfulness'">
+      
+      <!-- Estado del reto -->
+      <div class="challenge-status">
+        <span *ngIf="challenge.completed" class="status-badge completed">✅ Completado</span>
+        <span *ngIf="challenge.inProgress && !challenge.completed" class="status-badge progress">⏳ En progreso</span>
+        <span *ngIf="!challenge.completed && !challenge.inProgress" class="status-badge new">✨ Nuevo</span>
+        
+        <span class="challenge-points">+{{ challenge.points }} ⚡</span>
+      </div>
+
+      <!-- Icono de categoría -->
+      <div class="challenge-category-icon">
+        <span class="category-icon">{{ getCategoryIcon(challenge.category) }}</span>
+        <span class="category-name">{{ getCategoryName(challenge.category) }}</span>
+      </div>
+
+      <!-- Contenido -->
+      <h3 class="challenge-title-simple">{{ challenge.title }}</h3>
+      <p class="challenge-desc-simple">{{ challenge.description }}</p>
+
+      <!-- Beneficios -->
+      <div class="benefits-list" *ngIf="challenge.benefits">
+        <div *ngFor="let benefit of challenge.benefits" class="benefit-item">
+          <span class="benefit-icon">✨</span>
+          <span class="benefit-text">{{ benefit }}</span>
+        </div>
+      </div>
+
+      <!-- Detalles -->
+      <div class="challenge-details">
+        <span class="detail-item">
+          <span class="detail-icon">⏱️</span>
+          {{ challenge.duration }}
+        </span>
+        <span class="detail-item">
+          <span class="detail-icon">👥</span>
+          {{ challenge.participants | number }} personas
+        </span>
+        <span class="detail-item" *ngIf="challenge.difficulty">
+          <span class="detail-icon">📊</span>
+          {{ challenge.difficulty }}
+        </span>
+      </div>
+
+      <!-- Progreso (si aplica) -->
+      <div *ngIf="challenge.progress && !challenge.completed" class="simple-progress">
+        <div class="progress-container">
+          <div class="progress-track">
+            <div 
+              class="progress-fill-track" 
+              [style.width.%]="(challenge.progress.current / challenge.progress.total) * 100">
+            </div>
+          </div>
+          <span class="progress-text">{{ challenge.progress.current }}/{{ challenge.progress.total }}</span>
+        </div>
+      </div>
+
+      <!-- Botón de acción -->
+      <button 
+        (click)="handleChallengeAction(challenge)"
+        [disabled]="challenge.completed"
+        class="action-btn"
+        [class.mental-btn]="challenge.category === 'mental'"
+        [class.physical-btn]="challenge.category === 'physical'"
+        [class.mindfulness-btn]="challenge.category === 'mindfulness'">
+        
+        <span *ngIf="challenge.completed" class="btn-text">✅ Completado</span>
+        <span *ngIf="challenge.inProgress && !challenge.completed" class="btn-text">⏳ Continuar</span>
+        <span *ngIf="!challenge.completed && !challenge.inProgress" class="btn-text">{{ getActionButtonText(challenge) }}</span>
+      </button>
+    </div>
+  </div>
+
+  <!-- Retos diarios de bienestar -->
+  <section *ngIf="dailyChallenges.length > 0" class="daily-section wellness">
+    <div class="daily-header">
+      <h2>🌅 Hábitos Diarios</h2>
+      <p class="daily-subtitle">Pequeñas acciones, grandes cambios</p>
+    </div>
+    
+    <div class="daily-cards">
+      <div *ngFor="let daily of dailyChallenges" class="daily-card-simple wellness-card">
+        <div class="daily-day">Día {{ daily.day }}</div>
+        
+        <div class="daily-content">
+          <h4>{{ daily.title }}</h4>
+          <p>{{ daily.description }}</p>
+          
+          <div class="wellness-benefits">
+            <div class="benefit-tag" *ngFor="let tag of daily.tags">
+              <span>{{ tag }}</span>
+            </div>
+          </div>
+          
+          <div class="daily-reward">
+            <span class="reward-icon">⚡</span>
+            <span class="reward-points">+{{ daily.points }} energía</span>
+          </div>
+        </div>
+        
+        <button 
+          (click)="claimDaily(daily.id)"
+          [disabled]="daily.claimed"
+          class="daily-claim-btn wellness-claim"
+          [class.claimed]="daily.claimed">
+          {{ daily.claimed ? '✅ Hecho' : '✨ Completar' }}
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Consejo del día -->
+  <div class="daily-tip">
+    <div class="tip-icon">💡</div>
+    <div class="tip-content">
+      <h3>Consejo del día</h3>
+      <p>{{ dailyTip }}</p>
+      <button (click)="refreshTip()" class="tip-refresh">🔄 Nuevo consejo</button>
+    </div>
+  </div>
+
+  <!-- Sin resultados -->
+  <div *ngIf="filteredChallenges.length === 0" class="empty-state wellness-empty">
+    <div class="empty-icon">🌱</div>
+    <h3>Descansa y recarga</h3>
+    <p>Hoy has completado todos los retos disponibles. ¡Buen trabajo!</p>
+    <button (click)="resetFilters()" class="reset-btn wellness-reset">🌿 Ver todos los retos</button>
+  </div>
+</div>
