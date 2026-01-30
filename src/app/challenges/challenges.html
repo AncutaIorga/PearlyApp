@@ -57,7 +57,8 @@
       *ngFor="let filter of filters"
       [class.active]="activeFilter === filter.id"
       (click)="setFilter(filter.id)"
-      class="simple-filter-btn">
+      class="simple-filter-btn"
+      [attr.data-filter]="filter.id">
       <span class="filter-icon">{{ getFilterIcon(filter.id) }}</span>
       {{ filter.label }}
     </button>
@@ -72,14 +73,19 @@
       [class.in-progress]="challenge.inProgress"
       [class.mental]="challenge.category === 'mental'"
       [class.physical]="challenge.category === 'physical'"
-      [class.mindfulness]="challenge.category === 'mindfulness'">
+      [class.mindfulness]="challenge.category === 'mindfulness'"
+      [class.nutrition]="challenge.category === 'nutrition'">
       
-      <!-- Estado del reto -->
+      <!-- Solo dificultad y puntos -->
       <div class="challenge-status">
-        <span *ngIf="challenge.completed" class="status-badge completed">✅ Completado</span>
-        <span *ngIf="challenge.inProgress && !challenge.completed" class="status-badge progress">⏳ En progreso</span>
-        <span *ngIf="!challenge.completed && !challenge.inProgress" class="status-badge new">✨ Nuevo</span>
+        <!-- Dificultad a la izquierda -->
+        <div class="status-left">
+          <span *ngIf="challenge.difficulty" class="difficulty-badge" [class]="challenge.difficulty.toLowerCase()">
+            {{ challenge.difficulty }}
+          </span>
+        </div>
         
+        <!-- Puntos a la derecha -->
         <span class="challenge-points">+{{ challenge.points }} ⚡</span>
       </div>
 
@@ -101,19 +107,11 @@
         </div>
       </div>
 
-      <!-- Detalles -->
+      <!-- Detalles (SOLO DURACIÓN) -->
       <div class="challenge-details">
         <span class="detail-item">
           <span class="detail-icon">⏱️</span>
           {{ challenge.duration }}
-        </span>
-        <span class="detail-item">
-          <span class="detail-icon">👥</span>
-          {{ challenge.participants | number }} personas
-        </span>
-        <span class="detail-item" *ngIf="challenge.difficulty">
-          <span class="detail-icon">📊</span>
-          {{ challenge.difficulty }}
         </span>
       </div>
 
@@ -137,9 +135,12 @@
         class="action-btn"
         [class.mental-btn]="challenge.category === 'mental'"
         [class.physical-btn]="challenge.category === 'physical'"
-        [class.mindfulness-btn]="challenge.category === 'mindfulness'">
+        [class.mindfulness-btn]="challenge.category === 'mindfulness'"
+        [class.nutrition-btn]="challenge.category === 'nutrition'"
+        [class.nutrition-completed]="challenge.completed && challenge.category === 'nutrition'">
         
-        <span *ngIf="challenge.completed" class="btn-text">✅ Completado</span>
+        <span *ngIf="challenge.completed && challenge.category === 'nutrition'" class="btn-text">✅ ¡Completado!</span>
+        <span *ngIf="challenge.completed && challenge.category !== 'nutrition'" class="btn-text">✅ Completado</span>
         <span *ngIf="challenge.inProgress && !challenge.completed" class="btn-text">⏳ Continuar</span>
         <span *ngIf="!challenge.completed && !challenge.inProgress" class="btn-text">{{ getActionButtonText(challenge) }}</span>
       </button>
@@ -154,7 +155,9 @@
     </div>
     
     <div class="daily-cards">
-      <div *ngFor="let daily of dailyChallenges" class="daily-card-simple wellness-card">
+      <div *ngFor="let daily of dailyChallenges" 
+           class="daily-card-simple wellness-card"
+           [class.nutrition]="daily.tags?.includes('Nutrición') || daily.title.toLowerCase().includes('nutri')">
         <div class="daily-day">Día {{ daily.day }}</div>
         
         <div class="daily-content">
