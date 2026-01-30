@@ -1,5 +1,4 @@
 import { Component, HostListener, ElementRef, inject, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth';
 import { UserService } from '../../services/user';
@@ -8,7 +7,7 @@ import { ThemeService } from '../../services/theme';
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterModule, CommonModule],
+  imports: [RouterModule],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css'
 })
@@ -84,9 +83,9 @@ export class NavbarComponent implements OnInit {
 
   private createTestNotification() {
     if (Notification.permission === 'granted') {
-      new Notification('Pearly', {
+      new Notification('PearlyApp', {
         body: '¡Notificaciones activadas con éxito!',
-        icon: '/assets/logo.png'
+        icon: '/assets/icons/icon-192x192.png'
       });
     }
   }
@@ -104,7 +103,7 @@ export class NavbarComponent implements OnInit {
 
   private handleAccount() {
     if (this.user()) {
-      this.router.navigate(['/account']);
+      this.router.navigate(['/profile']);
     } else {
       this.router.navigate(['/login']);
     }
@@ -113,7 +112,6 @@ export class NavbarComponent implements OnInit {
   private handleLogout() {
     if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
       this.authService.logout();
-      this.router.navigate(['/login']);
       this.showToast('👋 Sesión cerrada correctamente');
     }
   }
@@ -123,20 +121,22 @@ export class NavbarComponent implements OnInit {
     toast.textContent = message;
     toast.style.cssText = `
       position: fixed;
-      top: 20px;
+      top: 80px;
       right: 20px;
-      background: #667eea;
+      background: linear-gradient(135deg, #a2b895 0%, #679460 100%);
       color: white;
-      padding: 12px 24px;
-      border-radius: 8px;
-      z-index: 1000;
-      animation: fadeIn 0.3s;
+      padding: 16px 24px;
+      border-radius: 12px;
+      z-index: 10000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+      font-weight: 600;
+      animation: slideIn 0.3s ease;
     `;
     
     document.body.appendChild(toast);
     
     setTimeout(() => {
-      toast.style.animation = 'fadeOut 0.3s';
+      toast.style.animation = 'slideOut 0.3s ease';
       setTimeout(() => toast.remove(), 300);
     }, 3000);
   }
