@@ -2,30 +2,61 @@
 
 <div class="profile-container">
   <div class="profile">
-    <div class="profile-header">
-      <div class="profile-avatar">
-        {{ user.name.charAt(0).toUpperCase() }}
-      </div>
-      
-      <h2>{{ user.name }}</h2>
-      <p class="bio">{{ user.bio }}</p>
-      
-      <div class="achievements-badge">
-        🏆 {{ user.achievements }} Logros conseguidos
-      </div>
-      
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="number">42</div>
-          <div class="label">Publicaciones</div>
+    <div class="profile-layout">
+      <!-- Columna Izquierda: Info + Retos -->
+      <div class="profile-left">
+        <div class="profile-header">
+          <div class="profile-avatar">
+            {{ user.name.charAt(0).toUpperCase() }}
+          </div>
+          
+          <h2>{{ user.name }}</h2>
+          <p class="bio">{{ user.bio }}</p>
+          
+          <div class="achievements-badge">
+            🏆 {{ user.achievements }} Logros conseguidos
+          </div>
         </div>
-        <div class="stat-card">
-          <div class="number">128</div>
-          <div class="label">Seguidores</div>
+
+        <!-- Sección de Retos -->
+        <div class="challenges-section">
+          <h3>RETOS</h3>
+          <div class="challenges-list">
+            <div class="challenge-item" (click)="goToChallenges()">
+              <div class="challenge-icon">💧</div>
+              <div class="challenge-info">
+                <div class="challenge-title">Beber 2L de agua</div>
+                <div class="challenge-progress">5/7 días</div>
+              </div>
+            </div>
+            <div class="challenge-item" (click)="goToChallenges()">
+              <div class="challenge-icon">🏃</div>
+              <div class="challenge-info">
+                <div class="challenge-title">Correr 5km</div>
+                <div class="challenge-progress">3/5 días</div>
+              </div>
+            </div>
+            <div class="challenge-item" (click)="goToChallenges()">
+              <div class="challenge-icon">🥗</div>
+              <div class="challenge-info">
+                <div class="challenge-title">Comer saludable</div>
+                <div class="challenge-progress">7/7 días</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="stat-card">
-          <div class="number">89</div>
-          <div class="label">Siguiendo</div>
+      </div>
+
+      <!-- Columna Derecha: Cuadrícula de Publicaciones -->
+      <div class="profile-right">
+        <div class="posts-grid">
+          <div class="post-item" *ngFor="let post of posts">
+            <img [src]="post.image" [alt]="post.title">
+            <div class="post-overlay">
+              <span>❤️ {{ post.likes }}</span>
+              <span>💬 {{ post.comments }}</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>

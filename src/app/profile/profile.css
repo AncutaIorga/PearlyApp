@@ -5,16 +5,14 @@
 }
 
 .profile {
-  max-width: 800px;
+  max-width: 1200px;
   margin: 0 auto;
 }
 
-.profile-header {
-  background: var(--card-bg);
-  padding: 40px;
-  border-radius: 16px;
-  box-shadow: var(--shadow-md);
-  text-align: center;
+.profile-layout {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  gap: 30px;
   animation: fadeIn 0.5s ease;
 }
 
@@ -27,6 +25,21 @@
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Columna Izquierda */
+.profile-left {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.profile-header {
+  background: var(--card-bg);
+  padding: 40px;
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+  text-align: center;
 }
 
 .profile-avatar {
@@ -42,6 +55,12 @@
   font-size: 48px;
   margin: 0 auto 20px;
   box-shadow: var(--shadow-lg);
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.profile-avatar:hover {
+  transform: scale(1.05);
 }
 
 .profile-header h2 {
@@ -71,50 +90,141 @@
   box-shadow: var(--shadow-md);
 }
 
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 20px;
-  margin-top: 30px;
-}
-
-.stat-card {
-  background: var(--bg-tertiary);
-  padding: 20px;
-  border-radius: 12px;
-  text-align: center;
-  transition: all 0.3s ease;
-  border: 1px solid var(--border-color);
-}
-
-.stat-card:hover {
-  transform: translateY(-4px);
+/* Sección de Retos */
+.challenges-section {
+  background: var(--card-bg);
+  padding: 30px;
+  border-radius: 16px;
   box-shadow: var(--shadow-md);
 }
 
-.stat-card .number {
-  font-size: 32px;
+.challenges-section h3 {
+  margin: 0 0 20px 0;
+  font-size: 20px;
   font-weight: 700;
-  background: linear-gradient(135deg, #a2b895 0%, #679460 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
+  color: var(--text-primary);
+  letter-spacing: 1px;
 }
 
-.stat-card .label {
+.challenges-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.challenge-item {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 16px;
+  background: var(--bg-tertiary);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.challenge-item:hover {
+  transform: translateX(5px);
+  box-shadow: var(--shadow-md);
+  background: var(--bg-secondary);
+}
+
+.challenge-icon {
+  font-size: 32px;
+  flex-shrink: 0;
+}
+
+.challenge-info {
+  flex: 1;
+}
+
+.challenge-title {
+  font-weight: 600;
+  color: var(--text-primary);
+  font-size: 16px;
+  margin-bottom: 4px;
+}
+
+.challenge-progress {
   color: var(--text-secondary);
   font-size: 14px;
-  margin-top: 4px;
-  font-weight: 500;
+}
+
+/* Columna Derecha - Cuadrícula de Publicaciones */
+.profile-right {
+  background: var(--card-bg);
+  padding: 30px;
+  border-radius: 16px;
+  box-shadow: var(--shadow-md);
+}
+
+.posts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 15px;
+}
+
+.post-item {
+  position: relative;
+  aspect-ratio: 1;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  transition: transform 0.3s ease;
+}
+
+.post-item:hover {
+  transform: scale(1.05);
+}
+
+.post-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.post-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  color: white;
+  font-weight: 600;
+}
+
+.post-item:hover .post-overlay {
+  opacity: 1;
+}
+
+@media (max-width: 900px) {
+  .profile-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .posts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
 }
 
 @media (max-width: 600px) {
-  .stats-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-  }
-  
   .profile-header {
     padding: 30px 20px;
+  }
+
+  .challenges-section {
+    padding: 20px;
+  }
+
+  .posts-grid {
+    grid-template-columns: 1fr;
   }
 }

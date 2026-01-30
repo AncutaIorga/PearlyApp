@@ -1,5 +1,4 @@
 <app-navbar></app-navbar>
-
 <div class="create-post-container">
   <div class="create-post">
     <h2>Comparte tu logro 🌟</h2>
@@ -12,14 +11,14 @@
             id="imageInput" 
             accept="image/*" 
             (change)="onImageSelected($event)">
-          
-          <div class="image-preview" *ngIf="selectedImage">
-            <img [src]="selectedImage" alt="Preview">
-            <button type="button" class="remove-image" (click)="removeImage()">✕</button>
-          </div>
+          @if (selectedImage) {
+            <div class="image-preview">
+              <img [src]="selectedImage" alt="Preview">
+              <button type="button" class="remove-image" (click)="removeImage()">✕</button>
+            </div>
+          }
         </div>
       </div>
-
       <!-- Sección de Descripción -->
       <div class="form-group">
         <textarea 
@@ -28,7 +27,6 @@
           placeholder="Describe tu logro saludable del día... ¿Qué has conseguido hoy?"
           rows="6"></textarea>
       </div>
-      
       <div class="form-actions">
         <button type="submit" class="btn-primary">Publicar logro</button>
       </div>
