@@ -9,4 +9,9 @@ export class UserService {
       achievements: 5
     };
   }
+
+  updateUser(user: any) {
+  localStorage.setItem('user', JSON.stringify(user));
+}
+
 }

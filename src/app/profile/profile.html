@@ -1,5 +1,4 @@
 <app-navbar></app-navbar>
-
 <div class="profile-container">
   <div class="profile">
     <div class="profile-layout">
@@ -9,15 +8,42 @@
           <div class="profile-avatar">
             {{ user.name.charAt(0).toUpperCase() }}
           </div>
-          
-          <h2>{{ user.name }}</h2>
-          <p class="bio">{{ user.bio }}</p>
-          
+          <!-- BOTONES NUEVOS -->
+          <button class="edit-btn" (click)="toggleEdit()">
+            {{ editing ? 'Guardar' : 'Editar perfil' }}
+          </button>
+          @if (editing) {
+            <button class="cancel-btn" (click)="cancelEdit()">
+              Cancelar
+            </button>
+          }
+          <!-- VISTA NORMAL -->
+          @if (!editing) {
+            <h2>{{ user.name }}</h2>
+            <p class="bio">{{ user.bio }}</p>
+          }
+          <!-- MODO EDICIÓN -->
+          @if (editing) {
+            <input
+              class="edit-input"
+              [(ngModel)]="editableUser.name"
+              placeholder="Nombre"
+            />
+            <textarea
+              class="edit-textarea"
+              [(ngModel)]="editableUser.bio"
+              placeholder="Biografía">
+            </textarea>
+            <input
+              class="edit-input"
+              [(ngModel)]="editableUser.avatar"
+              placeholder="URL de la foto (opcional)"
+            />
+          }
           <div class="achievements-badge">
             🏆 {{ user.achievements }} Logros conseguidos
           </div>
         </div>
-
         <!-- Sección de Retos -->
         <div class="challenges-section">
           <h3>RETOS</h3>
@@ -46,19 +72,36 @@
           </div>
         </div>
       </div>
-
       <!-- Columna Derecha: Cuadrícula de Publicaciones -->
       <div class="profile-right">
         <div class="posts-grid">
-          <div class="post-item" *ngFor="let post of posts">
-            <img [src]="post.image" [alt]="post.title">
-            <div class="post-overlay">
-              <span>❤️ {{ post.likes }}</span>
-              <span>💬 {{ post.comments }}</span>
+          @for (post of posts; track post.title) {
+            <div class="post-item" (click)="openImageModal(post)">
+              <img [src]="post.image" [alt]="post.title">
+              <div class="post-overlay">
+                <span>❤️ {{ post.likes }}</span>
+                <span>💬 {{ post.comments }}</span>
+              </div>
             </div>
-          </div>
+          }
         </div>
       </div>
     </div>
   </div>
 </div>
+
+<!-- Modal para ver imagen grande -->
+@if (selectedPost) {
+  <div class="image-modal" (click)="closeImageModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeImageModal()">✕</button>
+      <img [src]="selectedPost.image" [alt]="selectedPost.title">
+      <div class="modal-info">
+        <div class="modal-stats">
+          <span>❤️ {{ selectedPost.likes }}</span>
+          <span>💬 {{ selectedPost.comments }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+}
