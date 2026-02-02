@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PostService } from '../services/post';
+import { UserService } from '../services/user';
 import { NavbarComponent } from '../shared/navbar/navbar';
 
 @Component({
@@ -16,6 +17,7 @@ export class PostCreateComponent {
 
   constructor(
     private postService: PostService,
+    private userService: UserService,
     private router: Router
   ) {}
 
@@ -36,12 +38,15 @@ export class PostCreateComponent {
 
   submit() {
     if (this.text.trim()) {
+      const currentUser = this.userService.getUser();
+
       this.postService.addPost({
-        id: Date.now(),
-        user: 'Healthy User',
-        image: this.selectedImage || 'https://picsum.photos/400/30' + Math.floor(Math.random() * 10),
-        text: this.text,
-        likes: 0
+        user: currentUser.name,
+        userAvatar: currentUser.avatar,
+        image:
+          this.selectedImage ||
+          'https://picsum.photos/400/30' + Math.floor(Math.random() * 10),
+        text: this.text
       });
 
       this.text = '';

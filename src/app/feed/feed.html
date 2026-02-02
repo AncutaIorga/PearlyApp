@@ -2,9 +2,12 @@
 
 <div class="feed-container theme-transition">
   <div class="feed">
-    <app-post-card
-      *ngFor="let post of posts()"
-      [post]="post">
-    </app-post-card>
+    @if (posts.length === 0) {
+      <p class="empty-feed">No hay publicaciones todavía</p>
+    } @else {
+      @for (post of posts; track post.id) {
+        <app-post-card [post]="post"></app-post-card>
+      }
+    }
   </div>
 </div>

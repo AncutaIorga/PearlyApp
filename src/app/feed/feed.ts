@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PostService } from '../services/post';
+import { PostService, Post } from '../services/post';
 import { PostCardComponent } from '../shared/post-card/post-card';
 import { NavbarComponent } from '../shared/navbar/navbar';
 
@@ -8,12 +8,12 @@ import { NavbarComponent } from '../shared/navbar/navbar';
   standalone: true,
   imports: [CommonModule, PostCardComponent, NavbarComponent],
   templateUrl: './feed.html',
-  styleUrl: './feed.css'  
+  styleUrl: './feed.css'
 })
 export class FeedComponent {
-  posts;
+  posts: Post[] = [];
 
   constructor(private postService: PostService) {
-    this.posts = this.postService.posts;
+    this.posts = this.postService.getAllPosts();
   }
 }

@@ -57,10 +57,21 @@
   box-shadow: var(--shadow-lg);
   cursor: pointer;
   transition: transform 0.3s ease;
+  overflow: hidden;
 }
 
 .profile-avatar:hover {
   transform: scale(1.05);
+}
+
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-avatar span {
+  font-size: 48px;
 }
 
 .profile-header h2 {
@@ -75,6 +86,34 @@
   color: var(--text-secondary);
   font-size: 16px;
   line-height: 1.5;
+}
+
+/* Estadísticas */
+.stats {
+  display: flex;
+  justify-content: space-around;
+  margin: 20px 0;
+  padding: 20px 0;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.stat-item strong {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.stat-item span {
+  font-size: 13px;
+  color: var(--text-secondary);
 }
 
 .achievements-badge {
@@ -205,65 +244,6 @@
   opacity: 1;
 }
 
-@media (max-width: 900px) {
-  .profile-layout {
-    grid-template-columns: 1fr;
-  }
-
-  .posts-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
-
-@media (max-width: 600px) {
-  .profile-header {
-    padding: 30px 20px;
-  }
-
-  .challenges-section {
-    padding: 20px;
-  }
-
-  .posts-grid {
-    grid-template-columns: 1fr;
-  }
-}
-
-.edit-btn {
-  margin-top: 16px;
-  padding: 8px 18px;
-  border-radius: 20px;
-  border: none;
-  background: var(--primary);
-  color: white;
-  font-weight: 600;
-  cursor: pointer;
-}
-
-.cancel-btn {
-  margin-left: 10px;
-  padding: 8px 18px;
-  border-radius: 20px;
-  border: 1px solid var(--border-color);
-  background: transparent;
-  cursor: pointer;
-}
-
-.edit-input,
-.edit-textarea {
-  width: 100%;
-  margin-top: 10px;
-  padding: 10px 14px;
-  border-radius: 10px;
-  border: 1px solid var(--border-color);
-  font-size: 16px;
-}
-
-.edit-textarea {
-  resize: none;
-  min-height: 80px;
-}
-
 /* Modal de imagen grande */
 .image-modal {
   position: fixed;
@@ -342,7 +322,86 @@
   gap: 8px;
 }
 
+/* Botones de edición */
+.edit-btn {
+  margin-top: 16px;
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: none;
+  background: var(--primary);
+  color: white;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.edit-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(103, 148, 96, 0.3);
+}
+
+.cancel-btn {
+  margin-left: 10px;
+  padding: 8px 18px;
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+  background: var(--bg-secondary);
+}
+
+.edit-input,
+.edit-textarea {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  font-size: 16px;
+  box-sizing: border-box;
+}
+
+.edit-textarea {
+  resize: vertical;
+  min-height: 80px;
+  font-family: inherit;
+}
+
+.helper-text {
+  display: block;
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+@media (max-width: 900px) {
+  .profile-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .posts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
 @media (max-width: 600px) {
+  .profile-header {
+    padding: 30px 20px;
+  }
+
+  .challenges-section {
+    padding: 20px;
+  }
+
+  .posts-grid {
+    grid-template-columns: 1fr;
+  }
+  
   .modal-content {
     max-width: 95vw;
   }
@@ -355,5 +414,274 @@
   .modal-stats {
     font-size: 16px;
     gap: 20px;
+  }
+}
+
+/* Modal mejorado */
+.modal-layout {
+  display: flex;
+  background: var(--card-bg);
+  border-radius: 12px;
+  overflow: hidden;
+  max-width: 1200px;
+  max-height: 85vh;
+}
+
+.modal-image-section {
+  flex: 1;
+  background: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+}
+
+.modal-image-section img {
+  max-width: 100%;
+  max-height: 85vh;
+  object-fit: contain;
+}
+
+.modal-sidebar {
+  width: 400px;
+  display: flex;
+  flex-direction: column;
+  background: var(--card-bg);
+}
+
+.modal-header {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.modal-user-avatar,
+.modal-user-avatar-placeholder {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.modal-user-avatar-placeholder {
+  background: linear-gradient(135deg, #a2b895 0%, #679460 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 18px;
+}
+
+.modal-user-info strong {
+  font-size: 15px;
+  color: var(--text-primary);
+}
+
+.modal-time {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin: 2px 0 0 0;
+}
+
+.modal-description {
+  padding: 16px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal-description p {
+  margin: 0;
+  color: var(--text-primary);
+  line-height: 1.5;
+}
+
+.modal-comments {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  max-height: 400px;
+}
+
+.no-comments {
+  text-align: center;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin: 20px 0;
+}
+
+.comment-item {
+  margin-bottom: 16px;
+}
+
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.comment-avatar,
+.comment-avatar-placeholder {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+
+.comment-avatar-placeholder {
+  background: linear-gradient(135deg, #a2b895 0%, #679460 100%);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.comment-info {
+  flex: 1;
+}
+
+.comment-info strong {
+  font-size: 14px;
+  color: var(--text-primary);
+  margin-right: 8px;
+}
+
+.comment-time {
+  font-size: 12px;
+  color: var(--text-secondary);
+}
+
+.comment-text {
+  margin: 0 0 0 42px;
+  color: var(--text-primary);
+  font-size: 14px;
+  line-height: 1.4;
+}
+
+.modal-actions {
+  padding: 12px 16px;
+  border-top: 1px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.like-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  transition: transform 0.2s ease;
+  padding: 0;
+}
+
+.like-btn:hover {
+  transform: scale(1.2);
+}
+
+.like-btn.liked {
+  animation: likeAnimation 0.3s ease;
+}
+
+@keyframes likeAnimation {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.3); }
+}
+
+.likes-count {
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+.modal-comment-input {
+  padding: 16px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  border-top: 1px solid var(--border-color);
+}
+
+.modal-comment-input input {
+  flex: 1;
+  padding: 10px 14px;
+  border: 1px solid var(--border-color);
+  border-radius: 20px;
+  font-size: 14px;
+  outline: none;
+}
+
+.modal-comment-input input:focus {
+  border-color: #679460;
+}
+
+.post-comment-btn {
+  padding: 8px 20px;
+  background: linear-gradient(135deg, #a2b895 0%, #679460 100%);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  font-weight: 600;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.post-comment-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(103, 148, 96, 0.3);
+}
+
+.post-comment-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.no-posts {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-secondary);
+}
+
+.no-posts p:first-child {
+  font-size: 48px;
+  margin: 0 0 16px 0;
+}
+
+.no-posts-hint {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin: 0;
+}
+
+@media (max-width: 900px) {
+  .modal-layout {
+    flex-direction: column;
+    max-height: 90vh;
+  }
+
+  .modal-sidebar {
+    width: 100%;
+    max-height: 50vh;
+  }
+
+  .modal-image-section img {
+    max-height: 40vh;
+  }
+}
+
+@media (max-width: 600px) {
+  .modal-close {
+    top: 10px;
+    right: 10px;
   }
 }

@@ -5,9 +5,15 @@
       <!-- Columna Izquierda: Info + Retos -->
       <div class="profile-left">
         <div class="profile-header">
+          <!-- Avatar con opción de cambiar foto -->
           <div class="profile-avatar">
-            {{ user.name.charAt(0).toUpperCase() }}
+            @if (user.avatar) {
+              <img [src]="user.avatar" alt="Avatar">
+            } @else {
+              <span>{{ user.name.charAt(0).toUpperCase() }}</span>
+            }
           </div>
+          
           <!-- BOTONES NUEVOS -->
           <button class="edit-btn" (click)="toggleEdit()">
             {{ editing ? 'Guardar' : 'Editar perfil' }}
@@ -17,11 +23,29 @@
               Cancelar
             </button>
           }
+          
           <!-- VISTA NORMAL -->
           @if (!editing) {
             <h2>{{ user.name }}</h2>
             <p class="bio">{{ user.bio }}</p>
+            
+            <!-- Estadísticas dinámicas -->
+            <div class="stats">
+              <div class="stat-item">
+                <strong>{{ userStats.posts }}</strong>
+                <span>Publicaciones</span>
+              </div>
+              <div class="stat-item">
+                <strong>{{ userStats.followers }}</strong>
+                <span>Seguidores</span>
+              </div>
+              <div class="stat-item">
+                <strong>{{ userStats.following }}</strong>
+                <span>Siguiendo</span>
+              </div>
+            </div>
           }
+          
           <!-- MODO EDICIÓN -->
           @if (editing) {
             <input
@@ -32,18 +56,22 @@
             <textarea
               class="edit-textarea"
               [(ngModel)]="editableUser.bio"
-              placeholder="Biografía">
+              placeholder="Biografía"
+              maxlength="150">
             </textarea>
             <input
               class="edit-input"
               [(ngModel)]="editableUser.avatar"
-              placeholder="URL de la foto (opcional)"
+              placeholder="URL de la foto (ejemplo: https://...)"
             />
+            <small class="helper-text">Puedes usar una URL de imagen o dejar vacío para usar tu inicial</small>
           }
+          
           <div class="achievements-badge">
             🏆 {{ user.achievements }} Logros conseguidos
           </div>
         </div>
+        
         <!-- Sección de Retos -->
         <div class="challenges-section">
           <h3>RETOS</h3>
@@ -72,19 +100,27 @@
           </div>
         </div>
       </div>
+      
       <!-- Columna Derecha: Cuadrícula de Publicaciones -->
       <div class="profile-right">
-        <div class="posts-grid">
-          @for (post of posts; track post.title) {
-            <div class="post-item" (click)="openImageModal(post)">
-              <img [src]="post.image" [alt]="post.title">
-              <div class="post-overlay">
-                <span>❤️ {{ post.likes }}</span>
-                <span>💬 {{ post.comments }}</span>
+        @if (posts.length === 0) {
+          <div class="no-posts">
+            <p>📸 Aún no tienes publicaciones</p>
+            <p class="no-posts-hint">Crea tu primera publicación en el feed</p>
+          </div>
+        } @else {
+          <div class="posts-grid">
+            @for (post of posts; track post.id) {
+              <div class="post-item" (click)="openImageModal(post)">
+                <img [src]="post.image" [alt]="post.text">
+                <div class="post-overlay">
+                  <span>❤️ {{ post.likes }}</span>
+                  <span>💬 {{ post.comments.length }}</span>
+                </div>
               </div>
-            </div>
-          }
-        </div>
+            }
+          </div>
+        }
       </div>
     </div>
   </div>
@@ -95,11 +131,89 @@
   <div class="image-modal" (click)="closeImageModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <button class="modal-close" (click)="closeImageModal()">✕</button>
-      <img [src]="selectedPost.image" [alt]="selectedPost.title">
-      <div class="modal-info">
-        <div class="modal-stats">
-          <span>❤️ {{ selectedPost.likes }}</span>
-          <span>💬 {{ selectedPost.comments }}</span>
+      
+      <div class="modal-layout">
+        <!-- Imagen -->
+        <div class="modal-image-section">
+          <img [src]="selectedPost.image" [alt]="selectedPost.text">
+        </div>
+        
+        <!-- Sidebar con info, likes y comentarios -->
+        <div class="modal-sidebar">
+          <!-- Header del post -->
+          <div class="modal-header">
+            <div class="modal-user-info">
+              @if (selectedPost.userAvatar) {
+                <img [src]="selectedPost.userAvatar" alt="{{ selectedPost.user }}" class="modal-user-avatar">
+              } @else {
+                <div class="modal-user-avatar-placeholder">
+                  {{ selectedPost.user.charAt(0).toUpperCase() }}
+                </div>
+              }
+              <div>
+                <strong>{{ selectedPost.user }}</strong>
+                <p class="modal-time">{{ formatDate(selectedPost.createdAt) }}</p>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Descripción del post -->
+          <div class="modal-description">
+            <p>{{ selectedPost.text }}</p>
+          </div>
+          
+          <!-- Comentarios -->
+          <div class="modal-comments">
+            @if (selectedPost.comments.length === 0) {
+              <p class="no-comments">Sé el primero en comentar</p>
+            } @else {
+              @for (comment of selectedPost.comments; track comment.id) {
+                <div class="comment-item">
+                  <div class="comment-header">
+                    @if (comment.userAvatar) {
+                      <img [src]="comment.userAvatar" alt="{{ comment.user }}" class="comment-avatar">
+                    } @else {
+                      <div class="comment-avatar-placeholder">
+                        {{ comment.user.charAt(0).toUpperCase() }}
+                      </div>
+                    }
+                    <div class="comment-info">
+                      <strong>{{ comment.user }}</strong>
+                      <span class="comment-time">{{ formatDate(comment.createdAt) }}</span>
+                    </div>
+                  </div>
+                  <p class="comment-text">{{ comment.text }}</p>
+                </div>
+              }
+            }
+          </div>
+          
+          <!-- Actions: Like y contador -->
+          <div class="modal-actions">
+            <button 
+              class="like-btn" 
+              [class.liked]="selectedPost.likedByMe"
+              (click)="toggleLike()">
+              {{ selectedPost.likedByMe ? '❤️' : '🤍' }}
+            </button>
+            <span class="likes-count">{{ selectedPost.likes }} me gusta</span>
+          </div>
+          
+          <!-- Input de comentario -->
+          <div class="modal-comment-input">
+            <input 
+              type="text" 
+              [(ngModel)]="newComment"
+              placeholder="Añade un comentario..."
+              (keyup.enter)="addComment()"
+              maxlength="200">
+            <button 
+              (click)="addComment()"
+              [disabled]="!newComment.trim()"
+              class="post-comment-btn">
+              Publicar
+            </button>
+          </div>
         </div>
       </div>
     </div>
