@@ -147,9 +147,6 @@ export class AuthService {
 
     this.registeredUsers.push(newUser);
 
-    // TODO: Cuando tengas el backend, reemplazar esto con:
-    // return this.http.post('/api/register', newUser).subscribe(...)
-
     // Auto-login después del registro
     this.isAuthenticated = true;
     localStorage.setItem('isLoggedIn', 'true');
@@ -178,5 +175,15 @@ export class AuthService {
   // Método helper para debugging (eliminar en producción)
   getRegisteredUsers(): User[] {
     return this.registeredUsers;
+  }
+
+  // Obtener nombre del usuario autenticado
+  getCurrentUserName(): string {
+    return localStorage.getItem('userName') || 'Usuario';
+  }
+
+  // Obtener email del usuario autenticado
+  getCurrentUserEmail(): string {
+    return localStorage.getItem('userEmail') || '';
   }
 }

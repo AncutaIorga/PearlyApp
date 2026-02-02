@@ -116,6 +116,16 @@
                 <div class="post-overlay">
                   <span>❤️ {{ post.likes }}</span>
                   <span>💬 {{ post.comments.length }}</span>
+                  @if (isPostOwner(post)) {
+                    <div class="post-actions-overlay">
+                      <button class="mini-edit-btn" (click)="openEditPostModal(post); $event.stopPropagation()">
+                        ✏️
+                      </button>
+                      <button class="mini-delete-btn" (click)="deletePost(post.id); $event.stopPropagation()">
+                        🗑️
+                      </button>
+                    </div>
+                  }
                 </div>
               </div>
             }
@@ -155,6 +165,17 @@
                 <p class="modal-time">{{ formatDate(selectedPost.createdAt) }}</p>
               </div>
             </div>
+            
+            @if (isPostOwner(selectedPost)) {
+              <div class="modal-post-actions">
+                <button class="edit-post-btn" (click)="openEditPostModal(selectedPost); closeImageModal()">
+                  ✏️ Editar
+                </button>
+                <button class="delete-post-btn" (click)="deletePost(selectedPost.id)">
+                  🗑️ Eliminar
+                </button>
+              </div>
+            }
           </div>
           
           <!-- Descripción del post -->
@@ -214,6 +235,59 @@
               Publicar
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- Modal para editar post -->
+@if (editingPost) {
+  <div class="edit-post-modal" (click)="closeEditPostModal()">
+    <div class="edit-post-content" (click)="$event.stopPropagation()">
+      <button class="modal-close" (click)="closeEditPostModal()">✕</button>
+      
+      <h3>Editar publicación</h3>
+      
+      <div class="edit-post-form">
+        <div class="form-group">
+          <label>Descripción:</label>
+          <textarea 
+            [(ngModel)]="editPostData.text"
+            placeholder="¿Qué estás pensando?"
+            rows="4"
+            maxlength="200">
+          </textarea>
+          <small>{{ editPostData.text?.length || 0 }}/200 caracteres</small>
+        </div>
+        
+        <div class="form-group">
+          <label>URL de la imagen:</label>
+          <input
+            type="text"
+            [(ngModel)]="editPostData.image"
+            placeholder="https://ejemplo.com/imagen.jpg"
+          />
+          <small class="helper-text">Deja vacío para conservar la imagen actual</small>
+        </div>
+        
+        @if (editingPost.image) {
+          <div class="current-image-preview">
+            <p>Imagen actual:</p>
+            <img [src]="editingPost.image" alt="Imagen actual" class="preview-img">
+          </div>
+        }
+        
+        <div class="edit-post-buttons">
+          <button class="save-post-btn" (click)="saveEditedPost()">
+            Guardar cambios
+          </button>
+          <button class="cancel-post-btn" (click)="closeEditPostModal()">
+            Cancelar
+          </button>
+          <button class="delete-post-btn-in-modal" (click)="deletePost(editingPost.id)">
+            Eliminar publicación
+          </button>
         </div>
       </div>
     </div>

@@ -43,10 +43,12 @@ export class PostService {
       const maxId = Math.max(...parsed.map((p: Post) => p.id), 0);
       this.nextId = maxId + 1;
     } else {
+      // Posts iniciales con usuarios de ejemplo
       this.posts.set([
         {
           id: this.nextId++,
-          user: 'Ana',
+          user: 'Neli',
+          userAvatar: '',
           image: 'https://picsum.photos/400/300',
           text: '🏃‍♀️ Corrí 10K hoy',
           likes: 12,
@@ -54,6 +56,7 @@ export class PostService {
             {
               id: 1,
               user: 'Luis',
+              userAvatar: '',
               text: '¡Increíble! 💪',
               createdAt: new Date()
             }
@@ -64,6 +67,7 @@ export class PostService {
         {
           id: this.nextId++,
           user: 'Luis',
+          userAvatar: '',
           image: 'https://picsum.photos/400/301',
           text: '💧 2L de agua diarios',
           likes: 8,
@@ -94,10 +98,22 @@ export class PostService {
     return this.posts().find(p => p.id == id);
   }
 
-  addPost(post: Omit<Post, 'id' | 'createdAt' | 'likes' | 'comments' | 'likedByMe'>) {
+  // MÉTODO ACTUALIZADO: Ahora acepta userAvatar
+  addPost(postData: { 
+    image: string; 
+    text: string; 
+    user?: string; 
+    userAvatar?: string 
+  }) {
+    // Obtener datos del usuario actual del localStorage
+    const userName = localStorage.getItem('userName') || 'Usuario';
+    const userAvatarFromStorage = localStorage.getItem('userAvatar') || '';
+    
     const newPost: Post = {
-      ...post,
+      ...postData,
       id: this.nextId++,
+      user: postData.user || userName,
+      userAvatar: postData.userAvatar || userAvatarFromStorage,
       likes: 0,
       comments: [],
       createdAt: new Date(),
@@ -109,9 +125,19 @@ export class PostService {
     return newPost;
   }
 
-  updatePost(updatedPost: Post) {
+  // Método para actualizar un post
+  updatePost(id: number, updatedData: Partial<Post>) {
     this.posts.update(posts =>
-      posts.map(p => p.id === updatedPost.id ? { ...p, ...updatedPost } : p)
+      posts.map(p => {
+        if (p.id === id) {
+          return {
+            ...p,
+            ...updatedData,
+            comments: updatedData.comments || p.comments
+          };
+        }
+        return p;
+      })
     );
     this.savePosts();
   }
