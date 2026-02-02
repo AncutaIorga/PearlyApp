@@ -113,3 +113,53 @@
     font-size: 24px;
   }
 }
+
+.input-error {
+  border-color: #e74c3c !important;
+}
+
+.input-error:focus {
+  border-color: #e74c3c !important;
+  box-shadow: 0 0 0 3px rgba(231, 76, 60, 0.1) !important;
+}
+
+.error-message {
+  display: block;
+  color: #e74c3c;
+  font-size: 12px;
+  margin-top: 6px;
+  font-weight: 500;
+}
+
+.password-requirements {
+  margin-top: 12px;
+  padding: 12px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+}
+
+.requirements-title {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #666;
+}
+
+.requirements-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.requirements-list li {
+  font-size: 13px;
+  color: #999;
+  padding: 4px 0;
+  transition: color 0.3s ease;
+}
+
+.requirements-list li.valid {
+  color: #679460;
+  font-weight: 600;
+}
