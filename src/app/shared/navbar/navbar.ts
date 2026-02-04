@@ -15,7 +15,7 @@ export class NavbarComponent implements OnInit {
   showSettings = false;
   
   private elementRef = inject(ElementRef);
-  private router = inject(Router);
+  router = inject(Router);
   private authService = inject(AuthService);
   private userService = inject(UserService);
   private themeService = inject(ThemeService);
@@ -29,27 +29,15 @@ export class NavbarComponent implements OnInit {
     this.showSettings = !this.showSettings;
   }
 
-  handleSetting(action: string) {
-    this.showSettings = false;
-    
-    switch(action) {
-      case 'theme':
-        this.handleTheme();
-        break;
-      case 'notifications':
-        this.handleNotifications();
-        break;
-      case 'privacy':
-        this.handlePrivacy();
-        break;
-      case 'account':
-        this.handleAccount();
-        break;
-      case 'logout':
-        this.handleLogout();
-        break;
-    }
+handleSetting(action: string) {
+  this.showSettings = false;
+  
+  if (action === 'settings') {
+    this.router.navigate(['/ajustes']);
+  } else if (action === 'logout') {
+    this.handleLogout();
   }
+}
 
   private handleTheme() {
     const newTheme = this.themeService.toggleTheme();

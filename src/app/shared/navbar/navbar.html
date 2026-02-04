@@ -1,44 +1,30 @@
 <nav class="navbar">
   <a routerLink="/feed" class="logo">PearlyApp</a>
+
   <div class="nav-links">
     <a routerLink="/feed" routerLinkActive="active">Feed</a>
     <a routerLink="/challenges" routerLinkActive="active">Retos</a>
     <a routerLink="/post-create" routerLinkActive="active">Crear</a>
     <a routerLink="/profile" routerLinkActive="active">Perfil</a>
-    <button 
-      class="settings-btn" 
-      (click)="toggleSettings($event)"
-      aria-label="Ajustes">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-        <circle cx="12" cy="12" r="3"/>
-        <path d="M12 1v6m0 6v6"/>
+
+    <button
+      class="settings-btn"
+      (click)="router.navigate(['/ajustes'])"
+      aria-label="Ajustes"
+    >
+      <svg
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+      >
+        <line x1="3" y1="6"  x2="21" y2="6"></line>
+        <line x1="3" y1="12" x2="21" y2="12"></line>
+        <line x1="3" y1="18" x2="21" y2="18"></line>
       </svg>
     </button>
   </div>
-
-  @if (showSettings) {
-    <div class="settings-menu">
-      <button class="setting-item" (click)="handleSetting('theme')">
-        <span class="setting-icon">🎨</span>
-        <span class="setting-label">Tema</span>
-      </button>
-      <button class="setting-item" (click)="handleSetting('notifications')">
-        <span class="setting-icon">🔔</span>
-        <span class="setting-label">Notificaciones</span>
-      </button>
-      <button class="setting-item" (click)="handleSetting('privacy')">
-        <span class="setting-icon">🔒</span>
-        <span class="setting-label">Privacidad</span>
-      </button>
-      <button class="setting-item" (click)="handleSetting('account')">
-        <span class="setting-icon">👤</span>
-        <span class="setting-label">Cuenta</span>
-      </button>
-      <div class="setting-divider"></div>
-      <button class="setting-item danger" (click)="handleSetting('logout')">
-        <span class="setting-icon">🚪</span>
-        <span class="setting-label">Cerrar sesión</span>
-      </button>
-    </div>
-  }
 </nav>
