@@ -1,29 +1,15 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Subject, takeUntil, finalize } from 'rxjs';
+
 import { NavbarComponent } from '../shared/navbar/navbar';
 import { AuthService } from '../services/auth';
 import { UserService } from '../services/user';
-
-interface BlockedUser {
-  id: number;
-  name: string;
-  avatar?: string;
-  blockedAt: Date;
-}
-
-interface SupportTicket {
-  id: number;
-  userId: string;
-  subject: string;
-  description: string;
-  status: 'open' | 'in-progress' | 'resolved' | 'closed';
-  response?: string;
-  createdAt: Date;
-  respondedAt?: Date;
-  expanded?: boolean;
-}
+import { SupportService, CreateTicketDto, SupportTicket } from '../services/support';
+import { BlockService, BlockedUser } from '../services/block';
+import { NotificationService, NotificationSettings } from '../services/notification';
 
 @Component({
   selector: 'app-ajustes',
@@ -32,17 +18,29 @@ interface SupportTicket {
   templateUrl: './ajustes.html',
   styleUrl: './ajustes.css'
 })
-export class AjustesComponent implements OnInit {
+export class AjustesComponent implements OnInit, OnDestroy {
+  private destroy$ = new Subject<void>();
+  
+  // Loading states
+  loading = {
+    privacy: false,
+    notifications: false,
+    messages: false,
+    tickets: false,
+    blocked: false
+  };
+
   // Configuración de privacidad
   privacySettings = {
     isPrivate: false
   };
 
   // Configuración de notificaciones
-  notificationSettings = {
+  notificationSettings: NotificationSettings = {
     followers: true,
     comments: true,
-    likes: true
+    likes: true,
+    messages: true
   };
 
   // Configuración de mensajes
@@ -54,9 +52,9 @@ export class AjustesComponent implements OnInit {
   blockedUsers: BlockedUser[] = [];
 
   // Tickets de soporte
-  tickets: SupportTicket[] = [];
+  tickets: (SupportTicket & { expanded?: boolean })[] = [];
   
-  newTicket = {
+  newTicket: CreateTicketDto = {
     subject: '',
     description: ''
   };
@@ -64,122 +62,217 @@ export class AjustesComponent implements OnInit {
   constructor(
     private authService: AuthService,
     private userService: UserService,
+    private supportService: SupportService,
+    private blockService: BlockService,
+    private notificationService: NotificationService,
     private router: Router
   ) {}
 
   ngOnInit() {
-    this.loadSettings();
+    this.loadAllSettings();
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // CARGA INICIAL
+  // ═══════════════════════════════════════════════════════════
+
+  private loadAllSettings() {
+    this.loadUserSettings();
+    this.loadNotificationSettings();
     this.loadBlockedUsers();
     this.loadTickets();
   }
 
-  loadSettings() {
-    // Cargar configuración de privacidad
-    const savedPrivacy = localStorage.getItem('privacy-settings');
-    if (savedPrivacy) {
-      this.privacySettings = JSON.parse(savedPrivacy);
-    }
-
-    // Cargar configuración de notificaciones
-    const savedNotifications = localStorage.getItem('notification-settings');
-    if (savedNotifications) {
-      this.notificationSettings = JSON.parse(savedNotifications);
-    }
-
-    // Cargar configuración de mensajes
-    const savedMessages = localStorage.getItem('message-settings');
-    if (savedMessages) {
-      this.messageSettings = JSON.parse(savedMessages);
+  private loadUserSettings() {
+    const user = this.userService.getUser();
+    if (user) {
+      this.privacySettings.isPrivate = user.isPrivate;
+      this.messageSettings.onlyFollowers = user.onlyFollowersMessages;
     }
   }
 
-  loadBlockedUsers() {
-    const saved = localStorage.getItem('blocked-users');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      // Convertir fechas
-      this.blockedUsers = parsed.map((user: any) => ({
-        ...user,
-        blockedAt: new Date(user.blockedAt)
-      }));
-    }
+  private loadNotificationSettings() {
+    this.notificationService.getSettings()
+      .pipe(takeUntil(this.destroy$))
+      .subscribe(settings => {
+        this.notificationSettings = settings;
+      });
   }
 
-  loadTickets() {
-    const saved = localStorage.getItem('support-tickets');
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      // Convertir fechas
-      this.tickets = parsed.map((ticket: any) => ({
-        ...ticket,
-        createdAt: new Date(ticket.createdAt),
-        respondedAt: ticket.respondedAt ? new Date(ticket.respondedAt) : undefined,
-        expanded: false
-      }));
-    }
+  private loadBlockedUsers() {
+    this.loading.blocked = true;
+    this.blockService.getBlockedUsers()
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.loading.blocked = false)
+      )
+      .subscribe(users => {
+        this.blockedUsers = users;
+      });
   }
+
+  private loadTickets() {
+    this.loading.tickets = true;
+    this.supportService.getMyTickets()
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.loading.tickets = false)
+      )
+      .subscribe(tickets => {
+        this.tickets = tickets.map(t => ({ ...t, expanded: false }));
+      });
+  }
+
+  // ═══════════════════════════════════════════════════════════
+  // PRIVACIDAD
+  // ═══════════════════════════════════════════════════════════
 
   updatePrivacy() {
-    localStorage.setItem('privacy-settings', JSON.stringify(this.privacySettings));
+    this.loading.privacy = true;
     
-    if (this.privacySettings.isPrivate) {
-      this.showToast('🔒 Cuenta privada activada');
-    } else {
-      this.showToast('🌍 Cuenta pública activada');
-    }
+    this.userService.updatePrivacy(this.privacySettings.isPrivate)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.loading.privacy = false)
+      )
+      .subscribe({
+        next: () => {
+          this.showToast(
+            this.privacySettings.isPrivate
+              ? '🔒 Cuenta privada activada'
+              : '🌍 Cuenta pública activada'
+          );
+        },
+        error: (error) => {
+          console.error('Error updating privacy:', error);
+          // Revertir el toggle en caso de error
+          this.privacySettings.isPrivate = !this.privacySettings.isPrivate;
+          this.showToast('❌ Error al actualizar privacidad', 'error');
+        }
+      });
   }
+
+  // ═══════════════════════════════════════════════════════════
+  // NOTIFICACIONES
+  // ═══════════════════════════════════════════════════════════
 
   updateNotifications() {
-    localStorage.setItem('notification-settings', JSON.stringify(this.notificationSettings));
-    this.showToast('🔔 Preferencias de notificaciones actualizadas');
+    this.loading.notifications = true;
+    
+    this.notificationService.updateSettings(this.notificationSettings)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.loading.notifications = false)
+      )
+      .subscribe({
+        next: () => {
+          this.showToast('🔔 Preferencias de notificaciones actualizadas');
+        },
+        error: (error) => {
+          console.error('Error updating notifications:', error);
+          this.showToast('❌ Error al actualizar notificaciones', 'error');
+        }
+      });
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // MENSAJES
+  // ═══════════════════════════════════════════════════════════
+
   updateMessageSettings() {
-    localStorage.setItem('message-settings', JSON.stringify(this.messageSettings));
+    this.loading.messages = true;
     
-    if (this.messageSettings.onlyFollowers) {
-      this.showToast('💬 Solo tus seguidores pueden escribirte');
-    } else {
-      this.showToast('💬 Todos pueden escribirte mensajes');
-    }
+    this.userService.updateMessageSettings(this.messageSettings.onlyFollowers)
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.loading.messages = false)
+      )
+      .subscribe({
+        next: () => {
+          this.showToast(
+            this.messageSettings.onlyFollowers
+              ? '💬 Solo tus seguidores pueden escribirte'
+              : '💬 Todos pueden escribirte mensajes'
+          );
+        },
+        error: (error) => {
+          console.error('Error updating message settings:', error);
+          this.messageSettings.onlyFollowers = !this.messageSettings.onlyFollowers;
+          this.showToast('❌ Error al actualizar configuración de mensajes', 'error');
+        }
+      });
   }
+
+  // ═══════════════════════════════════════════════════════════
+  // BLOQUEOS
+  // ═══════════════════════════════════════════════════════════
 
   unblockUser(userId: number) {
     const user = this.blockedUsers.find(u => u.id === userId);
-    if (confirm(`¿Desbloquear a ${user?.name}?`)) {
-      this.blockedUsers = this.blockedUsers.filter(u => u.id !== userId);
-      localStorage.setItem('blocked-users', JSON.stringify(this.blockedUsers));
-      this.showToast(`✅ ${user?.name} ha sido desbloqueado`);
+    if (!user) return;
+
+    if (confirm(`¿Desbloquear a ${user.name}?`)) {
+      this.blockService.unblockUser(userId)
+        .pipe(takeUntil(this.destroy$))
+        .subscribe({
+          next: () => {
+            this.blockedUsers = this.blockedUsers.filter(u => u.id !== userId);
+            this.showToast(`✅ ${user.name} ha sido desbloqueado`);
+          },
+          error: (error) => {
+            console.error('Error unblocking user:', error);
+            this.showToast('❌ Error al desbloquear usuario', 'error');
+          }
+        });
     }
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // SOPORTE
+  // ═══════════════════════════════════════════════════════════
+
   submitTicket() {
     if (!this.newTicket.subject.trim() || !this.newTicket.description.trim()) {
-      alert('Por favor completa todos los campos');
+      this.showToast('⚠️ Por favor completa todos los campos', 'warning');
       return;
     }
 
-    const user = this.userService.getUser();
-    const ticket: SupportTicket = {
-      id: Date.now(),
-      userId: user.email,
+    if (this.newTicket.subject.length < 5) {
+      this.showToast('⚠️ El asunto debe tener al menos 5 caracteres', 'warning');
+      return;
+    }
+
+    if (this.newTicket.description.length < 20) {
+      this.showToast('⚠️ La descripción debe tener al menos 20 caracteres', 'warning');
+      return;
+    }
+
+    this.loading.tickets = true;
+
+    this.supportService.createTicket({
       subject: this.newTicket.subject.trim(),
-      description: this.newTicket.description.trim(),
-      status: 'open',
-      createdAt: new Date(),
-      expanded: false
-    };
-
-    this.tickets.unshift(ticket);
-    localStorage.setItem('support-tickets', JSON.stringify(this.tickets));
-
-    // Limpiar formulario
-    this.newTicket = { subject: '', description: '' };
-    
-    this.showToast('✅ Ticket enviado correctamente. Te responderemos pronto.');
-
-    // TODO: Cuando tengas backend, enviar al servidor
-    // this.http.post('/api/support/tickets', ticket).subscribe(...)
+      description: this.newTicket.description.trim()
+    })
+      .pipe(
+        takeUntil(this.destroy$),
+        finalize(() => this.loading.tickets = false)
+      )
+      .subscribe({
+        next: (ticket) => {
+          this.tickets.unshift({ ...ticket, expanded: false });
+          this.newTicket = { subject: '', description: '' };
+          this.showToast('✅ Ticket enviado correctamente. Te responderemos pronto.');
+        },
+        error: (error) => {
+          console.error('Error creating ticket:', error);
+          this.showToast('❌ Error al enviar el ticket. Intenta de nuevo.', 'error');
+        }
+      });
   }
 
   toggleTicket(ticketId: number) {
@@ -188,6 +281,10 @@ export class AjustesComponent implements OnInit {
       ticket.expanded = !ticket.expanded;
     }
   }
+
+  // ═══════════════════════════════════════════════════════════
+  // UTILIDADES
+  // ═══════════════════════════════════════════════════════════
 
   getStatusText(status: string): string {
     const statusMap: { [key: string]: string } = {
@@ -214,14 +311,20 @@ export class AjustesComponent implements OnInit {
     }
   }
 
-  private showToast(message: string) {
+  private showToast(message: string, type: 'success' | 'error' | 'warning' = 'success') {
+    const colors = {
+      success: 'linear-gradient(135deg, #a2b895 0%, #679460 100%)',
+      error: 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)',
+      warning: 'linear-gradient(135deg, #f39c12 0%, #e67e22 100%)'
+    };
+
     const toast = document.createElement('div');
     toast.textContent = message;
     toast.style.cssText = `
       position: fixed;
       top: 80px;
       right: 20px;
-      background: linear-gradient(135deg, #a2b895 0%, #679460 100%);
+      background: ${colors[type]};
       color: white;
       padding: 16px 24px;
       border-radius: 12px;
@@ -229,6 +332,7 @@ export class AjustesComponent implements OnInit {
       box-shadow: 0 4px 12px rgba(0,0,0,0.15);
       font-weight: 600;
       animation: slideIn 0.3s ease;
+      max-width: 400px;
     `;
     
     const style = document.createElement('style');
@@ -253,19 +357,5 @@ export class AjustesComponent implements OnInit {
         style.remove();
       }, 300);
     }, 3000);
-  }
-
-  // Método para bloquear usuarios (llamar desde otros componentes)
-  blockUser(userId: number, userName: string, userAvatar?: string) {
-    const newBlockedUser: BlockedUser = {
-      id: userId,
-      name: userName,
-      avatar: userAvatar,
-      blockedAt: new Date()
-    };
-    
-    this.blockedUsers.push(newBlockedUser);
-    localStorage.setItem('blocked-users', JSON.stringify(this.blockedUsers));
-    this.showToast(`🚫 ${userName} ha sido bloqueado`);
   }
 }

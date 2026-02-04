@@ -125,23 +125,25 @@ export class PostService {
     return newPost;
   }
 
-  // Método para actualizar un post
-  updatePost(id: number, updatedData: Partial<Post>) {
-    this.posts.update(posts =>
-      posts.map(p => {
-        if (p.id === id) {
-          return {
-            ...p,
-            ...updatedData,
-            comments: updatedData.comments || p.comments
-          };
-        }
-        return p;
-      })
-    );
-    this.savePosts();
-  }
-
+/**
+ * Actualiza un post existente
+ */
+updatePost(postId: number, data: { text?: string; image?: string }) {
+  this.posts.update(posts =>
+    posts.map(p => {
+      if (p.id === postId) {
+        return {
+          ...p,
+          ...data,
+          text: data.text || p.text,
+          image: data.image || p.image
+        };
+      }
+      return p;
+    })
+  );
+  this.savePosts();
+}
   toggleLike(postId: number) {
     this.posts.update(posts =>
       posts.map(p => {
@@ -186,4 +188,6 @@ export class PostService {
     this.posts.update(posts => posts.filter(p => p.id !== postId));
     this.savePosts();
   }
+
+  
 }
