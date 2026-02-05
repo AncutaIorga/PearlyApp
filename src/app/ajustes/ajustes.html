@@ -4,6 +4,28 @@
   <div class="settings-content">
     <h1>⚙️ Ajustes</h1>
 
+    <!-- Apariencia (NUEVO) -->
+    <div class="settings-section">
+      <div class="section-header">
+        <h2>🎨 Apariencia</h2>
+        <p class="section-description">Personaliza el aspecto de la aplicación</p>
+      </div>
+      
+      <div class="setting-item">
+        <div class="setting-info">
+          <h3>Modo oscuro</h3>
+          <p>Cambia entre tema claro y oscuro</p>
+        </div>
+        <label class="toggle-switch">
+          <input 
+            type="checkbox" 
+            [checked]="isDarkMode()"
+            (change)="toggleTheme()">
+          <span class="slider"></span>
+        </label>
+      </div>
+
+
     <!-- Privacidad -->
     <div class="settings-section">
       <div class="section-header">

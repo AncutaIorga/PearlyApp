@@ -10,6 +10,7 @@ import { UserService } from '../services/user';
 import { SupportService, CreateTicketDto, SupportTicket } from '../services/support';
 import { BlockService, BlockedUser } from '../services/block';
 import { NotificationService, NotificationSettings } from '../services/notification';
+import { ThemeService } from '../services/theme';
 
 @Component({
   selector: 'app-ajustes',
@@ -65,6 +66,7 @@ export class AjustesComponent implements OnInit, OnDestroy {
     private supportService: SupportService,
     private blockService: BlockService,
     private notificationService: NotificationService,
+    private themeService: ThemeService,
     private router: Router
   ) {}
 
@@ -76,6 +78,32 @@ export class AjustesComponent implements OnInit, OnDestroy {
     this.destroy$.next();
     this.destroy$.complete();
   }
+
+  // ═══════════════════════════════════════════════════════════
+  // TEMA
+  // ═══════════════════════════════════════════════════════════
+
+  /**
+   * Verifica si el modo oscuro está activo
+   */
+  isDarkMode(): boolean {
+    return this.themeService.isDarkMode();
+  }
+
+  /**
+   * Alterna entre tema claro y oscuro
+   */
+  toggleTheme(): void {
+    const newTheme = this.themeService.toggleTheme();
+    
+    const themeMessages = {
+      light: '☀️ Modo claro activado',
+      dark: '🌙 Modo oscuro activado'
+    };
+    
+    this.showToast(themeMessages[newTheme]);
+  }
+
 
   // ═══════════════════════════════════════════════════════════
   // CARGA INICIAL
