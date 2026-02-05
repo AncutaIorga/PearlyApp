@@ -91,8 +91,8 @@ export class AjustesComponent implements OnInit, OnDestroy {
   private loadUserSettings() {
     const user = this.userService.getUser();
     if (user) {
-      this.privacySettings.isPrivate = user.isPrivate;
-      this.messageSettings.onlyFollowers = user.onlyFollowersMessages;
+      this.privacySettings.isPrivate = user.isPrivate ?? false;
+      this.messageSettings.onlyFollowers = user.onlyFollowersMessages ?? false;
     }
   }
 
