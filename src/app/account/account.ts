@@ -21,9 +21,9 @@ export class AccountComponent {
   bio = this.userService.getUser().bio;
   email = 'usuario@ejemplo.com';
   
-  saveProfile() {
-    alert(`Perfil guardado:\nNombre: ${this.userName}\nBio: ${this.bio}`);
-  }
+saveProfile() {
+  alert(`Perfil guardado:\nNombre: ${this.userName}\nBio: ${this.bio}`);
+}
   
   changePassword() {
     const newPassword = prompt('Introduce tu nueva contraseña:');
