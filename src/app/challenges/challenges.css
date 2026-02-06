@@ -1,7 +1,8 @@
 :host {
   display: block;
   min-height: 100vh;
-  background: var(--bg-primary);
+  background: var(--bg-primary, #f8fafc);
+  font-family: system-ui, -apple-system, sans-serif;
   transition: background-color 0.3s ease;
 }
 
@@ -12,11 +13,76 @@
   padding-top: 100px;
 }
 
-/* ===== HEADER ===== */
+/* ===== VARIABLES PARA MODO CLARO ===== */
+:root {
+  /* Colores base */
+  --bg-primary: #f8fafc;
+  --bg-secondary: #f1f5f9;
+  --bg-tertiary: #e2e8f0;
+  --card-bg: #ffffff;
+  --text-primary: #1e293b;
+  --text-secondary: #64748b;
+  --border-color: #cbd5e1;
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.04);
+  --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.1);
+  
+  /* Colores por categoría - Modo claro */
+  --category-mental: #8B5CF6;
+  --category-physical: #EF4444;
+  --category-mindfulness: #10B981;
+  --category-nutrition: #F59E0B;
+  
+  /* Fondos claros por categoría */
+  --category-mental-light: rgba(139, 92, 246, 0.15);
+  --category-physical-light: rgba(239, 68, 68, 0.15);
+  --category-mindfulness-light: rgba(16, 185, 129, 0.15);
+  --category-nutrition-light: rgba(245, 158, 11, 0.15);
+  
+  /* Fondos más claros para beneficios */
+  --category-mental-lighter: rgba(139, 92, 246, 0.08);
+  --category-physical-lighter: rgba(239, 68, 68, 0.08);
+  --category-mindfulness-lighter: rgba(16, 185, 129, 0.08);
+  --category-nutrition-lighter: rgba(245, 158, 11, 0.08);
+}
+
+/* ===== VARIABLES PARA MODO OSCURO ===== */
+[data-theme="dark"] {
+  --bg-primary: #0f172a;
+  --bg-secondary: #1e293b;
+  --bg-tertiary: #334155;
+  --card-bg: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --border-color: #475569;
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 10px 25px rgba(0, 0, 0, 0.3);
+  --shadow-lg: 0 20px 40px rgba(0, 0, 0, 0.4);
+  
+  /* Colores por categoría - Modo oscuro (más vibrantes) */
+  --category-mental: #a78bfa;
+  --category-physical: #f87171;
+  --category-mindfulness: #34d399;
+  --category-nutrition: #fbbf24;
+  
+  /* Fondos oscuros por categoría */
+  --category-mental-light: rgba(167, 139, 250, 0.2);
+  --category-physical-light: rgba(248, 113, 113, 0.2);
+  --category-mindfulness-light: rgba(52, 211, 153, 0.2);
+  --category-nutrition-light: rgba(251, 191, 36, 0.2);
+  
+  /* Fondos más oscuros para beneficios */
+  --category-mental-lighter: rgba(167, 139, 250, 0.12);
+  --category-physical-lighter: rgba(248, 113, 113, 0.12);
+  --category-mindfulness-lighter: rgba(52, 211, 153, 0.12);
+  --category-nutrition-lighter: rgba(251, 191, 36, 0.12);
+}
+
+/* ===== HEADER CON NUEVO DISEÑO ===== */
 .page-header {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  flex-direction: column;
+  gap: 25px;
   margin-bottom: 40px;
   padding: 30px;
   background: var(--card-bg);
@@ -26,27 +92,61 @@
   transition: all 0.3s ease;
 }
 
-.header-content h1 {
-  font-size: 2.8rem;
+/* Contenedor principal del header */
+.header-main {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 30px;
+}
+
+/* Contenedor del título con emoji */
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex: 1;
+}
+
+/* Emoji grande */
+.header-emoji {
+  font-size: 3.5rem;
+  width: 80px;
+  height: 80px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #4a90e2 0%, #63b3ed 100%);
+  border-radius: 20px;
+  color: white;
+  box-shadow: var(--shadow-md);
+  flex-shrink: 0;
+}
+
+/* Contenedor del texto */
+.header-text {
+  flex: 1;
+}
+
+.header-text h1 {
+  font-size: 2.4rem;
   font-weight: 800;
-  background: linear-gradient(135deg, #4a90e2 0%, #5cdb95 100%);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  color: #4a90e2;
   margin-bottom: 8px;
   line-height: 1.2;
 }
 
 .header-subtitle {
-  font-size: 1.1rem;
   color: var(--text-secondary);
-  max-width: 600px;
-  line-height: 1.5;
+  font-size: 1.1rem;
+  margin-bottom: 0;
 }
 
-/* Quick Stats - Bienestar */
+/* Estadísticas rápidas - ahora en línea */
 .quick-stats {
   display: flex;
   gap: 20px;
+  align-items: center;
 }
 
 .stat-bubble {
@@ -54,12 +154,13 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 20px;
-  min-width: 120px;
-  border-radius: 20px;
+  padding: 20px 25px;
+  min-width: 140px;
+  border-radius: 18px;
   color: white;
   box-shadow: var(--shadow-md);
-  transition: transform 0.3s ease;
+  transition: all 0.3s ease;
+  text-align: center;
 }
 
 .stat-bubble.energy {
@@ -72,21 +173,27 @@
 
 .stat-bubble:hover {
   transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
 }
 
 .stat-number {
   font-size: 1.8rem;
   font-weight: 700;
-  margin-bottom: 4px;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
 .stat-label {
   font-size: 0.9rem;
   opacity: 0.9;
   font-weight: 500;
+  letter-spacing: 0.5px;
 }
 
-/* ===== BALANCE SECTION ===== */
+/* ===== BALANCE SECTION - BARRAS CON COLORES DEL TEMA ===== */
 .balance-section {
   background: var(--card-bg);
   padding: 25px 30px;
@@ -107,20 +214,8 @@
 .balance-header h2 {
   font-size: 1.5rem;
   font-weight: 700;
-  color: var(--text-primary);
-}
-
-.balance-score {
-  font-size: 1.2rem;
-  color: #4a90e2;
-  font-weight: 700;
-  background: rgba(74, 144, 226, 0.1);
-  padding: 10px 20px;
-  border-radius: 50px;
-}
-
-[data-theme="dark"] .balance-score {
-  background: rgba(74, 144, 226, 0.25);
+  color: #4a90e2; /* MISMO AZUL SÓLIDO */
+  margin-bottom: 0;
 }
 
 .balance-bars {
@@ -129,18 +224,12 @@
   gap: 20px;
 }
 
-.balance-bar {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-
 .bar-label {
   display: flex;
   justify-content: space-between;
   align-items: center;
   font-size: 1rem;
-  color: var(--text-secondary);
+  color: var(--text-primary);
   font-weight: 600;
 }
 
@@ -161,24 +250,16 @@
   height: 100%;
   border-radius: 6px;
   transition: width 1s ease-out;
+  background: #4a90e2; /* MISMO AZUL SÓLIDO (sin gradiente) */
 }
 
-.mental .bar-fill {
-  background: linear-gradient(90deg, #9f7aea, #805ad5);
-}
-
-.physical .bar-fill {
-  background: linear-gradient(90deg, #38b2ac, #319795);
-}
-
-/* ===== SIMPLE FILTERS CORREGIDO ===== */
+/* ===== FILTROS - TODOS CON EL MISMO COLOR AZUL ===== */
 .simple-filters {
   display: flex;
   gap: 12px;
   margin-bottom: 30px;
   overflow-x: auto;
   padding: 15px 0 10px 0;
-  scrollbar-width: none;
 }
 
 .simple-filters::-webkit-scrollbar {
@@ -204,62 +285,37 @@
   box-sizing: border-box;
 }
 
-[data-theme="dark"] .simple-filter-btn {
-  border: 2px solid var(--border-color);
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-}
-
 .simple-filter-btn:hover {
   transform: translateY(-2px);
-  border-color: var(--text-secondary);
+  border-color: #4a90e2;
   background: var(--bg-tertiary);
 }
 
+/* TODOS LOS FILTROS ACTIVOS CON EL MISMO COLOR AZUL */
 .simple-filter-btn.active {
-  color: white !important;
-  border-color: transparent;
+  background: #4a90e2 !important;
+  border-color: #4a90e2 !important;
   box-shadow: var(--shadow-md);
-  font-weight: 700;
-  padding: 14px 24px;
-  transform: translateY(-2px);
+  color: white !important;
 }
 
+/* Iconos en blanco para todos los filtros activos */
+.simple-filter-btn.active .filter-icon {
+  color: white !important;
+}
+
+/* Mantener el hover para botones activos */
 .simple-filter-btn.active:hover {
+  background: #3a80d2 !important;
+  border-color: #3a80d2 !important;
   transform: translateY(-4px);
-}
-
-.simple-filter-btn.active[data-filter="all"],
-.simple-filter-btn.active:nth-child(1) {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.simple-filter-btn.active[data-filter="mental"],
-.simple-filter-btn.active:nth-child(2) {
-  background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%);
-}
-
-.simple-filter-btn.active[data-filter="physical"],
-.simple-filter-btn.active:nth-child(3) {
-  background: linear-gradient(135deg, #38b2ac 0%, #319795 100%);
-}
-
-.simple-filter-btn.active[data-filter="mindfulness"],
-.simple-filter-btn.active:nth-child(4) {
-  background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
-}
-
-.simple-filter-btn.active[data-filter="nutrition"],
-.simple-filter-btn.active:nth-child(5) {
-  background: linear-gradient(135deg, #68d391 0%, #48bb78 100%);
-  box-shadow: 0 0 0 2px rgba(104, 211, 145, 0.3), var(--shadow-md);
 }
 
 .filter-icon {
   font-size: 1.1rem;
 }
 
-/* ===== CHALLENGE CARDS - BIENESTAR ===== */
+/* ===== TARJETAS DE RETOS ===== */
 .challenges-cards {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
@@ -280,117 +336,161 @@
 .challenge-card-simple:hover {
   transform: translateY(-8px);
   box-shadow: var(--shadow-lg);
-  border-color: var(--text-secondary);
 }
 
-/* Categorías de bienestar */
-.challenge-card-simple.mental {
-  border-color: #9f7aea;
-  background: linear-gradient(135deg, rgba(159, 122, 234, 0.05), rgba(128, 90, 213, 0.05));
+/* ===== COLORES ESPECÍFICOS PARA CADA CATEGORÍA ===== */
+
+/* MENTAL - Púrpura */
+.challenge-card-simple[data-category="mental"] {
+  border-left: 5px solid var(--category-mental) !important;
 }
 
-[data-theme="dark"] .challenge-card-simple.mental {
-  background: linear-gradient(135deg, rgba(159, 122, 234, 0.1), rgba(128, 90, 213, 0.1));
+.challenge-card-simple[data-category="mental"]:not(.completed) {
+  background: linear-gradient(135deg, var(--category-mental-light), var(--card-bg)) !important;
+  border-color: var(--category-mental) !important;
 }
 
-.challenge-card-simple.physical {
-  border-color: #38b2ac;
-  background: linear-gradient(135deg, rgba(56, 178, 172, 0.05), rgba(49, 151, 149, 0.05));
+/* FÍSICO - Rojo */
+.challenge-card-simple[data-category="physical"] {
+  border-left: 5px solid var(--category-physical) !important;
 }
 
-[data-theme="dark"] .challenge-card-simple.physical {
-  background: linear-gradient(135deg, rgba(56, 178, 172, 0.1), rgba(49, 151, 149, 0.1));
+.challenge-card-simple[data-category="physical"]:not(.completed) {
+  background: linear-gradient(135deg, var(--category-physical-light), var(--card-bg)) !important;
+  border-color: var(--category-physical) !important;
 }
 
-.challenge-card-simple.mindfulness {
-  border-color: #f6ad55;
-  background: linear-gradient(135deg, rgba(246, 173, 85, 0.05), rgba(237, 137, 54, 0.05));
+/* MINDFULNESS - Verde */
+.challenge-card-simple[data-category="mindfulness"] {
+  border-left: 5px solid var(--category-mindfulness) !important;
 }
 
-[data-theme="dark"] .challenge-card-simple.mindfulness {
-  background: linear-gradient(135deg, rgba(246, 173, 85, 0.1), rgba(237, 137, 54, 0.1));
+.challenge-card-simple[data-category="mindfulness"]:not(.completed) {
+  background: linear-gradient(135deg, var(--category-mindfulness-light), var(--card-bg)) !important;
+  border-color: var(--category-mindfulness) !important;
 }
 
-.challenge-card-simple.nutrition {
-  border-color: #68d391;
-  background: linear-gradient(135deg, rgba(104, 211, 145, 0.08), rgba(72, 187, 120, 0.08));
+/* NUTRICIÓN - Ámbar */
+.challenge-card-simple[data-category="nutrition"] {
+  border-left: 5px solid var(--category-nutrition) !important;
 }
 
-[data-theme="dark"] .challenge-card-simple.nutrition {
-  background: linear-gradient(135deg, rgba(104, 211, 145, 0.15), rgba(72, 187, 120, 0.15));
-  border-color: #48bb78;
+.challenge-card-simple[data-category="nutrition"]:not(.completed) {
+  background: linear-gradient(135deg, var(--category-nutrition-light), var(--card-bg)) !important;
+  border-color: var(--category-nutrition) !important;
 }
 
+/* IMPORTANTE: QUITAR ESTILOS ESPECIALES PARA TARJETAS COMPLETADAS */
 .challenge-card-simple.completed {
-  border-color: #48bb78;
-  background: linear-gradient(135deg, rgba(72, 187, 120, 0.08), rgba(56, 178, 172, 0.08));
+  border-left-width: 5px !important;
+  border-color: var(--border-color) !important;
 }
 
 [data-theme="dark"] .challenge-card-simple.completed {
-  background: linear-gradient(135deg, rgba(72, 187, 120, 0.15), rgba(56, 178, 172, 0.15));
+  border-left-width: 5px !important;
+  border-color: var(--border-color) !important;
 }
 
-/* ===== CHALLENGE STATUS - SOLO DIFICULTAD ===== */
+/* ===== CONTENIDO DE TARJETAS ===== */
 .challenge-status {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 15px;
 }
 
 .status-left {
   display: flex;
   align-items: center;
   gap: 10px;
-  flex-wrap: wrap;
 }
 
-/* Badge de dificultad */
-.difficulty-badge {
+/* Categoría */
+.challenge-category-icon {
+  display: flex;
+  align-items: center;
+  gap: 10px;
   padding: 8px 16px;
   border-radius: 50px;
+  border: 1px solid;
+}
+
+/* Colores para el contenedor de categoría */
+.challenge-category-icon[data-category="mental"] {
+  background: var(--category-mental-light) !important;
+  border-color: var(--category-mental) !important;
+}
+
+.challenge-category-icon[data-category="physical"] {
+  background: var(--category-physical-light) !important;
+  border-color: var(--category-physical) !important;
+}
+
+.challenge-category-icon[data-category="mindfulness"] {
+  background: var(--category-mindfulness-light) !important;
+  border-color: var(--category-mindfulness) !important;
+}
+
+.challenge-category-icon[data-category="nutrition"] {
+  background: var(--category-nutrition-light) !important;
+  border-color: var(--category-nutrition) !important;
+}
+
+/* Icono de categoría */
+.category-icon {
+  font-size: 1.8rem;
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  color: white;
+}
+
+/* Colores para el icono */
+.category-icon[data-category="mental"] {
+  background: var(--category-mental) !important;
+}
+
+.category-icon[data-category="physical"] {
+  background: var(--category-physical) !important;
+}
+
+.category-icon[data-category="mindfulness"] {
+  background: var(--category-mindfulness) !important;
+}
+
+.category-icon[data-category="nutrition"] {
+  background: var(--category-nutrition) !important;
+}
+
+/* Nombre de categoría */
+.category-name {
   font-size: 0.9rem;
-  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  font-weight: 700;
   white-space: nowrap;
 }
 
-/* Colores por dificultad */
-.difficulty-badge.fácil {
-  background: rgba(72, 187, 120, 0.15);
-  color: #48bb78;
-  border: 1px solid rgba(72, 187, 120, 0.3);
+/* Colores para el nombre */
+.category-name[data-category="mental"] {
+  color: var(--category-mental) !important;
 }
 
-[data-theme="dark"] .difficulty-badge.fácil {
-  background: rgba(72, 187, 120, 0.25);
-  color: #68d391;
-  border: 1px solid rgba(72, 187, 120, 0.4);
+.category-name[data-category="physical"] {
+  color: var(--category-physical) !important;
 }
 
-.difficulty-badge.moderado {
-  background: rgba(246, 173, 85, 0.15);
-  color: #f6ad55;
-  border: 1px solid rgba(246, 173, 85, 0.3);
+.category-name[data-category="mindfulness"] {
+  color: var(--category-mindfulness) !important;
 }
 
-[data-theme="dark"] .difficulty-badge.moderado {
-  background: rgba(246, 173, 85, 0.25);
-  color: #fbd38d;
-  border: 1px solid rgba(246, 173, 85, 0.4);
-}
-
-.difficulty-badge.desafiante {
-  background: rgba(239, 68, 68, 0.15);
-  color: #ef4444;
-  border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-[data-theme="dark"] .difficulty-badge.desafiante {
-  background: rgba(239, 68, 68, 0.25);
-  color: #fc8181;
-  border: 1px solid rgba(239, 68, 68, 0.4);
+.category-name[data-category="nutrition"] {
+  color: var(--category-nutrition) !important;
 }
 
 .challenge-points {
@@ -401,90 +501,17 @@
   padding: 8px 16px;
   border-radius: 50px;
   white-space: nowrap;
+  flex-shrink: 0;
+  border: 1px solid rgba(246, 173, 85, 0.2);
 }
 
 [data-theme="dark"] .challenge-points {
   background: rgba(246, 173, 85, 0.25);
   color: #fbd38d;
+  border-color: rgba(246, 173, 85, 0.3);
 }
 
-.nutrition .challenge-points {
-  background: rgba(104, 211, 145, 0.2);
-  color: #38a169;
-}
-
-[data-theme="dark"] .nutrition .challenge-points {
-  background: rgba(104, 211, 145, 0.3);
-  color: #68d391;
-}
-
-/* Category Icon */
-.challenge-category-icon {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 20px;
-}
-
-.category-icon {
-  font-size: 2rem;
-  width: 60px;
-  height: 60px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-}
-
-.mental .category-icon {
-  background: rgba(159, 122, 234, 0.15);
-  color: #805ad5;
-}
-
-[data-theme="dark"] .mental .category-icon {
-  background: rgba(159, 122, 234, 0.25);
-  color: #b794f4;
-}
-
-.physical .category-icon {
-  background: rgba(56, 178, 172, 0.15);
-  color: #319795;
-}
-
-[data-theme="dark"] .physical .category-icon {
-  background: rgba(56, 178, 172, 0.25);
-  color: #4fd1c5;
-}
-
-.mindfulness .category-icon {
-  background: rgba(246, 173, 85, 0.15);
-  color: #ed8936;
-}
-
-[data-theme="dark"] .mindfulness .category-icon {
-  background: rgba(246, 173, 85, 0.25);
-  color: #fbd38d;
-}
-
-.nutrition .category-icon {
-  background: rgba(104, 211, 145, 0.2);
-  color: #48bb78;
-}
-
-[data-theme="dark"] .nutrition .category-icon {
-  background: rgba(104, 211, 145, 0.3);
-  color: #68d391;
-}
-
-.category-name {
-  font-size: 0.9rem;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  font-weight: 600;
-}
-
-/* Content */
+/* ===== CONTENIDO ===== */
 .challenge-title-simple {
   font-size: 1.4rem;
   font-weight: 700;
@@ -500,26 +527,33 @@
   font-size: 0.95rem;
 }
 
-/* Benefits */
+/* ===== BENEFICIOS ===== */
 .benefits-list {
   margin-bottom: 20px;
   padding: 15px;
-  background: rgba(74, 144, 226, 0.05);
   border-radius: 12px;
+  border-left: 4px solid;
 }
 
-[data-theme="dark"] .benefits-list {
-  background: rgba(74, 144, 226, 0.15);
+/* Colores de beneficios */
+.benefits-list[data-category="mental"] {
+  background: var(--category-mental-lighter) !important;
+  border-color: var(--category-mental) !important;
 }
 
-.nutrition .benefits-list {
-  background: rgba(104, 211, 145, 0.1);
-  border-left: 4px solid #48bb78;
+.benefits-list[data-category="physical"] {
+  background: var(--category-physical-lighter) !important;
+  border-color: var(--category-physical) !important;
 }
 
-[data-theme="dark"] .nutrition .benefits-list {
-  background: rgba(104, 211, 145, 0.15);
-  border-left: 4px solid #68d391;
+.benefits-list[data-category="mindfulness"] {
+  background: var(--category-mindfulness-lighter) !important;
+  border-color: var(--category-mindfulness) !important;
+}
+
+.benefits-list[data-category="nutrition"] {
+  background: var(--category-nutrition-lighter) !important;
+  border-color: var(--category-nutrition) !important;
 }
 
 .benefit-item {
@@ -536,378 +570,30 @@
 }
 
 .benefit-icon {
-  color: #4a90e2;
   font-size: 1rem;
 }
 
-[data-theme="dark"] .benefit-icon {
-  color: #63b3ed;
+/* Colores para iconos de beneficio */
+.benefit-icon[data-category="mental"] {
+  color: var(--category-mental) !important;
 }
 
-.nutrition .benefit-icon {
-  color: #48bb78;
+.benefit-icon[data-category="physical"] {
+  color: var(--category-physical) !important;
 }
 
-[data-theme="dark"] .nutrition .benefit-icon {
-  color: #68d391;
+.benefit-icon[data-category="mindfulness"] {
+  color: var(--category-mindfulness) !important;
 }
 
-/* ===== CHALLENGE DETAILS (SOLO DURACIÓN) ===== */
-.challenge-details {
-  display: flex;
-  gap: 15px;
-  margin-bottom: 25px;
-  flex-wrap: wrap;
+.benefit-icon[data-category="nutrition"] {
+  color: var(--category-nutrition) !important;
 }
 
-.detail-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  color: var(--text-secondary);
-  font-size: 0.9rem;
-  padding: 8px 16px;
-  background: var(--bg-tertiary);
-  border-radius: 20px;
-  min-width: fit-content;
-}
-
-.detail-icon {
-  font-size: 1rem;
-}
-
-/* Simple Progress */
-.simple-progress {
-  margin-bottom: 25px;
-}
-
-.progress-container {
-  display: flex;
-  align-items: center;
-  gap: 15px;
-}
-
-.progress-track {
-  flex: 1;
-  height: 10px;
-  background: var(--bg-tertiary);
-  border-radius: 5px;
-  overflow: hidden;
-}
-
-.progress-fill-track {
-  height: 100%;
-  border-radius: 5px;
-  transition: width 0.5s ease;
-}
-
-.mental .progress-fill-track {
-  background: linear-gradient(90deg, #9f7aea, #805ad5);
-}
-
-.physical .progress-fill-track {
-  background: linear-gradient(90deg, #38b2ac, #319795);
-}
-
-.mindfulness .progress-fill-track {
-  background: linear-gradient(90deg, #f6ad55, #ed8936);
-}
-
-.nutrition .progress-fill-track {
-  background: linear-gradient(90deg, #68d391, #48bb78) !important;
-}
-
-.progress-text {
-  font-size: 0.9rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  min-width: 50px;
-}
-
-/* Action Button */
+/* ===== BOTONES DE RETOS PRINCIPALES - EXACTAMENTE IGUALES A LOS DIARIOS ===== */
 .action-btn {
   width: 100%;
-  padding: 16px;
-  border-radius: 14px;
-  border: none;
-  color: white;
-  font-weight: 700;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-
-.action-btn:hover:not(:disabled) {
-  transform: translateY(-3px);
-  box-shadow: var(--shadow-lg);
-}
-
-.action-btn:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.mental-btn {
-  background: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%);
-}
-
-.physical-btn {
-  background: linear-gradient(135deg, #38b2ac 0%, #319795 100%);
-}
-
-.mindfulness-btn {
-  background: linear-gradient(135deg, #f6ad55 0%, #ed8936 100%);
-}
-
-/* BOTÓN DE NUTRICIÓN MEJORADO */
-.nutrition-btn {
-  background: linear-gradient(135deg, #68d391 0%, #48bb78 100%) !important;
-  color: white !important;
-  font-weight: 700;
-  position: relative;
-  overflow: hidden;
-}
-
-.nutrition-btn::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: -100%;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-  transition: left 0.7s ease;
-}
-
-.nutrition-btn:hover::before {
-  left: 100%;
-}
-
-.nutrition-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 25px rgba(104, 211, 145, 0.4) !important;
-  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%) !important;
-}
-
-.nutrition-btn:focus {
-  outline: none;
-  box-shadow: 0 0 0 3px rgba(104, 211, 145, 0.5) !important;
-}
-
-.action-btn.completed-btn {
-  background: #48bb78;
-}
-
-/* Botón de completado para nutrición */
-.action-btn.completed-btn.nutrition-completed {
-  background: linear-gradient(135deg, #48bb78 0%, #38a169 100%) !important;
-  border: 2px solid #38a169 !important;
-  box-shadow: 0 0 15px rgba(72, 187, 120, 0.5) !important;
-  animation: pulse-green 2s infinite;
-}
-
-[data-theme="dark"] .action-btn.completed-btn.nutrition-completed {
-  background: linear-gradient(135deg, #68d391 0%, #48bb78 100%) !important;
-  border: 2px solid #68d391 !important;
-  box-shadow: 0 0 20px rgba(104, 211, 145, 0.6) !important;
-}
-
-@keyframes pulse-green {
-  0% {
-      box-shadow: 0 0 15px rgba(72, 187, 120, 0.5);
-  }
-  50% {
-      box-shadow: 0 0 25px rgba(72, 187, 120, 0.8);
-  }
-  100% {
-      box-shadow: 0 0 15px rgba(72, 187, 120, 0.5);
-  }
-}
-
-.action-btn.completed-btn.nutrition-completed .btn-text {
-  color: white !important;
-  font-weight: 800;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
-}
-
-.action-btn.completed-btn.nutrition-completed::before {
-  content: '✅ ';
-  margin-right: 8px;
-  font-size: 1.2em;
-  animation: bounce 1s infinite;
-}
-
-@keyframes bounce {
-  0%, 100% {
-      transform: translateY(0);
-  }
-  50% {
-      transform: translateY(-3px);
-  }
-}
-
-.btn-text {
-  font-size: 1rem;
-}
-
-/* ===== DAILY SECTION - BIENESTAR ===== */
-.daily-section.wellness {
-  margin-top: 60px;
-  padding: 30px;
-  background: linear-gradient(135deg, rgba(74, 144, 226, 0.08), rgba(92, 219, 149, 0.08));
-  border-radius: 24px;
-  border: 1px solid rgba(74, 144, 226, 0.2);
-}
-
-[data-theme="dark"] .daily-section.wellness {
-  background: linear-gradient(135deg, rgba(74, 144, 226, 0.15), rgba(92, 219, 149, 0.15));
-  border: 1px solid rgba(74, 144, 226, 0.3);
-}
-
-.daily-header {
-  margin-bottom: 30px;
-}
-
-.daily-header h2 {
-  font-size: 2rem;
-  font-weight: 800;
-  color: var(--text-primary);
-  margin-bottom: 8px;
-}
-
-.daily-subtitle {
-  color: var(--text-secondary);
-  font-size: 1.1rem;
-  margin-bottom: 10px;
-}
-
-.daily-cards {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-  gap: 25px;
-  margin-top: 10px;
-}
-
-.daily-card-simple.wellness-card {
-  background: var(--card-bg);
-  border-radius: 20px;
-  padding: 30px 25px;
-  border: 1px solid var(--border-color);
-  display: flex;
-  flex-direction: column;
-  transition: all 0.3s ease;
-  min-height: 280px;
-}
-
-.wellness-card:hover {
-  transform: translateY(-5px);
-  box-shadow: var(--shadow-lg);
-  border-color: var(--text-secondary);
-}
-
-.daily-day {
-  display: inline-block;
-  padding: 10px 20px;
-  background: linear-gradient(135deg, #4a90e2, #63b3ed);
-  color: white;
-  border-radius: 50px;
-  font-size: 0.9rem;
-  font-weight: 700;
-  margin-bottom: 20px;
-  align-self: flex-start;
-}
-
-.daily-content {
-  flex: 1;
-  margin-bottom: 25px;
-}
-
-.daily-content h4 {
-  font-size: 1.3rem;
-  font-weight: 700;
-  color: var(--text-primary);
-  margin-bottom: 12px;
-  line-height: 1.4;
-}
-
-.daily-content p {
-  color: var(--text-secondary);
-  line-height: 1.6;
-  margin-bottom: 20px;
-  font-size: 0.95rem;
-}
-
-.wellness-benefits {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 20px;
-}
-
-.benefit-tag {
-  padding: 6px 14px;
-  background: rgba(74, 144, 226, 0.1);
-  color: #4a90e2;
-  border-radius: 15px;
-  font-size: 0.85rem;
-  font-weight: 600;
-}
-
-[data-theme="dark"] .benefit-tag {
-  background: rgba(74, 144, 226, 0.2);
-  color: #63b3ed;
-}
-
-.wellness-card.nutrition .benefit-tag {
-  background: rgba(104, 211, 145, 0.15);
-  color: #38a169;
-}
-
-[data-theme="dark"] .wellness-card.nutrition .benefit-tag {
-  background: rgba(104, 211, 145, 0.25);
-  color: #68d391;
-}
-
-.wellness-card.nutrition .daily-day {
-  background: linear-gradient(135deg, #68d391, #48bb78);
-}
-
-.daily-reward {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 12px 16px;
-  background: rgba(246, 173, 85, 0.1);
-  border-radius: 10px;
-  border: 1px solid rgba(246, 173, 85, 0.2);
-  margin-bottom: 20px;
-}
-
-[data-theme="dark"] .daily-reward {
-  background: rgba(246, 173, 85, 0.2);
-  border: 1px solid rgba(246, 173, 85, 0.3);
-}
-
-.reward-icon {
-  font-size: 1.2rem;
-}
-
-.reward-points {
-  font-weight: 700;
-  color: #f6ad55;
-  font-size: 1rem;
-}
-
-[data-theme="dark"] .reward-points {
-  color: #fbd38d;
-}
-
-.daily-claim-btn.wellness-claim {
-  padding: 15px;
+  padding: 14px;
   border-radius: 12px;
   border: 2px solid #4a90e2;
   background: transparent;
@@ -916,45 +602,219 @@
   font-size: 1rem;
   cursor: pointer;
   transition: all 0.3s ease;
-  margin-top: auto;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
 }
 
-[data-theme="dark"] .daily-claim-btn.wellness-claim {
-  border: 2px solid #63b3ed;
-  color: #63b3ed;
+[data-theme="dark"] .action-btn {
+  border: 2px solid #93c5fd;
+  color: #93c5fd;
 }
 
-.wellness-claim:hover:not(:disabled):not(.claimed) {
+.action-btn:hover:not(:disabled):not(.claimed) {
   background: linear-gradient(135deg, #4a90e2 0%, #63b3ed 100%);
   color: white;
   border-color: transparent;
   transform: translateY(-2px);
 }
 
-.wellness-card.nutrition .wellness-claim:not(:disabled):not(.claimed) {
-  border: 2px solid #48bb78;
-  color: #48bb78;
-  background: rgba(104, 211, 145, 0.1);
-}
-
-[data-theme="dark"] .wellness-card.nutrition .wellness-claim:not(:disabled):not(.claimed) {
-  border: 2px solid #68d391;
-  color: #68d391;
-  background: rgba(104, 211, 145, 0.15);
-}
-
-.wellness-card.nutrition .wellness-claim:hover:not(:disabled):not(.claimed) {
-  background: linear-gradient(135deg, #68d391 0%, #48bb78 100%);
+[data-theme="dark"] .action-btn:hover:not(:disabled):not(.claimed) {
+  background: linear-gradient(135deg, #4a90e2 0%, #63b3ed 100%);
   color: white;
-  box-shadow: 0 5px 15px rgba(104, 211, 145, 0.4);
+  border-color: transparent;
 }
 
-.wellness-claim:disabled,
-.wellness-claim.claimed {
+.action-btn:disabled,
+.action-btn.claimed {
   background: #48bb78;
   color: white;
   border-color: transparent;
   cursor: not-allowed;
+}
+
+.action-btn.claimed:hover {
+  background: #3da167 !important;
+  transform: none !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.btn-text {
+  font-size: 1rem;
+}
+
+/* ===== CAJA DE RETOS DIARIOS ===== */
+.daily-section-box {
+  background: var(--card-bg);
+  border-radius: 24px;
+  padding: 30px;
+  margin: 40px 0;
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
+}
+
+.daily-section-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.daily-section-header h2 {
+  font-size: 2rem;
+  font-weight: 800;
+  background: linear-gradient(135deg, #f6ad55 0%, #fbd38d 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 8px;
+}
+
+.daily-section-subtitle {
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* Mantener los estilos existentes para las tarjetas diarias */
+.daily-cards-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-top: 20px;
+}
+
+.daily-challenge-card {
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.05), rgba(92, 219, 149, 0.05));
+  border-radius: 20px;
+  padding: 25px;
+  border: 2px solid rgba(74, 144, 226, 0.2);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+}
+
+[data-theme="dark"] .daily-challenge-card {
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.1), rgba(92, 219, 149, 0.1));
+  border-color: rgba(74, 144, 226, 0.3);
+}
+
+.daily-challenge-card:hover {
+  transform: translateY(-5px);
+  box-shadow: var(--shadow-lg);
+  border-color: rgba(74, 144, 226, 0.4);
+}
+
+/* SOLO PUNTOS, NO DÍA */
+.daily-card-header {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.points-badge {
+  padding: 8px 16px;
+  background: rgba(246, 173, 85, 0.15);
+  color: #f6ad55;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  border: 1px solid rgba(246, 173, 85, 0.2);
+}
+
+[data-theme="dark"] .points-badge {
+  background: rgba(246, 173, 85, 0.25);
+  color: #fbd38d;
+  border-color: rgba(246, 173, 85, 0.3);
+}
+
+.daily-card-content {
+  flex: 1;
+  margin-bottom: 20px;
+}
+
+.daily-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 12px;
+  line-height: 1.3;
+}
+
+.daily-description {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 15px;
+  font-size: 0.95rem;
+}
+
+.daily-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.daily-tag {
+  padding: 6px 12px;
+  background: rgba(74, 144, 226, 0.1);
+  color: #4a90e2;
+  border-radius: 15px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  border: 1px solid rgba(74, 144, 226, 0.2);
+}
+
+[data-theme="dark"] .daily-tag {
+  background: rgba(74, 144, 226, 0.2);
+  color: #93c5fd;
+  border-color: rgba(74, 144, 226, 0.3);
+}
+
+/* ===== BOTONES DE RETOS DIARIOS ===== */
+.daily-action-btn {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+  border: 2px solid #4a90e2;
+  background: transparent;
+  color: #4a90e2;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+[data-theme="dark"] .daily-action-btn {
+  border: 2px solid #93c5fd;
+  color: #93c5fd;
+}
+
+.daily-action-btn:hover:not(:disabled):not(.claimed) {
+  background: linear-gradient(135deg, #4a90e2 0%, #63b3ed 100%);
+  color: white;
+  border-color: transparent;
+  transform: translateY(-2px);
+}
+
+.daily-action-btn:disabled,
+.daily-action-btn.claimed {
+  background: #48bb78;
+  color: white;
+  border-color: transparent;
+  cursor: not-allowed;
+}
+
+.daily-action-btn.claimed:hover {
+  background: #3da167 !important;
+  transform: none !important;
+  box-shadow: var(--shadow-md) !important;
 }
 
 /* ===== CONSEJO DEL DÍA ===== */
@@ -962,26 +822,26 @@
   display: flex;
   align-items: flex-start;
   gap: 20px;
-  margin: 40px 0;
+  margin: 40px 0 40px 0;
   padding: 25px;
-  background: linear-gradient(135deg, rgba(159, 122, 234, 0.1), rgba(128, 90, 213, 0.1));
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.1), rgba(92, 219, 149, 0.1));
   border-radius: 20px;
-  border: 1px solid rgba(159, 122, 234, 0.2);
+  border: 1px solid rgba(74, 144, 226, 0.2);
 }
 
 [data-theme="dark"] .daily-tip {
-  background: linear-gradient(135deg, rgba(159, 122, 234, 0.2), rgba(128, 90, 213, 0.2));
-  border: 1px solid rgba(159, 122, 234, 0.3);
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.2), rgba(92, 219, 149, 0.2));
+  border: 1px solid rgba(74, 144, 226, 0.3);
 }
 
 .tip-icon {
   font-size: 3rem;
-  color: #805ad5;
+  color: #4a90e2;
   flex-shrink: 0;
 }
 
 [data-theme="dark"] .tip-icon {
-  color: #b794f4;
+  color: #93c5fd;
 }
 
 .tip-content {
@@ -1005,8 +865,8 @@
 .tip-refresh {
   padding: 8px 16px;
   background: transparent;
-  border: 1px solid #805ad5;
-  color: #805ad5;
+  border: 1px solid #4a90e2;
+  color: #4a90e2;
   border-radius: 20px;
   font-size: 0.9rem;
   cursor: pointer;
@@ -1014,33 +874,33 @@
 }
 
 [data-theme="dark"] .tip-refresh {
-  border: 1px solid #b794f4;
-  color: #b794f4;
+  border: 1px solid #93c5fd;
+  color: #93c5fd;
 }
 
 .tip-refresh:hover {
-  background: #805ad5;
+  background: #4a90e2;
   color: white;
 }
 
 [data-theme="dark"] .tip-refresh:hover {
-  background: #b794f4;
-  color: white;
+  background: #93c5fd;
+  color: #1e293b;
 }
 
-/* ===== EMPTY STATE - BIENESTAR ===== */
+/* ===== ESTADO VACÍO ===== */
 .empty-state.wellness-empty {
   text-align: center;
   padding: 60px 40px;
-  background: linear-gradient(135deg, rgba(72, 187, 120, 0.05), rgba(56, 178, 172, 0.05));
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.05), rgba(92, 219, 149, 0.05));
   border-radius: 24px;
-  border: 2px dashed #48bb78;
+  border: 2px dashed #4a90e2;
   margin: 50px 0;
 }
 
 [data-theme="dark"] .empty-state.wellness-empty {
-  background: linear-gradient(135deg, rgba(72, 187, 120, 0.1), rgba(56, 178, 172, 0.1));
-  border: 2px dashed #68d391;
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.1), rgba(92, 219, 149, 0.1));
+  border: 2px dashed #93c5fd;
 }
 
 .empty-icon {
@@ -1064,9 +924,9 @@
 .reset-btn.wellness-reset {
   padding: 14px 32px;
   border-radius: 50px;
-  border: 2px solid #48bb78;
+  border: 2px solid #4a90e2;
   background: transparent;
-  color: #48bb78;
+  color: #4a90e2;
   font-weight: 600;
   font-size: 1rem;
   cursor: pointer;
@@ -1074,174 +934,341 @@
 }
 
 [data-theme="dark"] .reset-btn.wellness-reset {
-  border: 2px solid #68d391;
-  color: #68d391;
+  border: 2px solid #93c5fd;
+  color: #93c5fd;
 }
 
 .wellness-reset:hover {
-  background: #48bb78;
+  background: #4a90e2;
   color: white;
   transform: translateY(-2px);
 }
 
 [data-theme="dark"] .wellness-reset:hover {
-  background: #68d391;
-  color: white;
+  background: #93c5fd;
+  color: #1e293b;
+}
+
+/* ===== COLORES POR CATEGORÍA - SOLUCIÓN SIMPLE ===== */
+
+/* 1. COLORES PARA TARJETAS PRINCIPALES */
+.challenge-card-simple.mental {
+  border-left: 5px solid #8B5CF6 !important;
+  border-color: rgba(139, 92, 246, 0.3) !important;
+}
+
+.challenge-card-simple.physical {
+  border-left: 5px solid #EF4444 !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+.challenge-card-simple.mindfulness {
+  border-left: 5px solid #10B981 !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+.challenge-card-simple.nutrition {
+  border-left: 5px solid #F59E0B !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+/* 2. FONDOS PARA TARJETAS NO COMPLETADAS - ESTOS SE MANTIENEN */
+.challenge-card-simple.mental:not(.completed) {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), var(--card-bg)) !important;
+}
+
+.challenge-card-simple.physical:not(.completed) {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), var(--card-bg)) !important;
+}
+
+.challenge-card-simple.mindfulness:not(.completed) {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), var(--card-bg)) !important;
+}
+
+.challenge-card-simple.nutrition:not(.completed) {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), var(--card-bg)) !important;
+}
+
+/* 3. PARA TARJETAS COMPLETADAS - MANTENER EL MISMO FONDO */
+.challenge-card-simple.mental.completed {
+  background: linear-gradient(135deg, rgba(139, 92, 246, 0.15), var(--card-bg)) !important;
+  border-color: rgba(139, 92, 246, 0.3) !important;
+}
+
+.challenge-card-simple.physical.completed {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15), var(--card-bg)) !important;
+  border-color: rgba(239, 68, 68, 0.3) !important;
+}
+
+.challenge-card-simple.mindfulness.completed {
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15), var(--card-bg)) !important;
+  border-color: rgba(16, 185, 129, 0.3) !important;
+}
+
+.challenge-card-simple.nutrition.completed {
+  background: linear-gradient(135deg, rgba(245, 158, 11, 0.15), var(--card-bg)) !important;
+  border-color: rgba(245, 158, 11, 0.3) !important;
+}
+
+/* 3. BADGE DE CATEGORÍA */
+.challenge-category-icon.mental {
+  background: rgba(139, 92, 246, 0.15) !important;
+  border: 1px solid #8B5CF6 !important;
+}
+
+.challenge-category-icon.physical {
+  background: rgba(239, 68, 68, 0.15) !important;
+  border: 1px solid #EF4444 !important;
+}
+
+.challenge-category-icon.mindfulness {
+  background: rgba(16, 185, 129, 0.15) !important;
+  border: 1px solid #10B981 !important;
+}
+
+.challenge-category-icon.nutrition {
+  background: rgba(245, 158, 11, 0.15) !important;
+  border: 1px solid #F59E0B !important;
+}
+
+/* 4. ICONO DE CATEGORÍA */
+.category-icon.mental {
+  background: #8B5CF6 !important;
+  color: white !important;
+}
+
+.category-icon.physical {
+  background: #EF4444 !important;
+  color: white !important;
+}
+
+.category-icon.mindfulness {
+  background: #10B981 !important;
+  color: white !important;
+}
+
+.category-icon.nutrition {
+  background: #F59E0B !important;
+  color: white !important;
+}
+
+/* 5. NOMBRE DE CATEGORÍA */
+.category-name.mental {
+  color: #8B5CF6 !important;
+}
+
+.category-name.physical {
+  color: #EF4444 !important;
+}
+
+.category-name.mindfulness {
+  color: #10B981 !important;
+}
+
+.category-name.nutrition {
+  color: #F59E0B !important;
+}
+
+/* 6. LISTA DE BENEFICIOS */
+.benefits-list.mental {
+  background: rgba(139, 92, 246, 0.08) !important;
+  border-left: 4px solid #8B5CF6 !important;
+}
+
+.benefits-list.physical {
+  background: rgba(239, 68, 68, 0.08) !important;
+  border-left: 4px solid #EF4444 !important;
+}
+
+.benefits-list.mindfulness {
+  background: rgba(16, 185, 129, 0.08) !important;
+  border-left: 4px solid #10B981 !important;
+}
+
+.benefits-list.nutrition {
+  background: rgba(245, 158, 11, 0.08) !important;
+  border-left: 4px solid #F59E0B !important;
+}
+
+/* 7. ICONOS DE BENEFICIOS */
+.benefit-icon.mental {
+  color: #8B5CF6 !important;
+}
+
+.benefit-icon.physical {
+  color: #EF4444 !important;
+}
+
+.benefit-icon.mindfulness {
+  color: #10B981 !important;
+}
+
+.benefit-icon.nutrition {
+  color: #F59E0B !important;
 }
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
   .challenges-page {
-      padding: 15px;
-      padding-top: 90px;
+    padding: 15px;
+    padding-top: 90px;
   }
   
   .page-header {
-      flex-direction: column;
-      gap: 25px;
-      padding: 25px 20px;
-      text-align: center;
+    padding: 25px 20px;
+    gap: 20px;
   }
   
-  .header-content h1 {
-      font-size: 2.2rem;
+  .header-main {
+    flex-direction: column;
+    gap: 20px;
+    text-align: center;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    gap: 15px;
+    text-align: center;
+  }
+  
+  .header-emoji {
+    width: 70px;
+    height: 70px;
+    font-size: 3rem;
+  }
+  
+  .header-text h1 {
+    font-size: 2rem;
   }
   
   .quick-stats {
-      width: 100%;
-      justify-content: center;
+    width: 100%;
+    justify-content: center;
+    flex-wrap: wrap;
   }
   
   .stat-bubble {
-      min-width: 100px;
-      padding: 16px;
+    min-width: 120px;
+    padding: 18px 20px;
   }
   
   .challenges-cards {
-      grid-template-columns: 1fr;
+    grid-template-columns: 1fr;
   }
   
   .simple-filters {
-      gap: 8px;
-      padding: 12px 0 8px 0;
+    gap: 8px;
+    padding: 12px 0 8px 0;
   }
   
   .simple-filter-btn {
-      padding: 12px 18px;
-      font-size: 0.9rem;
-      min-height: 44px;
+    padding: 12px 18px;
+    font-size: 0.9rem;
+    min-height: 44px;
   }
   
-  .simple-filter-btn.active {
-      padding: 12px 18px;
+  .daily-cards-container {
+    grid-template-columns: 1fr;
   }
   
-  .daily-cards {
-      grid-template-columns: 1fr;
-  }
-  
-  .daily-section.wellness {
-      padding: 25px 20px;
-  }
-  
-  .daily-card-simple.wellness-card {
-      padding: 25px 20px;
-      min-height: 260px;
-  }
-  
-  .daily-content h4 {
-      font-size: 1.2rem;
-  }
-  
-  .daily-day {
-      padding: 8px 18px;
-      font-size: 0.85rem;
-  }
-  
-  .benefit-tag {
-      padding: 5px 12px;
-      font-size: 0.8rem;
+  .daily-challenge-card {
+    padding: 20px;
   }
   
   .balance-header {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 15px;
-  }
-  
-  .balance-score {
-      align-self: flex-start;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
   }
   
   .challenge-status {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 12px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
   }
   
   .status-left {
-      width: 100%;
-      justify-content: space-between;
-  }
-  
-  .challenge-points {
-      align-self: flex-start;
-  }
-  
-  .status-badge,
-  .difficulty-badge {
-      padding: 5px 12px;
-      font-size: 0.8rem;
+    width: 100%;
+    justify-content: space-between;
   }
   
   .daily-tip {
-      flex-direction: column;
-      text-align: center;
+    flex-direction: column;
+    text-align: center;
   }
   
   .tip-icon {
-      align-self: center;
+    align-self: center;
+  }
+  
+  /* Responsive para la nueva caja */
+  .daily-section-box {
+    padding: 20px;
+    margin: 30px 0;
+  }
+  
+  .daily-section-header h2 {
+    font-size: 1.8rem;
+  }
+  
+  .daily-section-subtitle {
+    font-size: 1rem;
+    padding: 0 20px;
   }
 }
 
 @media (max-width: 480px) {
   .status-left {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 8px;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
   }
   
   .challenge-points {
-      font-size: 1.1rem;
-      padding: 5px 12px;
+    font-size: 1.1rem;
+    padding: 5px 12px;
   }
   
   .simple-filters {
-      gap: 6px;
+    gap: 6px;
   }
   
   .simple-filter-btn {
-      padding: 10px 16px;
-      font-size: 0.85rem;
+    padding: 10px 16px;
+    font-size: 0.85rem;
+  }
+  
+  .daily-card-header {
+    justify-content: center;
+  }
+  
+  .header-emoji {
+    width: 60px;
+    height: 60px;
+    font-size: 2.5rem;
+  }
+  
+  .header-text h1 {
+    font-size: 1.8rem;
+  }
+  
+  .header-subtitle {
+    font-size: 1rem;
+  }
+  
+  .quick-stats {
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+  }
+  
+  .stat-bubble {
+    width: 100%;
+    max-width: 200px;
   }
 }
 
-/* Transiciones suaves para tema */
-.challenge-card-simple,
-.balance-section,
-.page-header,
-.wellness-card,
-.daily-tip,
-.empty-state.wellness-empty,
-.simple-filter-btn,
-.benefit-tag,
-.detail-item,
-.difficulty-badge {
-  transition: background-color 0.3s ease, border-color 0.3s ease, 
-              box-shadow 0.3s ease, color 0.3s ease;
-}
-
-/* Regla general para prevenir cortes de texto */
+/* ===== REGLAS GENERALES ===== */
 * {
   box-sizing: border-box;
 }
@@ -1251,15 +1278,21 @@ p, span, button, a {
   line-height: 1.4;
   overflow-wrap: break-word;
   word-wrap: break-word;
+  transition: color 0.3s ease;
 }
 
+.challenge-card-simple,
+.balance-section,
+.page-header,
 .simple-filter-btn,
-.daily-day,
-.benefit-tag,
-.action-btn,
-.wellness-claim,
-.difficulty-badge {
-  overflow: visible !important;
-  white-space: normal !important;
-  text-overflow: clip !important;
+.daily-challenge-card,
+.daily-tip,
+.empty-state.wellness-empty {
+  transition: background-color 0.3s ease, border-color 0.3s ease, 
+              box-shadow 0.3s ease, color 0.3s ease;
+}
+
+/* Suavizar transiciones de modo oscuro */
+body, :host {
+  transition: background-color 0.3s ease;
 }

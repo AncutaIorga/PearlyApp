@@ -1,5 +1,5 @@
 import { Component, OnInit, inject } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { CommonModule, NgClass } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../services/auth';
 import { UserService } from '../services/user';
@@ -11,25 +11,17 @@ interface Challenge {
   description: string;
   category: 'mental' | 'physical' | 'mindfulness' | 'nutrition';
   points: number;
-  duration: string;
-  participants: number;
   completed: boolean;
   inProgress: boolean;
-  difficulty: 'Fácil' | 'Moderado' | 'Desafiante';
   benefits?: string[];
-  progress?: {
-    current: number;
-    total: number;
-  };
 }
 
 interface DailyChallenge {
   id: string;
-  day: number;
   title: string;
   description: string;
   points: number;
-  claimed: boolean;
+  completed: boolean;
   tags: string[];
 }
 
@@ -44,7 +36,8 @@ interface Filter {
   imports: [
     CommonModule, 
     RouterModule,
-    NavbarComponent
+    NavbarComponent,
+    NgClass
   ],
   templateUrl: './challenges.html',
   styleUrls: ['./challenges.css']
@@ -56,18 +49,18 @@ export class ChallengesComponent implements OnInit {
   user = this.authService.user;
   userProfile = this.userService.getUser();
   
-  // Estadísticas de bienestar
-  energyPoints = 850;
-  currentStreak = 7;
-  wellnessScore = 78;
-  mentalHealth = 75;
-  physicalHealth = 80;
+  // ESTADÍSTICAS VACÍAS AL INICIO
+  energyPoints = 0;
+  currentStreak = 0;
+  wellnessScore = 0;
+  mentalHealth = 0;
+  physicalHealth = 0;
   
-  completedChallenges = 5;
-  totalChallenges = 12;
+  completedChallenges = 0;
+  totalChallenges = 0;
   
   // Consejo del día
-  dailyTip = "Hoy, tómate 5 minutos para respirar profundamente. Inhala durante 4 segundos, mantén 4 segundos, exhala 6 segundos. Reduce el estrés instantáneamente.";
+  dailyTip = "Completa tu primer reto para desbloquear consejos personalizados.";
   
   // Filtros para bienestar
   filters: Filter[] = [
@@ -80,7 +73,7 @@ export class ChallengesComponent implements OnInit {
   
   activeFilter = 'all';
   
-  // Retos de bienestar
+  // RETOS BASE (todos incompletos al inicio)
   challenges: Challenge[] = [
     {
       id: '1',
@@ -88,11 +81,8 @@ export class ChallengesComponent implements OnInit {
       description: 'Encuentra un lugar tranquilo y medita durante 10 minutos para calmar tu mente.',
       category: 'mindfulness',
       points: 50,
-      duration: '1 día',
-      participants: 2450,
-      completed: true,
+      completed: false,
       inProgress: false,
-      difficulty: 'Fácil',
       benefits: ['Reduce estrés', 'Mejora concentración', 'Aumenta claridad mental']
     },
     {
@@ -101,12 +91,8 @@ export class ChallengesComponent implements OnInit {
       description: 'Da un paseo al aire libre durante 30 minutos para activar tu cuerpo y mente.',
       category: 'physical',
       points: 75,
-      duration: '1 día',
-      participants: 1876,
       completed: false,
-      inProgress: true,
-      difficulty: 'Fácil',
-      progress: { current: 20, total: 30 }
+      inProgress: false
     },
     {
       id: '3',
@@ -114,11 +100,8 @@ export class ChallengesComponent implements OnInit {
       description: 'Escribe 3 cosas por las que estés agradecido hoy.',
       category: 'mental',
       points: 40,
-      duration: '7 días',
-      participants: 1543,
       completed: false,
       inProgress: false,
-      difficulty: 'Fácil',
       benefits: ['Mejora ánimo', 'Reduce ansiedad', 'Aumenta felicidad']
     },
     {
@@ -127,11 +110,8 @@ export class ChallengesComponent implements OnInit {
       description: 'Completa una rutina básica de ejercicios de fuerza en casa.',
       category: 'physical',
       points: 100,
-      duration: '3 días',
-      participants: 932,
       completed: false,
-      inProgress: false,
-      difficulty: 'Moderado'
+      inProgress: false
     },
     {
       id: '5',
@@ -139,11 +119,8 @@ export class ChallengesComponent implements OnInit {
       description: 'Desconéctate de todas las pantallas durante una hora completa.',
       category: 'mental',
       points: 60,
-      duration: '1 día',
-      participants: 1321,
       completed: false,
-      inProgress: false,
-      difficulty: 'Moderado'
+      inProgress: false
     },
     {
       id: '6',
@@ -151,11 +128,8 @@ export class ChallengesComponent implements OnInit {
       description: 'Come al menos una comida hoy sin distracciones, enfocándote en cada bocado.',
       category: 'nutrition',
       points: 45,
-      duration: '1 día',
-      participants: 876,
-      completed: true,
-      inProgress: false,
-      difficulty: 'Fácil'
+      completed: false,
+      inProgress: false
     },
     {
       id: '7',
@@ -163,12 +137,8 @@ export class ChallengesComponent implements OnInit {
       description: 'Realiza 15 minutos de estiramientos para mejorar tu flexibilidad.',
       category: 'physical',
       points: 55,
-      duration: '5 días',
-      participants: 654,
       completed: false,
-      inProgress: false,
-      difficulty: 'Fácil',
-      progress: { current: 2, total: 5 }
+      inProgress: false
     },
     {
       id: '8',
@@ -176,11 +146,8 @@ export class ChallengesComponent implements OnInit {
       description: 'Practica la técnica de respiración 4-7-8 durante 5 minutos.',
       category: 'mindfulness',
       points: 35,
-      duration: '1 día',
-      participants: 2345,
       completed: false,
-      inProgress: false,
-      difficulty: 'Fácil'
+      inProgress: false
     },
     {
       id: '9',
@@ -188,60 +155,60 @@ export class ChallengesComponent implements OnInit {
       description: 'Toma 8 vasos de agua durante el día, registrando cada uno.',
       category: 'nutrition',
       points: 70,
-      duration: '3 días',
-      participants: 1876,
       completed: false,
-      inProgress: false,
-      difficulty: 'Moderado'
+      inProgress: false
     }
   ];
   
-  // Retos diarios de bienestar
+  // RETOS DIARIOS - Siempre disponibles
   dailyChallenges: DailyChallenge[] = [
     {
-      id: 'd1',
-      day: 1,
-      title: 'Levántate y estírate',
-      description: 'Haz 5 minutos de estiramientos al despertar.',
-      points: 25,
-      claimed: true,
-      tags: ['Mañana', 'Fácil', 'Energía']
-    },
-    {
-      id: 'd2',
-      day: 2,
-      title: 'Bebe agua con limón',
-      description: 'Comienza el día con un vaso de agua tibia con limón.',
-      points: 20,
-      claimed: true,
-      tags: ['Hidratación', 'Salud']
-    },
-    {
-      id: 'd3',
-      day: 3,
-      title: 'Pausa activa de 5 min',
-      description: 'Toma 5 minutos para moverte durante tu jornada.',
+      id: 'daily-1',
+      title: 'Meditación matutina',
+      description: 'Dedica 5 minutos por la mañana para meditar y centrar tu mente.',
       points: 30,
-      claimed: false,
-      tags: ['Trabajo', 'Movimiento']
+      completed: false,
+      tags: ['Mindfulness', '5 min']
     },
     {
-      id: 'd4',
-      day: 4,
-      title: 'Agradece algo hoy',
-      description: 'Reflexiona sobre algo positivo en tu vida.',
-      points: 15,
-      claimed: false,
-      tags: ['Mental', 'Gratitud']
+      id: 'daily-2',
+      title: 'Estiramientos básicos',
+      description: 'Realiza 10 minutos de estiramientos para activar tu cuerpo.',
+      points: 25,
+      completed: false,
+      tags: ['Físico', '10 min']
     },
     {
-      id: 'd5',
-      day: 5,
-      title: 'Cena sin pantallas',
-      description: 'Disfruta tu cena sin dispositivos electrónicos.',
+      id: 'daily-3',
+      title: 'Reflexión diaria',
+      description: 'Tómate un momento para reflexionar sobre tu día.',
+      points: 20,
+      completed: false,
+      tags: ['Mental', '5 min']
+    },
+    {
+      id: 'daily-4',
+      title: 'Hidratación completa',
+      description: 'Bebe al menos 2 litros de agua durante el día.',
       points: 35,
-      claimed: false,
-      tags: ['Nutrición', 'Mindfulness']
+      completed: false,
+      tags: ['Nutrición', 'Salud']
+    },
+    {
+      id: 'daily-5',
+      title: 'Pausa digital',
+      description: 'Descansa 20 minutos sin mirar ninguna pantalla.',
+      points: 30,
+      completed: false,
+      tags: ['Digital', '20 min']
+    },
+    {
+      id: 'daily-6',
+      title: 'Respiración consciente',
+      description: 'Practica la respiración profunda durante 3 minutos.',
+      points: 20,
+      completed: false,
+      tags: ['Respiración', 'Calma']
     }
   ];
   
@@ -251,8 +218,120 @@ export class ChallengesComponent implements OnInit {
   }
   
   ngOnInit() {
-    this.loadWellnessProgress();
+    this.loadUserProgress();
+    this.calculateTotalChallenges();
+  }
+  
+  // Carga el progreso del usuario desde localStorage
+  private loadUserProgress() {
+    const savedProgress = localStorage.getItem('pearly-wellness-progress');
+    
+    if (savedProgress) {
+      try {
+        const progress = JSON.parse(savedProgress);
+        
+        // Cargar estadísticas
+        this.energyPoints = progress.energyPoints || 0;
+        this.currentStreak = progress.currentStreak || 0;
+        this.mentalHealth = progress.mentalHealth || 0;
+        this.physicalHealth = progress.physicalHealth || 0;
+        this.completedChallenges = progress.completedChallenges || 0;
+        
+        // Cargar estado de retos principales
+        const savedChallenges = progress.challenges;
+        if (savedChallenges && Array.isArray(savedChallenges)) {
+          this.challenges = this.challenges.map(challenge => {
+            const saved = savedChallenges.find((c: any) => c.id === challenge.id);
+            return saved ? { ...challenge, ...saved } : challenge;
+          });
+        }
+        
+        // Cargar estado de retos diarios
+        const savedDaily = progress.dailyChallenges;
+        if (savedDaily && Array.isArray(savedDaily)) {
+          this.dailyChallenges = this.dailyChallenges.map(daily => {
+            const saved = savedDaily.find((d: any) => d.id === daily.id);
+            return saved ? { ...daily, ...saved } : daily;
+          });
+        }
+        
+        // Cargar consejo del día si existe
+        if (progress.dailyTip) {
+          this.dailyTip = progress.dailyTip;
+        }
+        
+      } catch (error) {
+        console.error('Error cargando progreso:', error);
+        // Si hay error, empezar desde cero
+        this.resetAllProgress();
+      }
+    } else {
+      // No hay progreso guardado, empezar desde cero
+      this.resetAllProgress();
+    }
+    
     this.updateWellnessScore();
+    this.calculateTotalChallenges();
+  }
+  
+  // Calcula el total de retos disponibles
+  private calculateTotalChallenges() {
+    this.totalChallenges = this.challenges.length;
+  }
+  
+  // Actualiza el score de bienestar
+  private updateWellnessScore() {
+    this.wellnessScore = Math.round((this.mentalHealth + this.physicalHealth) / 2);
+  }
+  
+  // Reinicia todo el progreso
+  private resetAllProgress() {
+    this.energyPoints = 0;
+    this.currentStreak = 0;
+    this.mentalHealth = 0;
+    this.physicalHealth = 0;
+    this.completedChallenges = 0;
+    this.wellnessScore = 0;
+    
+    // Resetear todos los retos principales a no completados
+    this.challenges = this.challenges.map(challenge => ({
+      ...challenge,
+      completed: false,
+      inProgress: false
+    }));
+    
+    // Resetear retos diarios
+    this.dailyChallenges = this.dailyChallenges.map(daily => ({
+      ...daily,
+      completed: false
+    }));
+    
+    this.saveProgress();
+  }
+  
+  // Guarda el progreso en localStorage
+  private saveProgress() {
+    const progress = {
+      energyPoints: this.energyPoints,
+      currentStreak: this.currentStreak,
+      mentalHealth: this.mentalHealth,
+      physicalHealth: this.physicalHealth,
+      wellnessScore: this.wellnessScore,
+      completedChallenges: this.completedChallenges,
+      challenges: this.challenges.map(c => ({
+        id: c.id,
+        completed: c.completed,
+        inProgress: c.inProgress
+      })),
+      dailyChallenges: this.dailyChallenges.map(d => ({
+        id: d.id,
+        completed: d.completed
+      })),
+      dailyTip: this.dailyTip,
+      lastUpdated: new Date().toISOString()
+    };
+    
+    localStorage.setItem('pearly-wellness-progress', JSON.stringify(progress));
   }
   
   getFilterIcon(filterId: string): string {
@@ -286,222 +365,131 @@ export class ChallengesComponent implements OnInit {
     return names[category] || 'Bienestar';
   }
   
-  getActionButtonText(challenge: Challenge): string {
-    const texts: Record<string, string> = {
-      'mental': '🧠 Comenzar',
-      'physical': '💪 Comenzar',
-      'mindfulness': '🌿 Comenzar',
-      'nutrition': '🍎 Comenzar'
-    };
-    return texts[challenge.category] || '🚀 Comenzar';
-  }
-  
   handleChallengeAction(challenge: Challenge) {
     if (challenge.completed) return;
     
-    if (challenge.inProgress) {
-      this.continueChallenge(challenge.id);
-    } else {
-      this.startChallenge(challenge.id);
-    }
+    // Marcar como completado
+    this.completeChallenge(challenge.id);
   }
   
   setFilter(filterId: string) {
     this.activeFilter = filterId;
+    this.showToast(`Filtrando por: ${this.filters.find(f => f.id === filterId)?.label}`);
   }
   
-  startChallenge(challengeId: string) {
-    const challenge = this.challenges.find(c => c.id === challengeId);
-    if (challenge && !challenge.completed) {
-      challenge.inProgress = true;
-      
-      // Mostrar mensaje según categoría
-      const categoryMessages = {
-        'mental': '🧠 Comenzando reto mental',
-        'physical': '💪 Comenzando reto físico',
-        'mindfulness': '🌿 Comenzando práctica de mindfulness',
-        'nutrition': '🍎 Comenzando reto nutricional'
-      };
-      
-      this.showToast(`${categoryMessages[challenge.category]}: "${challenge.title}"`);
-      
-      if (!challenge.progress) {
-        challenge.progress = { current: 0, total: 1 };
-      }
-      
-      setTimeout(() => {
-        if (challenge.progress) {
-          challenge.progress.current++;
-          if (challenge.progress.current >= challenge.progress.total) {
-            this.completeChallenge(challengeId);
-          }
-          this.saveWellnessProgress();
-        }
-      }, 2000);
-      
-      this.updateWellnessStats();
-      this.saveWellnessProgress();
-    }
-  }
-  
-  private continueChallenge(challengeId: string) {
-    const challenge = this.challenges.find(c => c.id === challengeId);
-    if (challenge && challenge.inProgress && !challenge.completed) {
-      this.showToast(`⏳ Continuando reto: "${challenge.title}"`);
-      
-      if (challenge.progress) {
-        challenge.progress.current++;
-        
-        if (challenge.progress.current >= challenge.progress.total) {
-          setTimeout(() => {
-            this.completeChallenge(challengeId);
-          }, 1000);
-        }
-        
-        this.saveWellnessProgress();
-      }
-    }
-  }
-  
+  // Completa un reto principal
   completeChallenge(challengeId: string) {
     const challenge = this.challenges.find(c => c.id === challengeId);
-    if (challenge) {
+    if (challenge && !challenge.completed) {
       challenge.completed = true;
       challenge.inProgress = false;
+      
+      // Añadir puntos de energía
       this.energyPoints += challenge.points;
+      
+      // Aumentar contador de retos completados
       this.completedChallenges++;
       
       // Actualizar estadísticas según categoría
       switch(challenge.category) {
         case 'mental':
-          this.mentalHealth = Math.min(100, this.mentalHealth + 5);
+          this.mentalHealth = Math.min(100, this.mentalHealth + 8);
           break;
         case 'physical':
-          this.physicalHealth = Math.min(100, this.physicalHealth + 5);
+          this.physicalHealth = Math.min(100, this.physicalHealth + 8);
           break;
         case 'mindfulness':
-          this.mentalHealth = Math.min(100, this.mentalHealth + 3);
-          this.physicalHealth = Math.min(100, this.physicalHealth + 2);
+          this.mentalHealth = Math.min(100, this.mentalHealth + 5);
+          this.physicalHealth = Math.min(100, this.physicalHealth + 3);
           break;
         case 'nutrition':
-          this.physicalHealth = Math.min(100, this.physicalHealth + 4);
+          this.physicalHealth = Math.min(100, this.physicalHealth + 6);
+          this.mentalHealth = Math.min(100, this.mentalHealth + 2);
           break;
       }
       
-      this.showToast(`🎉 Reto completado! +${challenge.points} ⚡ de energía`);
+      // Mostrar mensaje
+      const categoryMessages = {
+        'mental': '🧠 Reto mental completado',
+        'physical': '💪 Reto físico completado',
+        'mindfulness': '🌿 Práctica de mindfulness completada',
+        'nutrition': '🍎 Reto nutricional completado'
+      };
+      
+      this.showToast(`${categoryMessages[challenge.category]}: "${challenge.title}" - +${challenge.points} ⚡`);
+      
+      // Actualizar score y guardar
       this.updateWellnessScore();
-      this.updateWellnessStats();
-      this.saveWellnessProgress();
+      this.saveProgress();
+      
+      // Si es el primer reto completado, actualizar consejo
+      if (this.completedChallenges === 1) {
+        this.dailyTip = "¡Buen trabajo en tu primer reto! Recuerda que la constancia es clave para el bienestar.";
+        this.saveProgress();
+      }
     }
   }
   
-  claimDaily(dailyId: string) {
+  // Completa un reto diario
+  completeDailyChallenge(dailyId: string) {
     const daily = this.dailyChallenges.find(d => d.id === dailyId);
-    if (daily && !daily.claimed) {
-      daily.claimed = true;
+    if (daily && !daily.completed) {
+      daily.completed = true;
+      
+      // Añadir puntos de energía
       this.energyPoints += daily.points;
+      
+      // Aumentar racha
       this.currentStreak++;
-      this.showToast(`✨ Hábito completado! +${daily.points} ⚡ y racha: ${this.currentStreak} días 🔥`);
-      this.saveWellnessProgress();
+      
+      // Aumentar estadísticas según tags
+      if (daily.tags.some(tag => ['Mental', 'Mindfulness', 'Respiración'].includes(tag))) {
+        this.mentalHealth = Math.min(100, this.mentalHealth + 3);
+      }
+      
+      if (daily.tags.some(tag => ['Físico'].includes(tag))) {
+        this.physicalHealth = Math.min(100, this.physicalHealth + 3);
+      }
+      
+      if (daily.tags.some(tag => ['Nutrición', 'Salud'].includes(tag))) {
+        this.physicalHealth = Math.min(100, this.physicalHealth + 2);
+        this.mentalHealth = Math.min(100, this.mentalHealth + 1);
+      }
+      
+      this.showToast(`✨ Reto diario completado: "${daily.title}" - +${daily.points} ⚡`);
+      
+      this.updateWellnessScore();
+      this.saveProgress();
     }
   }
   
+  // Reiniciar filtros
   resetFilters() {
     this.activeFilter = 'all';
     this.showToast('🌿 Mostrando todos los retos de bienestar');
   }
   
+  // Refrescar consejo
   refreshTip() {
     const tips = [
-      "Recuerda beber agua regularmente durante el día. La hidratación es clave para el funcionamiento óptimo del cuerpo y la mente.",
-      "Cuando te sientas estresado, prueba la técnica 5-5-5: Nombra 5 cosas que ves, 4 que sientes, 3 que oyes, 2 que hueles y 1 que saboreas.",
-      "Programa pausas activas cada 50 minutos de trabajo. Levántate, estírate y camina unos minutos para reactivar la circulación.",
-      "Antes de dormir, escribe 3 logros del día, por pequeños que sean. Esto mejora la autoestima y la calidad del sueño.",
-      "Practica la alimentación consciente: come despacio, mastica bien y disfruta cada bocado sin distracciones.",
-      "Incorpora ejercicios de respiración profunda en tu rutina matutina para empezar el día con calma y claridad.",
-      "Dedica 10 minutos al día a una actividad que realmente disfrutes, sin sentir que es una obligación.",
-      "Cuando hagas ejercicio, concéntrate en cómo se siente tu cuerpo en movimiento, no solo en los resultados.",
-      "Establece límites digitales: designa momentos del día sin dispositivos para reconectar contigo mismo.",
-      "Practica la autocompasión: habla contigo mismo como lo harías con un buen amigo."
+      "Los retos diarios son oportunidades para construir hábitos saludables.",
+      "La consistencia en pequeños hábitos diarios crea grandes cambios a largo plazo.",
+      "Cada reto completado te acerca a una versión más saludable de ti mismo.",
+      "Equilibra retos mentales y físicos para un bienestar completo.",
+      "Celebra cada reto diario completado. ¡Estás construyendo una mejor versión de ti!",
+      "La magia está en la constancia. Los retos diarios te ayudan a mantener el rumbo.",
+      "Pequeños pasos diarios te llevarán lejos en tu camino de bienestar.",
+      "El bienestar es un viaje, disfruta cada pequeño logro.",
+      "Hoy es un buen día para cuidar de ti. ¡Cada reto cuenta!",
+      "Tu bienestar es una inversión, no un gasto. ¡Invierte en ti!"
     ];
     
     this.dailyTip = tips[Math.floor(Math.random() * tips.length)];
     this.showToast('💡 Nuevo consejo de bienestar cargado');
+    this.saveProgress();
   }
   
-  getProgressPercentage(): number {
-    return (this.completedChallenges / this.totalChallenges) * 100;
-  }
-  
-  private updateWellnessScore() {
-    this.wellnessScore = Math.round((this.mentalHealth + this.physicalHealth) / 2);
-  }
-  
-  private updateWellnessStats() {
-    // Simular mejora gradual en las estadísticas
-    if (this.energyPoints > 1000) {
-      this.currentStreak = Math.max(this.currentStreak, Math.floor(this.energyPoints / 150));
-    }
-  }
-  
-  private loadWellnessProgress() {
-    const savedProgress = localStorage.getItem('pearly-wellness-progress');
-    if (savedProgress) {
-      try {
-        const progress = JSON.parse(savedProgress);
-        this.energyPoints = progress.energyPoints || this.energyPoints;
-        this.currentStreak = progress.currentStreak || this.currentStreak;
-        this.mentalHealth = progress.mentalHealth || this.mentalHealth;
-        this.physicalHealth = progress.physicalHealth || this.physicalHealth;
-        this.completedChallenges = progress.completedChallenges || this.completedChallenges;
-        
-        const savedChallenges = progress.challenges;
-        if (savedChallenges && Array.isArray(savedChallenges)) {
-          this.challenges = this.challenges.map(challenge => {
-            const saved = savedChallenges.find((c: any) => c.id === challenge.id);
-            return saved ? { ...challenge, ...saved } : challenge;
-          });
-        }
-        
-        const savedDaily = progress.dailyChallenges;
-        if (savedDaily && Array.isArray(savedDaily)) {
-          this.dailyChallenges = this.dailyChallenges.map(daily => {
-            const saved = savedDaily.find((d: any) => d.id === daily.id);
-            return saved ? { ...daily, ...saved } : daily;
-          });
-        }
-        
-        this.updateWellnessScore();
-      } catch (error) {
-        console.error('Error cargando progreso de bienestar:', error);
-      }
-    }
-  }
-  
-  private saveWellnessProgress() {
-    const progress = {
-      energyPoints: this.energyPoints,
-      currentStreak: this.currentStreak,
-      mentalHealth: this.mentalHealth,
-      physicalHealth: this.physicalHealth,
-      wellnessScore: this.wellnessScore,
-      completedChallenges: this.completedChallenges,
-      challenges: this.challenges.map(c => ({
-        id: c.id,
-        completed: c.completed,
-        inProgress: c.inProgress,
-        progress: c.progress
-      })),
-      dailyChallenges: this.dailyChallenges.map(d => ({
-        id: d.id,
-        claimed: d.claimed
-      })),
-      lastUpdated: new Date().toISOString()
-    };
-    
-    localStorage.setItem('pearly-wellness-progress', JSON.stringify(progress));
-  }
-  
+  // Método para mostrar notificaciones
   private showToast(message: string) {
     let toastContainer = document.querySelector('.toast-container') as HTMLElement;
     
@@ -567,19 +555,7 @@ export class ChallengesComponent implements OnInit {
     toastContainer.appendChild(toast);
     
     setTimeout(() => {
-      toast.style.cssText = `
-        background: linear-gradient(135deg, #4a90e2 0%, #5cdb95 100%);
-        color: white;
-        padding: 14px 24px;
-        border-radius: 12px;
-        box-shadow: 0 8px 25px rgba(74, 144, 226, 0.3);
-        font-weight: 600;
-        font-size: 0.95rem;
-        animation: slideOut 0.3s ease;
-        max-width: 300px;
-        word-wrap: break-word;
-        backdrop-filter: blur(10px);
-      `;
+      toast.style.animation = 'slideOut 0.3s ease';
       
       setTimeout(() => {
         toast.remove();
@@ -588,31 +564,5 @@ export class ChallengesComponent implements OnInit {
         }
       }, 300);
     }, 3000);
-  }
-  
-  // Métodos adicionales para bienestar
-  getMotivationalQuote(): string {
-    const quotes = [
-      "Cuida tu cuerpo, es el único lugar que tienes para vivir. - Jim Rohn",
-      "La salud es la mayor posesión. La alegría es el mayor tesoro. - Lao Tzu",
-      "El autocuidado no es egoísta, es esencial.",
-      "Pequeños pasos diarios llevan a grandes cambios.",
-      "Tu cuerpo te agradece cada elección saludable.",
-      "La mente sana comienza con un cuerpo sano, y viceversa."
-    ];
-    return quotes[Math.floor(Math.random() * quotes.length)];
-  }
-  
-  // Calorías quemadas estimadas (para retos físicos)
-  getEstimatedCalories(challenge: Challenge): number {
-    if (challenge.category !== 'physical') return 0;
-    
-    const baseCalories: Record<string, number> = {
-      'Fácil': 50,
-      'Moderado': 120,
-      'Desafiante': 200
-    };
-    
-    return baseCalories[challenge.difficulty] || 0;
   }
 }
