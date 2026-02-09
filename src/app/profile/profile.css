@@ -910,3 +910,31 @@
     right: 10px;
   }
 }
+
+/* Estilos para mensaje de no hay retos */
+.no-challenges-message {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  padding: 20px;
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 12px;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+  text-align: center;
+  flex-direction: column;
+}
+
+.no-challenges-message .challenge-info {
+  text-align: center;
+}
+
+.no-challenges-message .challenge-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.no-challenges-message .challenge-progress {
+  font-weight: 700;
+  font-size: 1rem;
+}
