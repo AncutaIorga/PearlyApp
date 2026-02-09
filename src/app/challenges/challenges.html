@@ -127,7 +127,7 @@
     </div>
 
     <div class="daily-cards-container">
-      <div class="daily-challenge-card" *ngFor="let daily of dailyChallenges">
+      <div class="daily-challenge-card" *ngFor="let daily of dailyChallenges"[attr.data-daily-id]="daily.id">
         <!-- SOLO PUNTOS, NO DÍA -->
         <div class="daily-card-header">
           <span class="points-badge">+{{ daily.points }} ⚡</span>

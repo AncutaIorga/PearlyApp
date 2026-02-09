@@ -1296,3 +1296,25 @@ p, span, button, a {
 body, :host {
   transition: background-color 0.3s ease;
 }
+
+
+/* Agrega al final del archivo CSS */
+
+/* Estilo para resaltar retos enfocados */
+.daily-challenge-card.highlighted {
+  animation: pulseHighlight 2s ease;
+  border-color: #4a90e2 !important;
+  box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3) !important;
+}
+
+@keyframes pulseHighlight {
+  0% {
+    box-shadow: 0 0 0 0 rgba(74, 144, 226, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(74, 144, 226, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(74, 144, 226, 0);
+  }
+}

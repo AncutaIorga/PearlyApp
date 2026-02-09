@@ -72,31 +72,33 @@
           </div>
         </div>
         
-        <!-- Sección de Retos -->
+        <!-- Sección de Retos DIARIOS -->
         <div class="challenges-section">
-          <h3>RETOS</h3>
+          <h3>RETOS DIARIOS</h3>
           <div class="challenges-list">
-            <div class="challenge-item" (click)="goToChallenges()">
-              <div class="challenge-icon">💧</div>
-              <div class="challenge-info">
-                <div class="challenge-title">Beber 2L de agua</div>
-                <div class="challenge-progress">5/7 días</div>
+            @for (challenge of dailyChallenges; track challenge.id) {
+              <div class="challenge-item" (click)="goToDailyChallenge(challenge.id)">
+                <div class="challenge-icon">{{ getChallengeIcon(challenge.title) }}</div>
+                <div class="challenge-info">
+                  <div class="challenge-title">{{ challenge.title }}</div>
+                  <div class="challenge-progress">
+                    {{ getChallengeProgress(challenge) }}
+                    @if (challenge.completed) {
+                      <span style="color: #48bb78; margin-left: 5px;">✓</span>
+                    }
+                  </div>
+                </div>
               </div>
-            </div>
-            <div class="challenge-item" (click)="goToChallenges()">
-              <div class="challenge-icon">🏃</div>
-              <div class="challenge-info">
-                <div class="challenge-title">Correr 5km</div>
-                <div class="challenge-progress">3/5 días</div>
+            }
+            @if (dailyChallenges.length === 0) {
+              <div class="challenge-item" (click)="goToDailyChallenge('all')">
+                <div class="challenge-icon">🌟</div>
+                <div class="challenge-info">
+                  <div class="challenge-title">Cargando retos...</div>
+                  <div class="challenge-progress">0/0 días</div>
+                </div>
               </div>
-            </div>
-            <div class="challenge-item" (click)="goToChallenges()">
-              <div class="challenge-icon">🥗</div>
-              <div class="challenge-info">
-                <div class="challenge-title">Comer saludable</div>
-                <div class="challenge-progress">7/7 días</div>
-              </div>
-            </div>
+            }
           </div>
         </div>
       </div>
@@ -183,31 +185,48 @@
             <p>{{ selectedPost.text }}</p>
           </div>
           
-          <!-- Comentarios -->
-          <div class="modal-comments">
-            @if (selectedPost.comments.length === 0) {
-              <p class="no-comments">Sé el primero en comentar</p>
-            } @else {
-              @for (comment of selectedPost.comments; track comment.id) {
-                <div class="comment-item">
-                  <div class="comment-header">
-                    @if (comment.userAvatar) {
-                      <img [src]="comment.userAvatar" alt="{{ comment.user }}" class="comment-avatar">
-                    } @else {
-                      <div class="comment-avatar-placeholder">
-                        {{ comment.user.charAt(0).toUpperCase() }}
-                      </div>
-                    }
-                    <div class="comment-info">
-                      <strong>{{ comment.user }}</strong>
-                      <span class="comment-time">{{ formatDate(comment.createdAt) }}</span>
-                    </div>
-                  </div>
-                  <p class="comment-text">{{ comment.text }}</p>
-                </div>
-              }
-            }
+          <!-- Sección de Retos DIARIOS - SOLO NO COMPLETADOS -->
+<div class="challenges-section">
+  <h3>RETOS DIARIOS PENDIENTES</h3>
+  <div class="challenges-list">
+    @if (dailyChallenges.length > 0) {
+      @for (challenge of dailyChallenges; track challenge.id) {
+        <div class="challenge-item" (click)="goToDailyChallenge(challenge.id)">
+          <div class="challenge-icon">{{ getChallengeIcon(challenge.title) }}</div>
+          <div class="challenge-info">
+            <div class="challenge-title">{{ challenge.title }}</div>
+            <div class="challenge-progress">
+              {{ getChallengeProgress(challenge) }}
+            </div>
           </div>
+        </div>
+      }
+    } @else {
+      <div class="no-challenges-message">
+        <div class="challenge-icon" style="font-size: 2rem; opacity: 0.5;">🎉</div>
+        <div class="challenge-info">
+          <div class="challenge-title" style="color: var(--text-secondary);">
+            ¡Todos los retos diarios completados!
+          </div>
+          <div class="challenge-progress" style="color: #48bb78;">
+            ✅ {{ getCompletedChallengesCount() }}/{{ 6 }} completados
+          </div>
+        </div>
+      </div>
+      
+      <!-- Botón para ver todos los retos (incluyendo completados) -->
+      <div class="challenge-item" (click)="goToDailyChallenge('all')" style="margin-top: 15px; background: rgba(74, 144, 226, 0.1);">
+        <div class="challenge-icon">🌟</div>
+        <div class="challenge-info">
+          <div class="challenge-title">Ver todos los retos</div>
+          <div class="challenge-progress" style="color: #4a90e2;">
+            Ver retos completados y disponibles
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</div>
           
           <!-- Actions: Like y contador -->
           <div class="modal-actions">
