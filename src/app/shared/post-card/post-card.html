@@ -4,7 +4,7 @@
       <div class="avatar">{{ post.user.charAt(0).toUpperCase() }}</div>
       <div class="user-info">
         <h3>{{ post.user }}</h3>
-        <span class="time">Hace 2 horas</span>
+        <span class="time">{{ post.createdAt | timeAgo }}</span>
       </div>
     </div>
     <app-post-options 
@@ -24,9 +24,6 @@
       <div class="action-buttons">
         <button class="action-btn" title="Comentar">
           💬
-        </button>
-        <button class="action-btn" title="Guardar">
-          🔖
         </button>
         <button class="action-btn" title="Compartir">
           📤
