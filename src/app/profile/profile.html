@@ -138,19 +138,19 @@
   </div>
 </div>
 
-<!-- Modal para ver imagen grande -->
+<!-- Modal para ver imagen grande (VERSIÓN GRANDE ORIGINAL) -->
 @if (selectedPost) {
   <div class="image-modal" (click)="closeImageModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <button class="modal-close" (click)="closeImageModal()">✕</button>
       
       <div class="modal-layout">
-        <!-- Imagen -->
+        <!-- Imagen a la izquierda ocupando más espacio -->
         <div class="modal-image-section">
           <img [src]="selectedPost.image" [alt]="selectedPost.text">
         </div>
         
-        <!-- Sidebar con info, likes y comentarios -->
+        <!-- Sidebar con info y comentarios -->
         <div class="modal-sidebar">
           <!-- Header del post -->
           <div class="modal-header">
@@ -185,48 +185,32 @@
             <p>{{ selectedPost.text }}</p>
           </div>
           
-          <!-- Sección de Retos DIARIOS - SOLO NO COMPLETADOS -->
-<div class="challenges-section">
-  <h3>RETOS DIARIOS PENDIENTES</h3>
-  <div class="challenges-list">
-    @if (dailyChallenges.length > 0) {
-      @for (challenge of dailyChallenges; track challenge.id) {
-        <div class="challenge-item" (click)="goToDailyChallenge(challenge.id)">
-          <div class="challenge-icon">{{ getChallengeIcon(challenge.title) }}</div>
-          <div class="challenge-info">
-            <div class="challenge-title">{{ challenge.title }}</div>
-            <div class="challenge-progress">
-              {{ getChallengeProgress(challenge) }}
-            </div>
+          <!-- SECCIÓN DE COMENTARIOS (amplia) -->
+          <div class="modal-comments">
+            <h4>Comentarios</h4>
+            @if (selectedPost.comments.length === 0) {
+              <p class="no-comments">No hay comentarios aún. ¡Sé el primero en comentar!</p>
+            } @else {
+              @for (comment of selectedPost.comments; track comment.id) {
+                <div class="comment-item">
+                  <div class="comment-header">
+                    @if (comment.userAvatar) {
+                      <img [src]="comment.userAvatar" alt="{{ comment.user }}" class="comment-avatar">
+                    } @else {
+                      <div class="comment-avatar-placeholder">
+                        {{ comment.user.charAt(0).toUpperCase() }}
+                      </div>
+                    }
+                    <div class="comment-info">
+                      <strong>{{ comment.user }}</strong>
+                      <span class="comment-time">{{ formatDate(comment.createdAt) }}</span>
+                    </div>
+                  </div>
+                  <p class="comment-text">{{ comment.text }}</p>
+                </div>
+              }
+            }
           </div>
-        </div>
-      }
-    } @else {
-      <div class="no-challenges-message">
-        <div class="challenge-icon" style="font-size: 2rem; opacity: 0.5;">🎉</div>
-        <div class="challenge-info">
-          <div class="challenge-title" style="color: var(--text-secondary);">
-            ¡Todos los retos diarios completados!
-          </div>
-          <div class="challenge-progress" style="color: #48bb78;">
-            ✅ {{ getCompletedChallengesCount() }}/{{ 6 }} completados
-          </div>
-        </div>
-      </div>
-      
-      <!-- Botón para ver todos los retos (incluyendo completados) -->
-      <div class="challenge-item" (click)="goToDailyChallenge('all')" style="margin-top: 15px; background: rgba(74, 144, 226, 0.1);">
-        <div class="challenge-icon">🌟</div>
-        <div class="challenge-info">
-          <div class="challenge-title">Ver todos los retos</div>
-          <div class="challenge-progress" style="color: #4a90e2;">
-            Ver retos completados y disponibles
-          </div>
-        </div>
-      </div>
-    }
-  </div>
-</div>
           
           <!-- Actions: Like y contador -->
           <div class="modal-actions">

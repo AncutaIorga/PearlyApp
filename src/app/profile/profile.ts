@@ -116,32 +116,35 @@ export class ProfileComponent implements OnInit {
           }
         ];
         
-        this.dailyChallenges = baseDailyChallenges.map(challenge => {
-          const saved = progress.dailyChallenges?.find((d: any) => d.id === challenge.id);
-          
-          let currentProgress = 0;
-          let maxProgress = 7;
-          
-          const challengeKey = `challenge-${challenge.id}-progress`;
-          const savedProgressDetail = localStorage.getItem(challengeKey);
-          if (savedProgressDetail) {
-            try {
-              const detail = JSON.parse(savedProgressDetail);
-              currentProgress = detail.current || 0;
-              maxProgress = detail.max || 7;
-            } catch (e) {
-              console.error('Error cargando progreso detallado:', e);
+        // SOLO MOSTRAR RETOS NO COMPLETADOS
+        this.dailyChallenges = baseDailyChallenges
+          .map(challenge => {
+            const saved = progress.dailyChallenges?.find((d: any) => d.id === challenge.id);
+            
+            let currentProgress = 0;
+            let maxProgress = 7;
+            
+            const challengeKey = `challenge-${challenge.id}-progress`;
+            const savedProgressDetail = localStorage.getItem(challengeKey);
+            if (savedProgressDetail) {
+              try {
+                const detail = JSON.parse(savedProgressDetail);
+                currentProgress = detail.current || 0;
+                maxProgress = detail.max || 7;
+              } catch (e) {
+                console.error('Error cargando progreso detallado:', e);
+              }
             }
-          }
-          
-          return {
-            ...challenge,
-            points: this.getPointsForChallenge(challenge.id),
-            completed: saved ? saved.completed : false,
-            currentProgress: currentProgress,
-            maxProgress: maxProgress
-          };
-        }).filter(challenge => !challenge.completed);
+            
+            return {
+              ...challenge,
+              points: this.getPointsForChallenge(challenge.id),
+              completed: saved ? saved.completed : false,
+              currentProgress: currentProgress,
+              maxProgress: maxProgress
+            };
+          })
+          .filter(challenge => !challenge.completed); // SOLO NO COMPLETADOS
       } else {
         this.initializeDefaultChallenges();
       }
