@@ -1,34 +1,47 @@
 import { Pipe, PipeTransform } from '@angular/core';
 
-@Pipe({ 
-  name: 'timeAgo', 
-  standalone: true,
-  pure: false 
+@Pipe({
+  name: 'timeAgo',
+  standalone: true
 })
 export class TimeAgoPipe implements PipeTransform {
-  transform(date: Date | string): string {
-    if (!date) return '';
+  transform(value: Date | string | undefined): string {
+    if (!value) return '';
     
-    const postDate = new Date(date);
+    const date = new Date(value);
     const now = new Date();
-    const diff = now.getTime() - postDate.getTime();
-
-    const seconds = Math.floor(diff / 1000);
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
+    
+    if (seconds < 60) {
+      return 'Hace un momento';
+    }
+    
     const minutes = Math.floor(seconds / 60);
+    if (minutes < 60) {
+      return `Hace ${minutes} ${minutes === 1 ? 'minuto' : 'minutos'}`;
+    }
+    
     const hours = Math.floor(minutes / 60);
+    if (hours < 24) {
+      return `Hace ${hours} ${hours === 1 ? 'hora' : 'horas'}`;
+    }
+    
     const days = Math.floor(hours / 24);
+    if (days < 7) {
+      return `Hace ${days} ${days === 1 ? 'día' : 'días'}`;
+    }
+    
     const weeks = Math.floor(days / 7);
-
-    if (seconds < 60) return 'Ahora mismo';
-    if (minutes < 60) return `Hace ${minutes} minuto${minutes !== 1 ? 's' : ''}`;
-    if (hours < 24) return `Hace ${hours} hora${hours !== 1 ? 's' : ''}`;
-    if (days < 7) return `Hace ${days} día${days !== 1 ? 's' : ''}`;
-    if (weeks < 4) return `Hace ${weeks} semana${weeks !== 1 ? 's' : ''}`;
-
-    // Para fechas muy antiguas (más de 4 semanas), mostrar fecha exacta
-    const day = String(postDate.getDate()).padStart(2, '0');
-    const month = String(postDate.getMonth() + 1).padStart(2, '0');
-    const year = postDate.getFullYear();
-    return `${day}/${month}/${year}`;
+    if (weeks < 4) {
+      return `Hace ${weeks} ${weeks === 1 ? 'semana' : 'semanas'}`;
+    }
+    
+    const months = Math.floor(days / 30);
+    if (months < 12) {
+      return `Hace ${months} ${months === 1 ? 'mes' : 'meses'}`;
+    }
+    
+    const years = Math.floor(days / 365);
+    return `Hace ${years} ${years === 1 ? 'año' : 'años'}`;
   }
 }

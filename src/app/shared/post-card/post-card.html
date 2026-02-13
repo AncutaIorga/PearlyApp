@@ -1,7 +1,14 @@
 <div class="post-card theme-transition">
+  <!-- Header del post -->
   <div class="card-header">
     <div class="user-section">
-      <div class="avatar">{{ post.user.charAt(0).toUpperCase() }}</div>
+      <div class="avatar">
+        @if (post.userAvatar) {
+          <img [src]="post.userAvatar" [alt]="post.user">
+        } @else {
+          <span>{{ post.user.charAt(0).toUpperCase() }}</span>
+        }
+      </div>
       <div class="user-info">
         <h3>{{ post.user }}</h3>
         <span class="time">{{ post.createdAt | timeAgo }}</span>
@@ -13,22 +20,81 @@
       (optionSelected)="onOptionSelected($event)">
     </app-post-options>
   </div>
-  <img [src]="post.image" [alt]="'Logro de ' + post.user" class="post-image">
+
+  <!-- Imagen del post -->
+  <img [src]="post.image" [alt]="'Logro de ' + post.user" class="post-image" (click)="toggleComments()">
+
+  <!-- Contenido del post -->
   <div class="card-body">
     <p class="post-text">{{ post.text }}</p>
+    
+    <!-- Barra de acciones -->
     <div class="card-footer">
       <button class="like-btn" [class.liked]="isLiked" (click)="toggleLike()">
         <span class="heart">{{ isLiked ? '❤️' : '🤍' }}</span>
         <span class="count">{{ post.likes }}</span>
       </button>
+      
       <div class="action-buttons">
-        <button class="action-btn" title="Comentar">
-          💬
+        <button class="action-btn" (click)="toggleComments()" title="Comentarios">
+          💬 <span class="count">{{ post.comments.length }}</span>
         </button>
-        <button class="action-btn" title="Compartir">
+        <button class="action-btn" (click)="sharePost()" title="Compartir">
           📤
         </button>
       </div>
     </div>
+
+    <!-- Sección de comentarios (expandible) -->
+    @if (showComments) {
+      <div class="comments-section">
+        <!-- Lista de comentarios -->
+        <div class="comments-list">
+          @for (comment of post.comments; track comment.id) {
+            <div class="comment-item">
+              <div class="comment-avatar">
+                @if (comment.userAvatar) {
+                  <img [src]="comment.userAvatar" [alt]="comment.user">
+                } @else {
+                  <span>{{ comment.user.charAt(0).toUpperCase() }}</span>
+                }
+              </div>
+              <div class="comment-content">
+                <div class="comment-header">
+                  <strong>{{ comment.user }}</strong>
+                  <span class="comment-time">{{ comment.createdAt | timeAgo }}</span>
+                </div>
+                <p class="comment-text">{{ comment.text }}</p>
+              </div>
+            </div>
+          } @empty {
+            <p class="no-comments">No hay comentarios aún. ¡Sé el primero en comentar!</p>
+          }
+        </div>
+
+        <!-- Input para nuevo comentario -->
+        <div class="comment-input">
+          <div class="comment-avatar small">
+            @if (getCurrentUserAvatar()) {
+              <img [src]="getCurrentUserAvatar()" [alt]="getCurrentUserName()">
+            } @else {
+              <span>{{ getCurrentUserName().charAt(0).toUpperCase() }}</span>
+            }
+          </div>
+          <input 
+            type="text" 
+            [(ngModel)]="newComment"
+            placeholder="Añade un comentario..."
+            (keyup.enter)="addComment()"
+            maxlength="200">
+          <button 
+            class="send-btn"
+            (click)="addComment()"
+            [disabled]="!newComment.trim()">
+            Enviar
+          </button>
+        </div>
+      </div>
+    }
   </div>
 </div>
