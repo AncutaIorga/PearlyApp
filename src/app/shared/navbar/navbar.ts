@@ -3,6 +3,7 @@ import { RouterModule, Router } from '@angular/router';
 import { AuthService } from '../../services/auth';
 import { UserService } from '../../services/user';
 import { ThemeService } from '../../services/theme';
+import { NotificationService } from '../../services/notification';
 
 @Component({
   selector: 'app-navbar',
@@ -19,6 +20,7 @@ export class NavbarComponent implements OnInit {
   private authService = inject(AuthService);
   private userService = inject(UserService);
   private themeService = inject(ThemeService);
+  private notificationService = inject(NotificationService);
   
   user = this.authService.user;
   userProfile = this.userService.getUser();
@@ -29,24 +31,19 @@ export class NavbarComponent implements OnInit {
     this.showSettings = !this.showSettings;
   }
 
-handleSetting(action: string) {
-  this.showSettings = false;
-  
-  if (action === 'settings') {
-    this.router.navigate(['/ajustes']);
-  } else if (action === 'logout') {
-    this.handleLogout();
+  handleSetting(action: string) {
+    this.showSettings = false;
+    
+    if (action === 'settings') {
+      this.router.navigate(['/ajustes']);
+    } else if (action === 'logout') {
+      this.handleLogout();
+    }
   }
-}
 
   private handleTheme() {
     const newTheme = this.themeService.toggleTheme();
-    
-    const themeMessages = {
-      light: '🌞 Modo claro activado',
-      dark: '🌙 Modo oscuro activado'
-    };
-    this.showToast(themeMessages[newTheme]);
+    this.notificationService.showThemeChanged(newTheme);
   }
 
   private handleNotifications() {
@@ -56,16 +53,16 @@ handleSetting(action: string) {
       } else if (Notification.permission === 'default') {
         Notification.requestPermission().then(permission => {
           if (permission === 'granted') {
-            this.showToast('🔔 Notificaciones habilitadas');
+            this.notificationService.success('🔔 Notificaciones habilitadas');
             this.createTestNotification();
             this.router.navigate(['/notifications']);
           }
         });
       } else {
-        this.showToast('🔕 Notificaciones bloqueadas. Actívalas en configuración del navegador.');
+        this.notificationService.warning('Notificaciones bloqueadas. Actívalas en configuración del navegador.');
       }
     } else {
-      this.showToast('⚠️ Tu navegador no soporta notificaciones');
+      this.notificationService.warning('Tu navegador no soporta notificaciones');
     }
   }
 
@@ -98,35 +95,13 @@ handleSetting(action: string) {
   }
 
   private handleLogout() {
-    if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-      this.authService.logout();
-      this.showToast('👋 Sesión cerrada correctamente');
-    }
-  }
-
-  private showToast(message: string) {
-    const toast = document.createElement('div');
-    toast.textContent = message;
-    toast.style.cssText = `
-      position: fixed;
-      top: 80px;
-      right: 20px;
-      background: linear-gradient(135deg, #a2b895 0%, #679460 100%);
-      color: white;
-      padding: 16px 24px;
-      border-radius: 12px;
-      z-index: 10000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      font-weight: 600;
-      animation: slideIn 0.3s ease;
-    `;
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-      toast.style.animation = 'slideOut 0.3s ease';
-      setTimeout(() => toast.remove(), 300);
-    }, 3000);
+    const notificationId = this.notificationService.showConfirmAction(
+      '¿Estás seguro de que quieres cerrar sesión?',
+      'Sí, cerrar sesión',
+      () => {
+        this.authService.logout();
+      }
+    );
   }
 
   @HostListener('document:click', ['$event'])

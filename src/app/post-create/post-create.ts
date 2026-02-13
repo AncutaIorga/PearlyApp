@@ -1,9 +1,10 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PostService } from '../services/post';
 import { UserService } from '../services/user';
 import { NavbarComponent } from '../shared/navbar/navbar';
+import { NotificationService } from '../services/notification';
 
 @Component({
   standalone: true,
@@ -12,6 +13,8 @@ import { NavbarComponent } from '../shared/navbar/navbar';
   styleUrl: './post-create.css'
 })
 export class PostCreateComponent {
+  private notificationService = inject(NotificationService);
+  
   text = '';
   selectedImage: string | null = null;
 
@@ -51,7 +54,10 @@ export class PostCreateComponent {
 
       this.text = '';
       this.selectedImage = null;
+      this.notificationService.showPostCreated();
       this.router.navigate(['/feed']);
+    } else {
+      this.notificationService.warning('Por favor escribe algo para publicar');
     }
   }
 }

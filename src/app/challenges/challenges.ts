@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { AuthService } from '../services/auth';
 import { UserService } from '../services/user';
 import { NavbarComponent } from '../shared/navbar/navbar';
+import { NotificationService } from '../services/notification';
 
 interface Challenge {
   id: string;
@@ -45,11 +46,11 @@ interface Filter {
 export class ChallengesComponent implements OnInit {
   private authService = inject(AuthService);
   private userService = inject(UserService);
+  private notificationService = inject(NotificationService);
   
   user = this.authService.user;
   userProfile = this.userService.getUser();
   
-  // ESTADÍSTICAS VACÍAS AL INICIO
   energyPoints = 0;
   currentStreak = 0;
   wellnessScore = 0;
@@ -59,10 +60,8 @@ export class ChallengesComponent implements OnInit {
   completedChallenges = 0;
   totalChallenges = 0;
   
-  // Consejo del día
   dailyTip = "Completa tu primer reto para desbloquear consejos personalizados.";
   
-  // Filtros para bienestar
   filters: Filter[] = [
     { id: 'all', label: 'Todos' },
     { id: 'mental', label: 'Mental' },
@@ -73,10 +72,7 @@ export class ChallengesComponent implements OnInit {
   
   activeFilter = 'all';
   
-  // RETOS BASE - Inicializamos vacíos, se llenarán en ngOnInit
   challenges: Challenge[] = [];
-  
-  // RETOS DIARIOS - Inicializamos vacíos, se llenarán en ngOnInit
   dailyChallenges: DailyChallenge[] = [];
   
   get filteredChallenges(): Challenge[] {
@@ -85,40 +81,32 @@ export class ChallengesComponent implements OnInit {
   }
   
   ngOnInit() {
-    // PRIMERO: Cargar progreso si existe
     this.loadUserProgress();
     
-    // SI NO HAY RETOS (primer inicio), inicializarlos todos como NO completados
     if (this.challenges.length === 0) {
       this.initializeChallengesAsNotCompleted();
     }
     
-    // SI NO HAY RETOS DIARIOS (primer inicio), inicializarlos todos como NO completados
     if (this.dailyChallenges.length === 0) {
       this.initializeDailyChallengesAsNotCompleted();
     }
     
     this.calculateTotalChallenges();
     
-    // VERIFICAR SI HAY UN RETO PARA ENFOCAR (desde el perfil)
     setTimeout(() => {
       this.checkForFocusedChallenge();
     }, 500);
   }
   
-  // Método para verificar y enfocar un reto específico
   private checkForFocusedChallenge() {
     const focusedChallengeId = localStorage.getItem('focusDailyChallenge');
     
     if (focusedChallengeId) {
-      // Limpiar el flag
       localStorage.removeItem('focusDailyChallenge');
       
-      // Encontrar el reto en la lista de diarios
       const challenge = this.dailyChallenges.find(d => d.id === focusedChallengeId);
       
       if (challenge) {
-        // Desplazar a la sección de retos diarios
         const dailySection = document.querySelector('.daily-section-box');
         if (dailySection) {
           dailySection.scrollIntoView({ 
@@ -126,7 +114,6 @@ export class ChallengesComponent implements OnInit {
             block: 'center'
           });
           
-          // Resaltar el reto específico
           setTimeout(() => {
             const challengeElement = document.querySelector(`[data-daily-id="${focusedChallengeId}"]`);
             if (challengeElement) {
@@ -137,14 +124,12 @@ export class ChallengesComponent implements OnInit {
             }
           }, 1000);
           
-          // Mostrar notificación
-          this.showToast(`✨ Navegando al reto: ${challenge.title}`);
+          this.notificationService.info(`✨ Navegando al reto: ${challenge.title}`);
         }
       }
     }
   }
   
-  // Inicializar todos los retos principales como NO completados
   private initializeChallengesAsNotCompleted() {
     this.challenges = [
       {
@@ -233,7 +218,6 @@ export class ChallengesComponent implements OnInit {
     ];
   }
   
-  // Inicializar todos los retos diarios como NO completados
   private initializeDailyChallengesAsNotCompleted() {
     this.dailyChallenges = [
       {
@@ -287,7 +271,6 @@ export class ChallengesComponent implements OnInit {
     ];
   }
   
-  // Carga el progreso del usuario desde localStorage
   private loadUserProgress() {
     const savedProgress = localStorage.getItem('pearly-wellness-progress');
     
@@ -295,7 +278,6 @@ export class ChallengesComponent implements OnInit {
       try {
         const progress = JSON.parse(savedProgress);
         
-        // Cargar estadísticas
         this.energyPoints = progress.energyPoints || 0;
         this.currentStreak = progress.currentStreak || 0;
         this.mentalHealth = progress.mentalHealth || 0;
@@ -303,13 +285,10 @@ export class ChallengesComponent implements OnInit {
         this.completedChallenges = progress.completedChallenges || 0;
         this.dailyTip = progress.dailyTip || this.dailyTip;
         
-        // SI HAY RETOS GUARDADOS, cargarlos
         const savedChallenges = progress.challenges;
         if (savedChallenges && Array.isArray(savedChallenges) && savedChallenges.length > 0) {
-          // Primero inicializar todos los retos como NO completados
           this.initializeChallengesAsNotCompleted();
           
-          // Luego actualizar solo los que estaban completados en el progreso guardado
           this.challenges = this.challenges.map(challenge => {
             const saved = savedChallenges.find((c: any) => c.id === challenge.id);
             if (saved) {
@@ -323,13 +302,10 @@ export class ChallengesComponent implements OnInit {
           });
         }
         
-        // MISMO PARA RETOS DIARIOS
         const savedDaily = progress.dailyChallenges;
         if (savedDaily && Array.isArray(savedDaily) && savedDaily.length > 0) {
-          // Primero inicializar todos como NO completados
           this.initializeDailyChallengesAsNotCompleted();
           
-          // Luego actualizar solo los que estaban completados
           this.dailyChallenges = this.dailyChallenges.map(daily => {
             const saved = savedDaily.find((d: any) => d.id === daily.id);
             if (saved) {
@@ -341,11 +317,9 @@ export class ChallengesComponent implements OnInit {
         
       } catch (error) {
         console.error('Error cargando progreso:', error);
-        // Si hay error, empezar desde cero
         this.resetAllProgress();
       }
     } else {
-      // No hay progreso guardado - primer inicio
       this.resetAllProgress();
     }
     
@@ -353,19 +327,15 @@ export class ChallengesComponent implements OnInit {
     this.calculateTotalChallenges();
   }
   
-  // Calcula el total de retos disponibles
   private calculateTotalChallenges() {
     this.totalChallenges = this.challenges.length;
   }
   
-  // Actualiza el score de bienestar
   private updateWellnessScore() {
     this.wellnessScore = Math.round((this.mentalHealth + this.physicalHealth) / 2);
   }
   
-  // Reinicia todo el progreso
   private resetAllProgress() {
-    // Resetear estadísticas a cero
     this.energyPoints = 0;
     this.currentStreak = 0;
     this.mentalHealth = 0;
@@ -373,17 +343,14 @@ export class ChallengesComponent implements OnInit {
     this.completedChallenges = 0;
     this.wellnessScore = 0;
     
-    // Consejo inicial
     this.dailyTip = "Completa tu primer reto para desbloquear consejos personalizados.";
     
-    // Inicializar todos los retos como NO completados
     this.initializeChallengesAsNotCompleted();
     this.initializeDailyChallengesAsNotCompleted();
     
     this.saveProgress();
   }
   
-  // Guarda el progreso en localStorage
   private saveProgress() {
     const progress = {
       energyPoints: this.energyPoints,
@@ -441,30 +408,23 @@ export class ChallengesComponent implements OnInit {
   
   handleChallengeAction(challenge: Challenge) {
     if (challenge.completed) return;
-    
-    // Marcar como completado
     this.completeChallenge(challenge.id);
   }
   
   setFilter(filterId: string) {
     this.activeFilter = filterId;
-    this.showToast(`Filtrando por: ${this.filters.find(f => f.id === filterId)?.label}`);
+    this.notificationService.info(`Filtrando por: ${this.filters.find(f => f.id === filterId)?.label}`);
   }
   
-  // Completa un reto principal
   completeChallenge(challengeId: string) {
     const challenge = this.challenges.find(c => c.id === challengeId);
     if (challenge && !challenge.completed) {
       challenge.completed = true;
       challenge.inProgress = false;
       
-      // Añadir puntos de energía
       this.energyPoints += challenge.points;
-      
-      // Aumentar contador de retos completados
       this.completedChallenges++;
       
-      // Actualizar estadísticas según categoría
       switch(challenge.category) {
         case 'mental':
           this.mentalHealth = Math.min(100, this.mentalHealth + 8);
@@ -482,21 +442,12 @@ export class ChallengesComponent implements OnInit {
           break;
       }
       
-      // Mostrar mensaje
-      const categoryMessages = {
-        'mental': '🧠 Reto mental completado',
-        'physical': '💪 Reto físico completado',
-        'mindfulness': '🌿 Práctica de mindfulness completada',
-        'nutrition': '🍎 Reto nutricional completado'
-      };
+      this.notificationService.showChallengeCompleted(challenge.title, challenge.points);
+      this.notificationService.showEnergyGained(challenge.points);
       
-      this.showToast(`${categoryMessages[challenge.category]}: "${challenge.title}" - +${challenge.points} ⚡`);
-      
-      // Actualizar score y guardar
       this.updateWellnessScore();
       this.saveProgress();
       
-      // Si es el primer reto completado, actualizar consejo
       if (this.completedChallenges === 1) {
         this.dailyTip = "¡Buen trabajo en tu primer reto! Recuerda que la constancia es clave para el bienestar.";
         this.saveProgress();
@@ -504,22 +455,16 @@ export class ChallengesComponent implements OnInit {
     }
   }
   
-  // Completa un reto diario
   completeDailyChallenge(dailyId: string) {
     const daily = this.dailyChallenges.find(d => d.id === dailyId);
     if (daily && !daily.completed) {
       daily.completed = true;
       
-      // Añadir puntos de energía
       this.energyPoints += daily.points;
-      
-      // Aumentar racha
       this.currentStreak++;
       
-      // Guardar progreso específico para este reto
       this.saveChallengeProgress(dailyId);
       
-      // Aumentar estadísticas según tags
       if (daily.tags.some(tag => ['Mental', 'Mindfulness', 'Respiración'].includes(tag))) {
         this.mentalHealth = Math.min(100, this.mentalHealth + 3);
       }
@@ -533,14 +478,15 @@ export class ChallengesComponent implements OnInit {
         this.mentalHealth = Math.min(100, this.mentalHealth + 1);
       }
       
-      this.showToast(`✨ Reto diario completado: "${daily.title}" - +${daily.points} ⚡`);
+      this.notificationService.showDailyChallengeCompleted(daily.title, daily.points);
+      this.notificationService.showStreakUpdated(this.currentStreak);
+      this.notificationService.showEnergyGained(daily.points);
       
       this.updateWellnessScore();
       this.saveProgress();
     }
   }
   
-  // Guardar progreso específico para cada reto diario
   private saveChallengeProgress(challengeId: string) {
     const challengeKey = `challenge-${challengeId}-progress`;
     const savedProgress = localStorage.getItem(challengeKey);
@@ -558,10 +504,8 @@ export class ChallengesComponent implements OnInit {
       }
     }
     
-    // Incrementar progreso actual
     currentProgress = Math.min(maxProgress, currentProgress + 1);
     
-    // Guardar progreso actualizado
     localStorage.setItem(challengeKey, JSON.stringify({
       current: currentProgress,
       max: maxProgress,
@@ -569,13 +513,11 @@ export class ChallengesComponent implements OnInit {
     }));
   }
   
-  // Reiniciar filtros
   resetFilters() {
     this.activeFilter = 'all';
-    this.showToast('🌿 Mostrando todos los retos de bienestar');
+    this.notificationService.info('🌿 Mostrando todos los retos de bienestar');
   }
   
-  // Refrescar consejo
   refreshTip() {
     const tips = [
       "Los retos diarios son oportunidades para construir hábitos saludables.",
@@ -591,16 +533,15 @@ export class ChallengesComponent implements OnInit {
     ];
     
     this.dailyTip = tips[Math.floor(Math.random() * tips.length)];
-    this.showToast('💡 Nuevo consejo de bienestar cargado');
+    this.notificationService.info('💡 Nuevo consejo de bienestar cargado', {
+      duration: 2000
+    });
     this.saveProgress();
   }
   
-  // Método público para resetear progreso
   public forceResetForNewUser() {
-    // Limpiar localStorage
     localStorage.removeItem('pearly-wellness-progress');
     
-    // Resetear todas las estadísticas
     this.energyPoints = 0;
     this.currentStreak = 0;
     this.mentalHealth = 0;
@@ -608,93 +549,13 @@ export class ChallengesComponent implements OnInit {
     this.wellnessScore = 0;
     this.completedChallenges = 0;
     
-    // Resetear todos los retos a NO completados
     this.initializeChallengesAsNotCompleted();
     this.initializeDailyChallengesAsNotCompleted();
     
-    // Resetear consejo
     this.dailyTip = "Completa tu primer reto para desbloquear consejos personalizados.";
     
-    // Guardar estado inicial
     this.saveProgress();
     
-    this.showToast('🔄 Progreso reiniciado. Todos los retos están disponibles para completar.');
-  }
-  
-  // Método para mostrar notificaciones
-  private showToast(message: string) {
-    let toastContainer = document.querySelector('.toast-container') as HTMLElement;
-    
-    if (!toastContainer) {
-      toastContainer = document.createElement('div');
-      toastContainer.className = 'toast-container';
-      toastContainer.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        z-index: 10000;
-        display: flex;
-        flex-direction: column;
-        gap: 10px;
-      `;
-      document.body.appendChild(toastContainer);
-    }
-    
-    const toast = document.createElement('div');
-    toast.textContent = message;
-    toast.style.cssText = `
-      background: linear-gradient(135deg, #4a90e2 0%, #5cdb95 100%);
-      color: white;
-      padding: 14px 24px;
-      border-radius: 12px;
-      box-shadow: 0 8px 25px rgba(74, 144, 226, 0.3);
-      font-weight: 600;
-      font-size: 0.95rem;
-      animation: slideIn 0.3s ease;
-      max-width: 300px;
-      word-wrap: break-word;
-      backdrop-filter: blur(10px);
-    `;
-    
-    if (!document.querySelector('#toast-animations')) {
-      const style = document.createElement('style');
-      style.id = 'toast-animations';
-      style.textContent = `
-        @keyframes slideIn {
-          from {
-            opacity: 0;
-            transform: translateX(100%);
-          }
-          to {
-            opacity: 1;
-            transform: translateX(0);
-          }
-        }
-        @keyframes slideOut {
-          from {
-            opacity: 1;
-            transform: translateX(0);
-          }
-          to {
-            opacity: 0;
-            transform: translateX(100%);
-          }
-        }
-      `;
-      document.head.appendChild(style);
-    }
-    
-    toastContainer.appendChild(toast);
-    
-    setTimeout(() => {
-      toast.style.animation = 'slideOut 0.3s ease';
-      
-      setTimeout(() => {
-        toast.remove();
-        if (toastContainer && toastContainer.children.length === 0) {
-          toastContainer.remove();
-        }
-      }, 300);
-    }, 3000);
+    this.notificationService.success('🔄 Progreso reiniciado. Todos los retos están disponibles para completar.');
   }
 }

@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -6,8 +6,8 @@ import { UserService } from '../services/user';
 import { PostService, Post } from '../services/post';
 import { AuthService } from '../services/auth';
 import { NavbarComponent } from '../shared/navbar/navbar';
+import { NotificationService } from '../services/notification';
 
-// Interfaz para los retos diarios
 interface DailyChallenge {
   id: string;
   title: string;
@@ -26,19 +26,18 @@ interface DailyChallenge {
   styleUrl: './profile.css'
 })
 export class ProfileComponent implements OnInit {
+  private notificationService = inject(NotificationService);
+  
   user: any;
   editing = false;
   editableUser: any = {};
   selectedPost: Post | null = null;
   
-  // Nuevas propiedades para editar/eliminar posts
   editingPost: Post | null = null;
   editPostData: any = {};
   
-  // Para comentarios
   newComment = '';
   
-  // Estadísticas dinámicas
   userStats = {
     posts: 0,
     followers: 0,
@@ -47,7 +46,6 @@ export class ProfileComponent implements OnInit {
   
   posts: Post[] = [];
   
-  // RETOS DIARIOS REALES desde localStorage - SOLO NO COMPLETADOS
   dailyChallenges: DailyChallenge[] = [];
 
   constructor(
@@ -58,23 +56,15 @@ export class ProfileComponent implements OnInit {
   ) {}
 
   ngOnInit() {
-    // Verificar si el usuario está autenticado
     if (!this.authService.isLoggedIn()) {
       this.router.navigate(['/login']);
       return;
     }
 
-    // Sincronizar datos del usuario con la autenticación
     this.userService.syncWithAuthData();
-    
-    // Obtener datos del usuario
     this.user = this.userService.getUser();
-    
-    // Cargar posts del usuario actual
     this.loadUserPosts();
     this.updateStats();
-    
-    // CARGAR RETOS DIARIOS desde localStorage (solo no completados)
     this.loadDailyChallenges();
     
     console.log('Usuario actual:', this.user.name);
@@ -87,85 +77,72 @@ export class ProfileComponent implements OnInit {
       if (savedProgress) {
         const progress = JSON.parse(savedProgress);
         
-        // Cargar retos diarios desde el progreso guardado
-        if (progress.dailyChallenges && Array.isArray(progress.dailyChallenges)) {
-          // Estos son los retos diarios base
-          const baseDailyChallenges = [
-            {
-              id: 'daily-1',
-              title: 'Meditación matutina',
-              description: 'Dedica 5 minutos por la mañana para meditar y centrar tu mente.',
-              tags: ['Mindfulness', '5 min']
-            },
-            {
-              id: 'daily-2',
-              title: 'Estiramientos básicos',
-              description: 'Realiza 10 minutos de estiramientos para activar tu cuerpo.',
-              tags: ['Físico', '10 min']
-            },
-            {
-              id: 'daily-3',
-              title: 'Reflexión diaria',
-              description: 'Tómate un momento para reflexionar sobre tu día.',
-              tags: ['Mental', '5 min']
-            },
-            {
-              id: 'daily-4',
-              title: 'Hidratación completa',
-              description: 'Bebe al menos 2 litros de agua durante el día.',
-              tags: ['Nutrición', 'Salud']
-            },
-            {
-              id: 'daily-5',
-              title: 'Pausa digital',
-              description: 'Descansa 20 minutos sin mirar ninguna pantalla.',
-              tags: ['Digital', '20 min']
-            },
-            {
-              id: 'daily-6',
-              title: 'Respiración consciente',
-              description: 'Practica la respiración profunda durante 3 minutos.',
-              tags: ['Respiración', 'Calma']
-            }
-          ];
+        const baseDailyChallenges = [
+          {
+            id: 'daily-1',
+            title: 'Meditación matutina',
+            description: 'Dedica 5 minutos por la mañana para meditar y centrar tu mente.',
+            tags: ['Mindfulness', '5 min']
+          },
+          {
+            id: 'daily-2',
+            title: 'Estiramientos básicos',
+            description: 'Realiza 10 minutos de estiramientos para activar tu cuerpo.',
+            tags: ['Físico', '10 min']
+          },
+          {
+            id: 'daily-3',
+            title: 'Reflexión diaria',
+            description: 'Tómate un momento para reflexionar sobre tu día.',
+            tags: ['Mental', '5 min']
+          },
+          {
+            id: 'daily-4',
+            title: 'Hidratación completa',
+            description: 'Bebe al menos 2 litros de agua durante el día.',
+            tags: ['Nutrición', 'Salud']
+          },
+          {
+            id: 'daily-5',
+            title: 'Pausa digital',
+            description: 'Descansa 20 minutos sin mirar ninguna pantalla.',
+            tags: ['Digital', '20 min']
+          },
+          {
+            id: 'daily-6',
+            title: 'Respiración consciente',
+            description: 'Practica la respiración profunda durante 3 minutos.',
+            tags: ['Respiración', 'Calma']
+          }
+        ];
+        
+        this.dailyChallenges = baseDailyChallenges.map(challenge => {
+          const saved = progress.dailyChallenges?.find((d: any) => d.id === challenge.id);
           
-          // Combinar con el estado guardado y FILTRAR solo no completados
-          this.dailyChallenges = baseDailyChallenges.map(challenge => {
-            const saved = progress.dailyChallenges.find((d: any) => d.id === challenge.id);
-            
-            // Obtener progreso específico para cada reto desde localStorage
-            let currentProgress = 0;
-            let maxProgress = 7; // Por defecto, 7 días
-            
-            // Intentar cargar progreso específico para cada reto
-            const challengeKey = `challenge-${challenge.id}-progress`;
-            const savedProgressDetail = localStorage.getItem(challengeKey);
-            if (savedProgressDetail) {
-              try {
-                const detail = JSON.parse(savedProgressDetail);
-                currentProgress = detail.current || 0;
-                maxProgress = detail.max || 7;
-              } catch (e) {
-                console.error('Error cargando progreso detallado:', e);
-              }
+          let currentProgress = 0;
+          let maxProgress = 7;
+          
+          const challengeKey = `challenge-${challenge.id}-progress`;
+          const savedProgressDetail = localStorage.getItem(challengeKey);
+          if (savedProgressDetail) {
+            try {
+              const detail = JSON.parse(savedProgressDetail);
+              currentProgress = detail.current || 0;
+              maxProgress = detail.max || 7;
+            } catch (e) {
+              console.error('Error cargando progreso detallado:', e);
             }
-            
-            return {
-              ...challenge,
-              points: this.getPointsForChallenge(challenge.id),
-              completed: saved ? saved.completed : false,
-              currentProgress: currentProgress,
-              maxProgress: maxProgress
-            };
-          })
-          // FILTRAR: Mostrar solo retos NO COMPLETADOS
-          .filter(challenge => !challenge.completed);
-        } else {
-          // Si no hay progreso guardado, usar los retos base (ninguno completado)
-          this.initializeDefaultChallenges();
-        }
+          }
+          
+          return {
+            ...challenge,
+            points: this.getPointsForChallenge(challenge.id),
+            completed: saved ? saved.completed : false,
+            currentProgress: currentProgress,
+            maxProgress: maxProgress
+          };
+        }).filter(challenge => !challenge.completed);
       } else {
-        // Si no hay progreso guardado, usar los retos base (ninguno completado)
         this.initializeDefaultChallenges();
       }
     } catch (error) {
@@ -252,7 +229,6 @@ export class ProfileComponent implements OnInit {
   }
 
   loadUserPosts() {
-    // Cargar solo las publicaciones del usuario actual
     const userName = this.user.name;
     console.log('Buscando posts para usuario:', userName);
     this.posts = this.postService.getPostsByUser(userName);
@@ -260,7 +236,6 @@ export class ProfileComponent implements OnInit {
   }
 
   updateStats() {
-    // Actualizar estadísticas dinámicamente
     this.userStats.posts = this.posts.length;
     this.userStats.followers = this.userService.getFollowersCount();
     this.userStats.following = this.userService.getFollowingCount();
@@ -268,34 +243,29 @@ export class ProfileComponent implements OnInit {
 
   toggleEdit() {
     if (this.editing) {
-      // Validaciones antes de guardar
       if (!this.editableUser.name || this.editableUser.name.trim().length < 2) {
-        alert('El nombre debe tener al menos 2 caracteres');
+        this.notificationService.warning('El nombre debe tener al menos 2 caracteres');
         return;
       }
 
       if (this.editableUser.bio && this.editableUser.bio.length > 150) {
-        alert('La biografía no puede exceder 150 caracteres');
+        this.notificationService.warning('La biografía no puede exceder 150 caracteres');
         return;
       }
 
-      // Validar URL de avatar si se proporcionó
       if (this.editableUser.avatar && this.editableUser.avatar.trim() !== '') {
         const urlPattern = /^https?:\/\/.+/;
         if (!urlPattern.test(this.editableUser.avatar)) {
-          alert('Por favor ingresa una URL válida que comience con http:// o https://');
+          this.notificationService.warning('Por favor ingresa una URL válida que comience con http:// o https://');
           return;
         }
       }
 
-      // Guardar cambios en el perfil
       this.user = { ...this.editableUser };
       this.userService.updateUser(this.user);
-      
-      // Actualizar también en localStorage para mantener sincronizado con autenticación
       localStorage.setItem('userName', this.user.name);
       
-      alert('Perfil actualizado correctamente');
+      this.notificationService.showProfileUpdated();
     } else {
       this.editableUser = { ...this.user };
     }
@@ -307,12 +277,8 @@ export class ProfileComponent implements OnInit {
     this.editableUser = {};
   }
 
-  // Navegar a la página de retos y enfocar un reto específico
   goToDailyChallenge(challengeId: string) {
-    // Guardar el ID del reto a enfocar
     localStorage.setItem('focusDailyChallenge', challengeId);
-    
-    // Navegar a la página de retos
     this.router.navigate(['/challenges']);
   }
 
@@ -329,10 +295,10 @@ export class ProfileComponent implements OnInit {
   toggleLike() {
     if (this.selectedPost) {
       this.postService.toggleLike(this.selectedPost.id);
-      // Actualizar el post seleccionado
       const updatedPost = this.postService.getPostById(this.selectedPost.id);
       if (updatedPost) {
         this.selectedPost = updatedPost;
+        this.notificationService.showPostLiked(this.selectedPost.likedByMe || false, this.selectedPost.user);
       }
       this.loadUserPosts();
     }
@@ -347,7 +313,6 @@ export class ProfileComponent implements OnInit {
         this.user.avatar
       );
       
-      // Actualizar el post seleccionado
       const updatedPost = this.postService.getPostById(this.selectedPost.id);
       if (updatedPost) {
         this.selectedPost = updatedPost;
@@ -355,11 +320,8 @@ export class ProfileComponent implements OnInit {
       
       this.newComment = '';
       this.loadUserPosts();
+      this.notificationService.showCommentAdded();
     }
-  }
-
-  deleteComment(commentId: number) {
-    // Implementar si lo necesitas
   }
 
   formatDate(date: Date): string {
@@ -375,10 +337,7 @@ export class ProfileComponent implements OnInit {
     if (minutes > 0) return `Hace ${minutes} minuto${minutes > 1 ? 's' : ''}`;
     return 'Ahora';
   }
-
-  // NUEVOS MÉTODOS PARA EDITAR/ELIMINAR POSTS
   
-  // Abrir modal para editar post
   openEditPostModal(post: Post) {
     this.editingPost = post;
     this.editPostData = {
@@ -387,35 +346,28 @@ export class ProfileComponent implements OnInit {
     };
   }
 
-  // Cerrar modal de edición
   closeEditPostModal() {
     this.editingPost = null;
     this.editPostData = {};
   }
 
-  // Guardar cambios del post editado
   saveEditedPost() {
     if (this.editingPost && this.editPostData.text.trim()) {
-      // Validar URL de imagen si se proporcionó
       if (this.editPostData.image && this.editPostData.image.trim() !== '') {
-        // Aceptar tanto URLs http/https como data URLs (base64)
         const urlPattern = /^(https?:\/\/|data:image\/)/;
         if (!urlPattern.test(this.editPostData.image)) {
-          alert('Por favor ingresa una URL válida:\n- Comienza con http:// o https://\n- O una URL data:image/ (imagen en base64)');
+          this.notificationService.warning('Por favor ingresa una URL válida:\n- Comienza con http:// o https://\n- O una URL data:image/ (imagen en base64)');
           return;
         }
       }
 
-      // Actualizar el post
       this.postService.updatePost(this.editingPost.id, {
         text: this.editPostData.text,
         image: this.editPostData.image || this.editingPost.image
       });
 
-      // Actualizar la lista de posts
       this.loadUserPosts();
       
-      // Si el post editado está abierto en el modal, actualizarlo también
       if (this.selectedPost && this.selectedPost.id === this.editingPost.id) {
         const updatedPost = this.postService.getPostById(this.editingPost.id);
         if (updatedPost) {
@@ -424,36 +376,36 @@ export class ProfileComponent implements OnInit {
       }
 
       this.closeEditPostModal();
-      alert('Publicación actualizada correctamente');
+      this.notificationService.showPostUpdated();
     }
   }
 
-  // Eliminar post
   deletePost(postId: number) {
-    if (confirm('¿Estás seguro de que quieres eliminar esta publicación? Esta acción no se puede deshacer.')) {
-      this.postService.deletePost(postId);
-      this.loadUserPosts();
-      this.updateStats();
-      
-      // Cerrar modales si estaban abiertos
-      if (this.selectedPost && this.selectedPost.id === postId) {
-        this.closeImageModal();
+    const notificationId = this.notificationService.showConfirmAction(
+      '¿Estás seguro de que quieres eliminar esta publicación? Esta acción no se puede deshacer.',
+      'Sí, eliminar',
+      () => {
+        this.postService.deletePost(postId);
+        this.loadUserPosts();
+        this.updateStats();
+        
+        if (this.selectedPost && this.selectedPost.id === postId) {
+          this.closeImageModal();
+        }
+        if (this.editingPost && this.editingPost.id === postId) {
+          this.closeEditPostModal();
+        }
+        
+        this.notificationService.showPostDeleted();
       }
-      if (this.editingPost && this.editingPost.id === postId) {
-        this.closeEditPostModal();
-      }
-      
-      alert('Publicación eliminada correctamente');
-    }
+    );
   }
 
-  // Verificar si el usuario actual es el dueño del post
   isPostOwner(post: Post): boolean {
     const currentUserName = this.user.name;
     return post.user === currentUserName;
   }
   
-  // Obtener icono para el reto según su título
   getChallengeIcon(title: string): string {
     const iconMap: { [key: string]: string } = {
       'Meditación': '🧘',
@@ -473,7 +425,6 @@ export class ProfileComponent implements OnInit {
     return '🌟';
   }
   
-  // Obtener texto de progreso para el reto
   getChallengeProgress(challenge: DailyChallenge): string {
     if (challenge.currentProgress !== undefined && challenge.maxProgress !== undefined) {
       return `${challenge.currentProgress}/${challenge.maxProgress} días`;
@@ -481,7 +432,6 @@ export class ProfileComponent implements OnInit {
     return '0/7 días';
   }
   
-  // Contar retos completados para mostrar en estadísticas
   getCompletedChallengesCount(): number {
     try {
       const savedProgress = localStorage.getItem('pearly-wellness-progress');

@@ -1,0 +1,57 @@
+<div class="notifications-container">
+    @for (notification of notificationService.activeNotifications(); track notification.id) {
+      <div 
+        class="notification animate-in"
+        [class]="'notification-' + notification.type"
+        (mouseenter)="pauseTimer(notification)"
+        (mouseleave)="resumeTimer(notification)"
+      >
+        <!-- Barra de progreso superior -->
+        @if (hasDuration(notification)) {
+          <div class="notification-progress">
+            <div class="progress-bar" [style.animation-duration]="notification.duration + 'ms'"></div>
+          </div>
+        }
+        
+        <div class="notification-content">
+          <!-- Icono según tipo -->
+          <div class="notification-icon">
+            @switch (notification.type) {
+              @case ('success') { <span>✓</span> }
+              @case ('error') { <span>✕</span> }
+              @case ('warning') { <span>⚠</span> }
+              @case ('info') { <span>ℹ</span> }
+            }
+          </div>
+          
+          <div class="notification-text">
+            @if (notification.title) {
+              <div class="notification-title">{{ notification.title }}</div>
+            }
+            <div class="notification-message">{{ notification.message }}</div>
+            
+            @if (notification.action) {
+              <button 
+                class="notification-action"
+                (click)="handleAction(notification)"
+              >
+                {{ notification.action.label }}
+              </button>
+            }
+          </div>
+          
+          @if (notification.dismissible) {
+            <button 
+              class="notification-close" 
+              (click)="dismiss(notification.id)"
+              aria-label="Cerrar"
+            >
+              <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M13 1L1 13M1 1L13 13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              </svg>
+            </button>
+          }
+        </div>
+      </div>
+    }
+  </div>

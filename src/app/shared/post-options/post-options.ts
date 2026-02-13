@@ -1,5 +1,6 @@
-import { Component, Input, Output, EventEmitter, HostListener, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, HostListener, ElementRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { NotificationService } from '../../services/notification';
 
 @Component({
   selector: 'app-post-options',
@@ -13,6 +14,8 @@ export class PostOptionsComponent {
   @Input() userId!: string;
   @Output() optionSelected = new EventEmitter<{ action: string; postId: number }>();
 
+  private notificationService = inject(NotificationService);
+  
   isOpen = false;
 
   constructor(private elementRef: ElementRef) {}
@@ -49,7 +52,7 @@ export class PostOptionsComponent {
   private copyLink() {
     const url = `${window.location.origin}/post/${this.postId}`;
     navigator.clipboard.writeText(url).then(() => {
-      alert('✅ Link copiado al portapapeles');
+      this.notificationService.showLinkCopied();
     });
   }
 
@@ -59,6 +62,8 @@ export class PostOptionsComponent {
       navigator.share({
         title: 'Compartir post de Pearly',
         url: url
+      }).catch(() => {
+        this.copyLink();
       });
     } else {
       this.copyLink();
@@ -66,24 +71,36 @@ export class PostOptionsComponent {
   }
 
   private mute() {
-    if (confirm(`¿Silenciar publicaciones de ${this.userId}?`)) {
-      console.log(`Usuario ${this.userId} silenciado`);
-      alert('✅ Usuario silenciado correctamente');
-    }
+    const notificationId = this.notificationService.showConfirmAction(
+      `¿Silenciar publicaciones de ${this.userId}?`,
+      'Sí, silenciar',
+      () => {
+        console.log(`Usuario ${this.userId} silenciado`);
+        this.notificationService.info(`✅ Usuario ${this.userId} silenciado`);
+      }
+    );
   }
 
   private block() {
-    if (confirm(`¿Bloquear a ${this.userId}? No verás más sus publicaciones.`)) {
-      console.log(`Usuario ${this.userId} bloqueado`);
-      alert('✅ Usuario bloqueado correctamente');
-    }
+    const notificationId = this.notificationService.showConfirmAction(
+      `¿Bloquear a ${this.userId}? No verás más sus publicaciones.`,
+      'Sí, bloquear',
+      () => {
+        console.log(`Usuario ${this.userId} bloqueado`);
+        this.notificationService.showUserBlocked(this.userId);
+      }
+    );
   }
 
   private report() {
-    if (confirm('¿Reportar este contenido como inapropiado?')) {
-      console.log(`Post ${this.postId} reportado`);
-      alert('✅ Contenido reportado. Gracias por tu colaboración.');
-    }
+    const notificationId = this.notificationService.showConfirmAction(
+      '¿Reportar este contenido como inapropiado?',
+      'Sí, reportar',
+      () => {
+        console.log(`Post ${this.postId} reportado`);
+        this.notificationService.showUserReported();
+      }
+    );
   }
 
   @HostListener('document:click', ['$event'])

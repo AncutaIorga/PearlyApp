@@ -1,5 +1,6 @@
-import { Injectable, signal } from '@angular/core';
+import { Injectable, signal, inject } from '@angular/core';
 import { Router } from '@angular/router';
+import { NotificationService } from './notification';
 
 interface User {
   name: string;
@@ -13,9 +14,8 @@ interface User {
 export class AuthService {
   private isAuthenticated = false;
   user = signal<{ name: string; email: string } | null>(null);
+  private notificationService = inject(NotificationService);
   
-  // Simulación de base de datos temporal (se perderá al recargar)
-  // Cuando tengas el backend, esto se reemplazará por llamadas HTTP
   private registeredUsers: User[] = [
     {
       name: 'Neli',
@@ -25,7 +25,6 @@ export class AuthService {
   ];
 
   constructor(private router: Router) {
-    // Verifica si ya hay sesión guardada
     this.isAuthenticated = localStorage.getItem('isLoggedIn') === 'true';
     
     if (this.isAuthenticated) {
@@ -35,13 +34,11 @@ export class AuthService {
     }
   }
 
-  // Validación de email
   private isValidEmail(email: string): boolean {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     return emailRegex.test(email);
   }
 
-  // Validación de contraseña: mínimo 1 mayúscula, 1 minúscula, 1 número y 1 símbolo
   private isValidPassword(password: string): boolean {
     const hasUpperCase = /[A-Z]/.test(password);
     const hasLowerCase = /[a-z]/.test(password);
@@ -51,7 +48,6 @@ export class AuthService {
     return hasUpperCase && hasLowerCase && hasNumber && hasSymbol && password.length >= 8;
   }
 
-  // Obtener mensaje detallado de error de contraseña
   private getPasswordError(password: string): string {
     const errors: string[] = [];
     
@@ -75,19 +71,16 @@ export class AuthService {
   }
 
   login(email: string, password: string): boolean {
-    // Validar que el email no esté vacío
     if (!email || !password) {
-      alert('Por favor completa todos los campos');
+      this.notificationService.warning('Por favor completa todos los campos');
       return false;
     }
 
-    // Validar formato de email
     if (!this.isValidEmail(email)) {
-      alert('Por favor ingresa un email válido (ejemplo: usuario@gmail.com)');
+      this.notificationService.warning('Por favor ingresa un email válido');
       return false;
     }
 
-    // Buscar usuario en la "base de datos"
     const user = this.registeredUsers.find(
       u => u.email === email && u.password === password
     );
@@ -98,47 +91,47 @@ export class AuthService {
       localStorage.setItem('userName', user.name);
       localStorage.setItem('userEmail', user.email);
       this.user.set({ name: user.name, email: user.email });
+      this.notificationService.showWelcome(user.name);
       this.router.navigate(['/feed']);
       return true;
     } else {
-      alert('Email o contraseña incorrectos');
+      this.notificationService.showLoginError();
       return false;
     }
   }
 
   register(name: string, email: string, password: string): boolean {
-    // Validar campos vacíos
     if (!name || !email || !password) {
-      alert('Por favor completa todos los campos');
+      this.notificationService.warning('Por favor completa todos los campos');
       return false;
     }
 
-    // Validar nombre (mínimo 2 caracteres)
     if (name.trim().length < 2) {
-      alert('El nombre debe tener al menos 2 caracteres');
+      this.notificationService.warning('El nombre debe tener al menos 2 caracteres');
       return false;
     }
 
-    // Validar formato de email
     if (!this.isValidEmail(email)) {
-      alert('Por favor ingresa un email válido (ejemplo: usuario@gmail.com)');
+      this.notificationService.warning('Por favor ingresa un email válido');
       return false;
     }
 
-    // Validar contraseña
     if (!this.isValidPassword(password)) {
-      alert(this.getPasswordError(password));
+      this.notificationService.warning(this.getPasswordError(password));
       return false;
     }
 
-    // Verificar si el email ya está registrado
     const emailExists = this.registeredUsers.some(u => u.email === email);
     if (emailExists) {
-      alert('Este email ya está registrado');
+      this.notificationService.warning('Este email ya está registrado', {
+        action: {
+          label: '¿Olvidaste tu contraseña?',
+          handler: () => this.router.navigate(['/recover-password'])
+        }
+      });
       return false;
     }
 
-    // Registrar nuevo usuario
     const newUser: User = {
       name: name.trim(),
       email: email.toLowerCase().trim(),
@@ -146,16 +139,14 @@ export class AuthService {
     };
 
     this.registeredUsers.push(newUser);
-
-    // Auto-login después del registro
     this.isAuthenticated = true;
     localStorage.setItem('isLoggedIn', 'true');
     localStorage.setItem('userName', newUser.name);
     localStorage.setItem('userEmail', newUser.email);
     this.user.set({ name: newUser.name, email: newUser.email });
-    this.router.navigate(['/feed']);
     
-    alert('¡Cuenta creada exitosamente!');
+    this.notificationService.showRegistrationSuccess(newUser.name);
+    this.router.navigate(['/feed']);
     return true;
   }
 
@@ -165,6 +156,7 @@ export class AuthService {
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('userName');
     localStorage.removeItem('userEmail');
+    this.notificationService.showLogout();
     this.router.navigate(['/login']);
   }
 
@@ -172,17 +164,14 @@ export class AuthService {
     return this.isAuthenticated;
   }
 
-  // Método helper para debugging (eliminar en producción)
   getRegisteredUsers(): User[] {
     return this.registeredUsers;
   }
 
-  // Obtener nombre del usuario autenticado
   getCurrentUserName(): string {
     return localStorage.getItem('userName') || 'Usuario';
   }
 
-  // Obtener email del usuario autenticado
   getCurrentUserEmail(): string {
     return localStorage.getItem('userEmail') || '';
   }

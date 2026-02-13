@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,8 +9,16 @@ import { AuthService } from '../services/auth';
 import { UserService } from '../services/user';
 import { SupportService, CreateTicketDto, SupportTicket } from '../services/support';
 import { BlockService, BlockedUser } from '../services/block';
-import { NotificationService, NotificationSettings } from '../services/notification';
 import { ThemeService } from '../services/theme';
+import { NotificationService } from '../services/notification'; // Importación correcta
+
+// Definir la interfaz localmente ya que no está exportada
+interface NotificationSettings {
+  followers: boolean;
+  comments: boolean;
+  likes: boolean;
+  messages: boolean;
+}
 
 @Component({
   selector: 'app-ajustes',
@@ -21,6 +29,7 @@ import { ThemeService } from '../services/theme';
 })
 export class AjustesComponent implements OnInit, OnDestroy {
   private destroy$ = new Subject<void>();
+  private notificationService = inject(NotificationService);
   
   // Loading states
   loading = {
@@ -65,7 +74,6 @@ export class AjustesComponent implements OnInit, OnDestroy {
     private userService: UserService,
     private supportService: SupportService,
     private blockService: BlockService,
-    private notificationService: NotificationService,
     private themeService: ThemeService,
     private router: Router
   ) {}
@@ -83,27 +91,14 @@ export class AjustesComponent implements OnInit, OnDestroy {
   // TEMA
   // ═══════════════════════════════════════════════════════════
 
-  /**
-   * Verifica si el modo oscuro está activo
-   */
   isDarkMode(): boolean {
     return this.themeService.isDarkMode();
   }
 
-  /**
-   * Alterna entre tema claro y oscuro
-   */
   toggleTheme(): void {
     const newTheme = this.themeService.toggleTheme();
-    
-    const themeMessages = {
-      light: '☀️ Modo claro activado',
-      dark: '🌙 Modo oscuro activado'
-    };
-    
-    this.showToast(themeMessages[newTheme]);
+    this.notificationService.showThemeChanged(newTheme);
   }
-
 
   // ═══════════════════════════════════════════════════════════
   // CARGA INICIAL
@@ -125,11 +120,15 @@ export class AjustesComponent implements OnInit, OnDestroy {
   }
 
   private loadNotificationSettings() {
-    this.notificationService.getSettings()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe(settings => {
-        this.notificationSettings = settings;
-      });
+    // Cargar desde localStorage o usar valores por defecto
+    const saved = localStorage.getItem('notification-settings');
+    if (saved) {
+      try {
+        this.notificationSettings = JSON.parse(saved);
+      } catch (e) {
+        console.error('Error loading notification settings', e);
+      }
+    }
   }
 
   private loadBlockedUsers() {
@@ -139,8 +138,14 @@ export class AjustesComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
         finalize(() => this.loading.blocked = false)
       )
-      .subscribe(users => {
-        this.blockedUsers = users;
+      .subscribe({
+        next: (users) => {
+          this.blockedUsers = users;
+        },
+        error: (error: any) => {
+          console.error('Error loading blocked users:', error);
+          this.notificationService.showError('Error al cargar usuarios bloqueados');
+        }
       });
   }
 
@@ -151,8 +156,13 @@ export class AjustesComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
         finalize(() => this.loading.tickets = false)
       )
-      .subscribe(tickets => {
-        this.tickets = tickets.map(t => ({ ...t, expanded: false }));
+      .subscribe({
+        next: (tickets) => {
+          this.tickets = tickets.map(t => ({ ...t, expanded: false }));
+        },
+        error: (error: any) => {
+          console.error('Error loading tickets:', error);
+        }
       });
   }
 
@@ -170,17 +180,12 @@ export class AjustesComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: () => {
-          this.showToast(
-            this.privacySettings.isPrivate
-              ? '🔒 Cuenta privada activada'
-              : '🌍 Cuenta pública activada'
-          );
+          this.notificationService.showPrivacyUpdated(this.privacySettings.isPrivate);
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error updating privacy:', error);
-          // Revertir el toggle en caso de error
           this.privacySettings.isPrivate = !this.privacySettings.isPrivate;
-          this.showToast('❌ Error al actualizar privacidad', 'error');
+          this.notificationService.showError('Error al actualizar privacidad');
         }
       });
   }
@@ -192,20 +197,18 @@ export class AjustesComponent implements OnInit, OnDestroy {
   updateNotifications() {
     this.loading.notifications = true;
     
-    this.notificationService.updateSettings(this.notificationSettings)
-      .pipe(
-        takeUntil(this.destroy$),
-        finalize(() => this.loading.notifications = false)
-      )
-      .subscribe({
-        next: () => {
-          this.showToast('🔔 Preferencias de notificaciones actualizadas');
-        },
-        error: (error) => {
-          console.error('Error updating notifications:', error);
-          this.showToast('❌ Error al actualizar notificaciones', 'error');
-        }
+    // Guardar en localStorage
+    try {
+      localStorage.setItem('notification-settings', JSON.stringify(this.notificationSettings));
+      this.notificationService.success('Preferencias de notificaciones actualizadas', {
+        title: '🔔 Notificaciones'
       });
+    } catch (error) {
+      console.error('Error saving notification settings:', error);
+      this.notificationService.showError('Error al actualizar notificaciones');
+    } finally {
+      this.loading.notifications = false;
+    }
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -222,16 +225,12 @@ export class AjustesComponent implements OnInit, OnDestroy {
       )
       .subscribe({
         next: () => {
-          this.showToast(
-            this.messageSettings.onlyFollowers
-              ? '💬 Solo tus seguidores pueden escribirte'
-              : '💬 Todos pueden escribirte mensajes'
-          );
+          this.notificationService.showMessageSettingsUpdated(this.messageSettings.onlyFollowers);
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error updating message settings:', error);
           this.messageSettings.onlyFollowers = !this.messageSettings.onlyFollowers;
-          this.showToast('❌ Error al actualizar configuración de mensajes', 'error');
+          this.notificationService.showError('Error al actualizar configuración de mensajes');
         }
       });
   }
@@ -244,20 +243,24 @@ export class AjustesComponent implements OnInit, OnDestroy {
     const user = this.blockedUsers.find(u => u.id === userId);
     if (!user) return;
 
-    if (confirm(`¿Desbloquear a ${user.name}?`)) {
-      this.blockService.unblockUser(userId)
-        .pipe(takeUntil(this.destroy$))
-        .subscribe({
-          next: () => {
-            this.blockedUsers = this.blockedUsers.filter(u => u.id !== userId);
-            this.showToast(`✅ ${user.name} ha sido desbloqueado`);
-          },
-          error: (error) => {
-            console.error('Error unblocking user:', error);
-            this.showToast('❌ Error al desbloquear usuario', 'error');
-          }
-        });
-    }
+    const notificationId = this.notificationService.showConfirmAction(
+      `¿Desbloquear a ${user.name}?`,
+      'Sí, desbloquear',
+      () => {
+        this.blockService.unblockUser(userId)
+          .pipe(takeUntil(this.destroy$))
+          .subscribe({
+            next: () => {
+              this.blockedUsers = this.blockedUsers.filter(u => u.id !== userId);
+              this.notificationService.showUserUnblocked(user.name);
+            },
+            error: (error: any) => {
+              console.error('Error unblocking user:', error);
+              this.notificationService.showError('Error al desbloquear usuario');
+            }
+          });
+      }
+    );
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -266,17 +269,17 @@ export class AjustesComponent implements OnInit, OnDestroy {
 
   submitTicket() {
     if (!this.newTicket.subject.trim() || !this.newTicket.description.trim()) {
-      this.showToast('⚠️ Por favor completa todos los campos', 'warning');
+      this.notificationService.warning('Por favor completa todos los campos');
       return;
     }
 
     if (this.newTicket.subject.length < 5) {
-      this.showToast('⚠️ El asunto debe tener al menos 5 caracteres', 'warning');
+      this.notificationService.warning('El asunto debe tener al menos 5 caracteres');
       return;
     }
 
     if (this.newTicket.description.length < 20) {
-      this.showToast('⚠️ La descripción debe tener al menos 20 caracteres', 'warning');
+      this.notificationService.warning('La descripción debe tener al menos 20 caracteres');
       return;
     }
 
@@ -294,11 +297,11 @@ export class AjustesComponent implements OnInit, OnDestroy {
         next: (ticket) => {
           this.tickets.unshift({ ...ticket, expanded: false });
           this.newTicket = { subject: '', description: '' };
-          this.showToast('✅ Ticket enviado correctamente. Te responderemos pronto.');
+          this.notificationService.showTicketCreated(ticket.id);
         },
-        error: (error) => {
+        error: (error: any) => {
           console.error('Error creating ticket:', error);
-          this.showToast('❌ Error al enviar el ticket. Intenta de nuevo.', 'error');
+          this.notificationService.showTicketError();
         }
       });
   }
@@ -333,57 +336,12 @@ export class AjustesComponent implements OnInit, OnDestroy {
   }
 
   logout() {
-    if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
-      this.authService.logout();
-      this.showToast('👋 Sesión cerrada correctamente');
-    }
-  }
-
-  private showToast(message: string, type: 'success' | 'error' | 'warning' = 'success') {
-    const colors = {
-      success: 'linear-gradient(135deg, #a2b895 0%, #679460 100%)',
-      error: 'linear-gradient(135deg, #e74c3c 0%, #c0392b 100%)',
-      warning: 'linear-gradient(135deg, #f39c12 0%, #e67e22 100%)'
-    };
-
-    const toast = document.createElement('div');
-    toast.textContent = message;
-    toast.style.cssText = `
-      position: fixed;
-      top: 80px;
-      right: 20px;
-      background: ${colors[type]};
-      color: white;
-      padding: 16px 24px;
-      border-radius: 12px;
-      z-index: 10000;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-      font-weight: 600;
-      animation: slideIn 0.3s ease;
-      max-width: 400px;
-    `;
-    
-    const style = document.createElement('style');
-    style.textContent = `
-      @keyframes slideIn {
-        from { transform: translateX(400px); opacity: 0; }
-        to { transform: translateX(0); opacity: 1; }
+    const notificationId = this.notificationService.showConfirmAction(
+      '¿Estás seguro de que quieres cerrar sesión?',
+      'Sí, cerrar sesión',
+      () => {
+        this.authService.logout();
       }
-      @keyframes slideOut {
-        from { transform: translateX(0); opacity: 1; }
-        to { transform: translateX(400px); opacity: 0; }
-      }
-    `;
-    document.head.appendChild(style);
-    
-    document.body.appendChild(toast);
-    
-    setTimeout(() => {
-      toast.style.animation = 'slideOut 0.3s ease';
-      setTimeout(() => {
-        toast.remove();
-        style.remove();
-      }, 300);
-    }, 3000);
+    );
   }
 }
