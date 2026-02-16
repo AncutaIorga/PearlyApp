@@ -1,117 +1,70 @@
-import { Component, HostListener, ElementRef, inject, OnInit } from '@angular/core';
+import { Component, inject, HostListener } from '@angular/core';
 import { RouterModule, Router } from '@angular/router';
-import { AuthService } from '../../services/auth';
-import { UserService } from '../../services/user';
-import { ThemeService } from '../../services/theme';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { UserService, SearchUserResult } from '../../services/user';
 import { NotificationService } from '../../services/notification';
+import { Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 
 @Component({
   selector: 'app-navbar',
   standalone: true,
-  imports: [RouterModule],
+  imports: [RouterModule, CommonModule, FormsModule],
   templateUrl: './navbar.html',
   styleUrl: './navbar.css'
 })
-export class NavbarComponent implements OnInit {
-  showSettings = false;
-  
-  private elementRef = inject(ElementRef);
+export class NavbarComponent {
   router = inject(Router);
-  private authService = inject(AuthService);
   private userService = inject(UserService);
-  private themeService = inject(ThemeService);
   private notificationService = inject(NotificationService);
-  
-  user = this.authService.user;
-  userProfile = this.userService.getUser();
-  currentTheme = this.themeService.currentTheme;
 
-  toggleSettings(event: Event) {
-    event.stopPropagation();
-    this.showSettings = !this.showSettings;
+  // Buscador
+  isSearchActive = false;
+  searchQuery = '';
+  searchResults: SearchUserResult[] = [];
+  private searchSubject = new Subject<string>();
+
+  constructor() {
+    // Debounce para no buscar en cada tecla
+    this.searchSubject.pipe(
+      debounceTime(300),
+      distinctUntilChanged()
+    ).subscribe(query => {
+      this.performSearch(query);
+    });
   }
 
-  handleSetting(action: string) {
-    this.showSettings = false;
+  onSearchInput() {
+    this.searchSubject.next(this.searchQuery);
+  }
+
+  performSearch(query: string) {
+    if (query.trim().length === 0) {
+      this.searchResults = [];
+      return;
+    }
     
-    if (action === 'settings') {
-      this.router.navigate(['/ajustes']);
-    } else if (action === 'logout') {
-      this.handleLogout();
-    }
+    this.userService.searchUsers(query).subscribe(results => {
+      this.searchResults = results;
+    });
   }
 
-  private handleTheme() {
-    const newTheme = this.themeService.toggleTheme();
-    this.notificationService.showThemeChanged(newTheme);
+  clearSearch() {
+    this.searchQuery = '';
+    this.searchResults = [];
+    this.isSearchActive = false;
   }
 
-  private handleNotifications() {
-    if ('Notification' in window) {
-      if (Notification.permission === 'granted') {
-        this.router.navigate(['/notifications']);
-      } else if (Notification.permission === 'default') {
-        Notification.requestPermission().then(permission => {
-          if (permission === 'granted') {
-            this.notificationService.success('🔔 Notificaciones habilitadas');
-            this.createTestNotification();
-            this.router.navigate(['/notifications']);
-          }
-        });
-      } else {
-        this.notificationService.warning('Notificaciones bloqueadas. Actívalas en configuración del navegador.');
-      }
-    } else {
-      this.notificationService.warning('Tu navegador no soporta notificaciones');
-    }
+  closeSearch() {
+    this.isSearchActive = false;
   }
 
-  private createTestNotification() {
-    if (Notification.permission === 'granted') {
-      new Notification('PearlyApp', {
-        body: '¡Notificaciones activadas con éxito!',
-        icon: '/assets/icons/icon-192x192.png'
-      });
-    }
-  }
-
-  private handlePrivacy() {
-    this.router.navigate(['/privacy']);
-    
-    const privacyPrefs = {
-      lastViewed: new Date().toISOString(),
-      showActivity: true,
-      showProfile: true
-    };
-    localStorage.setItem('pearly-privacy', JSON.stringify(privacyPrefs));
-  }
-
-  private handleAccount() {
-    if (this.user()) {
-      this.router.navigate(['/profile']);
-    } else {
-      this.router.navigate(['/login']);
-    }
-  }
-
-  private handleLogout() {
-    const notificationId = this.notificationService.showConfirmAction(
-      '¿Estás seguro de que quieres cerrar sesión?',
-      'Sí, cerrar sesión',
-      () => {
-        this.authService.logout();
-      }
-    );
-  }
-
-  @HostListener('document:click', ['$event'])
-  onDocumentClick(event: Event) {
-    if (!this.elementRef.nativeElement.contains(event.target)) {
-      this.showSettings = false;
-    }
-  }
-
-  ngOnInit() {
-    // El tema ya se carga automáticamente en ThemeService
+  goToUserProfile(user: SearchUserResult) {
+    this.closeSearch();
+    this.searchQuery = '';
+    // Como aún no tenemos ruta de perfil público (/profile/:id), simulamos la navegación
+    this.notificationService.info(`Visitando perfil de ${user.name}`);
+    // Opcional: navegar a una ruta dummy si existiera
+    // this.router.navigate(['/profile', user.id]);
   }
 }

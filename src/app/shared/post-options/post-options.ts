@@ -1,28 +1,41 @@
 import { Component, Input, Output, EventEmitter, HostListener, ElementRef, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NotificationService } from '../../services/notification';
+import { MuteService } from '../../services/mute';
+import { BlockService } from '../../services/block';
 
 @Component({
   selector: 'app-post-options',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './post-options.html', 
-  styleUrls: ['./post-options.css'] 
+  templateUrl: './post-options.html',
+  styleUrls: ['./post-options.css']
 })
 export class PostOptionsComponent {
+
   @Input() postId!: number;
   @Input() userId!: string;
   @Output() optionSelected = new EventEmitter<{ action: string; postId: number }>();
 
   private notificationService = inject(NotificationService);
-  
+  private muteService = inject(MuteService);
+  private blockService = inject(BlockService);
+
   isOpen = false;
+  blocked = false;
 
   constructor(private elementRef: ElementRef) {}
 
+  // ─────────────────────────────
+  // MENU
+  // ─────────────────────────────
   toggleMenu(event: Event) {
     event.stopPropagation();
     this.isOpen = !this.isOpen;
+
+    if (this.isOpen) {
+      this.blocked = this.blockService.isBlocked(this.userId);
+    }
   }
 
   handleAction(action: string) {
@@ -32,15 +45,19 @@ export class PostOptionsComponent {
       case 'copy-link':
         this.copyLink();
         break;
+
       case 'share':
         this.share();
         break;
+
       case 'mute':
         this.mute();
         break;
+
       case 'block':
         this.block();
         break;
+
       case 'report':
         this.report();
         break;
@@ -49,8 +66,23 @@ export class PostOptionsComponent {
     this.optionSelected.emit({ action, postId: this.postId });
   }
 
+  // ─────────────────────────────
+  // ESTADOS
+  // ─────────────────────────────
+  isMuted(): boolean {
+    return this.muteService.isMuted(this.userId);
+  }
+
+  isBlocked(): boolean {
+    return this.blocked;
+  }
+
+  // ─────────────────────────────
+  // ACCIONES
+  // ─────────────────────────────
   private copyLink() {
     const url = `${window.location.origin}/post/${this.postId}`;
+
     navigator.clipboard.writeText(url).then(() => {
       this.notificationService.showLinkCopied();
     });
@@ -58,42 +90,55 @@ export class PostOptionsComponent {
 
   private share() {
     const url = `${window.location.origin}/post/${this.postId}`;
+
     if (navigator.share) {
       navigator.share({
         title: 'Compartir post de Pearly',
         url: url
-      }).catch(() => {
-        this.copyLink();
-      });
+      }).catch(() => this.copyLink());
     } else {
       this.copyLink();
     }
   }
 
   private mute() {
-    const notificationId = this.notificationService.showConfirmAction(
-      `¿Silenciar publicaciones de ${this.userId}?`,
-      'Sí, silenciar',
-      () => {
-        console.log(`Usuario ${this.userId} silenciado`);
-        this.notificationService.info(`✅ Usuario ${this.userId} silenciado`);
-      }
-    );
+    if (this.isMuted()) {
+      this.muteService.unmute(this.userId);
+      this.notificationService.success(`Has dejado de silenciar a ${this.userId}`);
+    } else {
+      this.muteService.mute(this.userId);
+      this.notificationService.success(`Has silenciado a ${this.userId}`);
+    }
   }
 
   private block() {
-    const notificationId = this.notificationService.showConfirmAction(
-      `¿Bloquear a ${this.userId}? No verás más sus publicaciones.`,
-      'Sí, bloquear',
-      () => {
-        console.log(`Usuario ${this.userId} bloqueado`);
-        this.notificationService.showUserBlocked(this.userId);
-      }
-    );
+
+    if (this.blocked) {
+
+      this.blockService.unblockUserByUsername(this.userId).subscribe(() => {
+        this.blocked = false;
+        this.notificationService.success(`${this.userId} desbloqueado`);
+      });
+
+    } else {
+
+      this.notificationService.showConfirmAction(
+        `¿Bloquear a ${this.userId}?`,
+        'Sí, bloquear',
+        () => {
+          this.blockService.blockUserByUsername(this.userId).subscribe(() => {
+            this.blocked = true;
+            this.notificationService.success(`${this.userId} bloqueado`);
+          });
+        }
+      );
+
+    }
+
   }
 
   private report() {
-    const notificationId = this.notificationService.showConfirmAction(
+    this.notificationService.showConfirmAction(
       '¿Reportar este contenido como inapropiado?',
       'Sí, reportar',
       () => {
@@ -103,6 +148,9 @@ export class PostOptionsComponent {
     );
   }
 
+  // ─────────────────────────────
+  // CERRAR MENU CLICK FUERA
+  // ─────────────────────────────
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event) {
     if (!this.elementRef.nativeElement.contains(event.target)) {

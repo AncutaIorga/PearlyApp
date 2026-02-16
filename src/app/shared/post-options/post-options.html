@@ -17,17 +17,18 @@
       <span class="option-label">Copiar link</span>
     </button>
     
-    <button 
-      class="option-item"
-      (click)="handleAction('mute')">
-      <span class="option-label">Silenciar a {{ userId }}</span>
-    </button>
-    
-    <button 
-      class="option-item danger"
-      (click)="handleAction('block')">
-      <span class="option-label">Bloquear</span>
-    </button>
+<button class="option-item" (click)="handleAction('mute')">
+<span class="option-label">
+{{ isMuted() ? 'Desilenciar' : 'Silenciar' }} a {{ userId }}
+</span>
+</button>
+
+<button class="option-item danger" (click)="handleAction('block')">
+<span class="option-label">
+{{ isBlocked() ? 'Desbloquear' : 'Bloquear' }}
+</span>
+</button>
+
     
     <button 
       class="option-item danger"

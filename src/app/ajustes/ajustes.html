@@ -4,7 +4,6 @@
   <div class="settings-content">
     <h1>⚙️ Ajustes</h1>
 
-    <!-- Apariencia (NUEVO) -->
     <div class="settings-section">
       <div class="section-header">
         <h2>🎨 Apariencia</h2>
@@ -24,9 +23,8 @@
           <span class="slider"></span>
         </label>
       </div>
+    </div>
 
-
-    <!-- Privacidad -->
     <div class="settings-section">
       <div class="section-header">
         <h2>🔒 Privacidad</h2>
@@ -48,7 +46,6 @@
       </div>
     </div>
 
-    <!-- Notificaciones -->
     <div class="settings-section">
       <div class="section-header">
         <h2>🔔 Notificaciones</h2>
@@ -68,59 +65,8 @@
           <span class="slider"></span>
         </label>
       </div>
-
-      <div class="setting-item">
-        <div class="setting-info">
-          <h3>Comentarios</h3>
-          <p>Recibe notificaciones de nuevos comentarios</p>
-        </div>
-        <label class="toggle-switch">
-          <input 
-            type="checkbox" 
-            [(ngModel)]="notificationSettings.comments"
-            (change)="updateNotifications()">
-          <span class="slider"></span>
-        </label>
-      </div>
-
-      <div class="setting-item">
-        <div class="setting-info">
-          <h3>Me gusta</h3>
-          <p>Recibe notificaciones cuando te den like</p>
-        </div>
-        <label class="toggle-switch">
-          <input 
-            type="checkbox" 
-            [(ngModel)]="notificationSettings.likes"
-            (change)="updateNotifications()">
-          <span class="slider"></span>
-        </label>
-      </div>
     </div>
 
-    <!-- Mensajes -->
-    <div class="settings-section">
-      <div class="section-header">
-        <h2>💬 Mensajes</h2>
-        <p class="section-description">Controla quién puede enviarte mensajes</p>
-      </div>
-      
-      <div class="setting-item">
-        <div class="setting-info">
-          <h3>Solo seguidores</h3>
-          <p>Solo las personas que sigues pueden escribirte</p>
-        </div>
-        <label class="toggle-switch">
-          <input 
-            type="checkbox" 
-            [(ngModel)]="messageSettings.onlyFollowers"
-            (change)="updateMessageSettings()">
-          <span class="slider"></span>
-        </label>
-      </div>
-    </div>
-
-    <!-- Usuarios Bloqueados -->
     <div class="settings-section">
       <div class="section-header">
         <h2>🚫 Usuarios bloqueados</h2>
@@ -135,19 +81,7 @@
         <div class="blocked-users-list">
           @for (user of blockedUsers; track user.id) {
             <div class="blocked-user-item">
-              <div class="blocked-user-info">
-                @if (user.avatar) {
-                  <img [src]="user.avatar" [alt]="user.name" class="blocked-avatar">
-                } @else {
-                  <div class="blocked-avatar-placeholder">
-                    {{ user.name.charAt(0).toUpperCase() }}
-                  </div>
-                }
-                <div>
-                  <h4>{{ user.name }}</h4>
-                  <p>Bloqueado el {{ formatDate(user.blockedAt) }}</p>
-                </div>
-              </div>
+              <span>{{ user.name }}</span>
               <button class="unblock-btn" (click)="unblockUser(user.id)">
                 Desbloquear
               </button>
@@ -157,86 +91,56 @@
       }
     </div>
 
-    <!-- Soporte/Ayuda -->
     <div class="settings-section">
       <div class="section-header">
         <h2>💡 Soporte y ayuda</h2>
         <p class="section-description">Envía tus consultas o reporta problemas</p>
       </div>
 
-      <!-- Formulario nuevo ticket -->
       <div class="support-form">
         <h3>Crear nuevo ticket</h3>
         
         <div class="form-group">
-          <label for="subject">Asunto *</label>
+          <label>Asunto *</label>
           <input 
-            id="subject"
             type="text" 
             [(ngModel)]="newTicket.subject"
-            placeholder="Describe brevemente el problema"
-            maxlength="100">
+            placeholder="Describe brevemente el problema">
         </div>
 
         <div class="form-group">
-          <label for="description">Descripción *</label>
+          <label>Descripción *</label>
           <textarea 
-            id="description"
             [(ngModel)]="newTicket.description"
-            placeholder="Describe detalladamente tu consulta o problema"
-            rows="5"
-            maxlength="500"></textarea>
-          <small>{{ newTicket.description.length }}/500 caracteres</small>
+            placeholder="Detalla tu problema..."
+            rows="4"></textarea>
         </div>
 
         <button 
           class="submit-ticket-btn"
           (click)="submitTicket()"
-          [disabled]="!newTicket.subject || !newTicket.description">
-          Enviar ticket
+          [disabled]="!newTicket.subject || !newTicket.description || loading.tickets">
+          {{ loading.tickets ? 'Enviando...' : 'Enviar ticket' }}
         </button>
       </div>
 
-      <!-- Historial de tickets -->
       <div class="tickets-history">
-        <h3>Mis tickets</h3>
+        <h3>Mis tickets recientes</h3>
         
-        @if (tickets.length === 0) {
+        @if (tickets().length === 0) {
           <div class="empty-state">
             <p>No tienes tickets de soporte</p>
           </div>
         } @else {
           <div class="tickets-list">
-            @for (ticket of tickets; track ticket.id) {
-              <div class="ticket-item" [class.expanded]="ticket.expanded">
-                <div class="ticket-header" (click)="toggleTicket(ticket.id)">
-                  <div class="ticket-info">
-                    <h4>{{ ticket.subject }}</h4>
-                    <p class="ticket-date">{{ formatDate(ticket.createdAt) }}</p>
-                  </div>
-                  <span class="ticket-status" [class]="ticket.status">
-                    {{ getStatusText(ticket.status) }}
-                  </span>
+            @for (ticket of tickets(); track ticket.id) {
+              <div class="ticket-item">
+                <div class="ticket-header-simple">
+                  <h4>{{ ticket.subject }}</h4>
+                  <span class="ticket-status open">Abierto</span>
                 </div>
-                
-                @if (ticket.expanded) {
-                  <div class="ticket-details">
-                    <div class="ticket-description">
-                      <strong>Descripción:</strong>
-                      <p>{{ ticket.description }}</p>
-                    </div>
-                    
-                    @if (ticket.response) {
-                      <div class="ticket-response">
-                        <strong>Respuesta del equipo:</strong>
-                        <p>{{ ticket.response }}</p>
-                        <small>Respondido el {{ formatDate(ticket.respondedAt!) }}</small>
-                      </div>
-                    } @else if (ticket.status === 'open') {
-                      <p class="pending-response">⏳ Esperando respuesta del equipo...</p>
-                    }
-                  </div>
-                }
+                <p class="ticket-date">{{ formatDate(ticket.createdAt) }}</p>
+                <p class="ticket-desc">{{ ticket.description }}</p>
               </div>
             }
           </div>
@@ -244,8 +148,7 @@
       </div>
     </div>
 
-    <!-- Cerrar Sesión -->
-    <div class="settings-section">
+    <div class="settings-section logout-section">
       <button class="logout-btn" (click)="logout()">
         🚪 Cerrar sesión
       </button>

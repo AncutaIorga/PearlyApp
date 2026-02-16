@@ -1,7 +1,10 @@
+/* ajustes/ajustes.css */
+
 .settings-container {
   min-height: calc(100vh - 64px);
   background: var(--bg-secondary);
   padding: 30px 20px;
+  transition: background-color 0.3s ease;
 }
 
 .settings-content {
@@ -9,25 +12,28 @@
   margin: 0 auto;
 }
 
-.settings-content > h1 {
+h1 {
   font-size: 32px;
   font-weight: 700;
   color: var(--text-primary);
   margin: 0 0 30px 0;
 }
 
+/* --- SECCIONES GENERALES --- */
 .settings-section {
   background: var(--card-bg);
   border-radius: 16px;
   padding: 30px;
   margin-bottom: 20px;
-  box-shadow: var(--shadow-md);
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--border-color);
+  transition: all 0.3s ease;
 }
 
 .section-header {
   margin-bottom: 24px;
   padding-bottom: 16px;
-  border-bottom: 2px solid var(--border-color);
+  border-bottom: 1px solid var(--border-color);
 }
 
 .section-header h2 {
@@ -43,7 +49,7 @@
   margin: 0;
 }
 
-/* Toggle Switch */
+/* --- TOGGLES Y OPCIONES --- */
 .setting-item {
   display: flex;
   justify-content: space-between;
@@ -69,11 +75,12 @@
   margin: 0;
 }
 
+/* Toggle Switch Personalizado */
 .toggle-switch {
   position: relative;
   display: inline-block;
-  width: 60px;
-  height: 34px;
+  width: 52px;
+  height: 28px;
   flex-shrink: 0;
 }
 
@@ -90,37 +97,42 @@
   left: 0;
   right: 0;
   bottom: 0;
-  background-color: #ccc;
+  background-color: var(--bg-tertiary);
   transition: 0.4s;
   border-radius: 34px;
+  border: 1px solid var(--border-color);
 }
 
 .slider:before {
   position: absolute;
   content: "";
-  height: 26px;
-  width: 26px;
-  left: 4px;
-  bottom: 4px;
+  height: 20px;
+  width: 20px;
+  left: 3px;
+  bottom: 3px;
   background-color: white;
   transition: 0.4s;
   border-radius: 50%;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
 }
 
 input:checked + .slider {
-  background: linear-gradient(135deg, #a2b895 0%, #679460 100%);
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  border-color: transparent;
 }
 
 input:checked + .slider:before {
-  transform: translateX(26px);
+  transform: translateX(24px);
 }
 
-/* Usuarios Bloqueados */
+/* --- USUARIOS BLOQUEADOS --- */
 .empty-state {
   text-align: center;
   padding: 40px 20px;
   color: var(--text-secondary);
   font-style: italic;
+  background: var(--bg-secondary);
+  border-radius: 12px;
 }
 
 .blocked-users-list {
@@ -139,50 +151,18 @@ input:checked + .slider:before {
   border: 1px solid var(--border-color);
 }
 
-.blocked-user-info {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 1;
-}
-
-.blocked-avatar,
-.blocked-avatar-placeholder {
-  width: 48px;
-  height: 48px;
-  border-radius: 50%;
-  object-fit: cover;
-}
-
-.blocked-avatar-placeholder {
-  background: linear-gradient(135deg, #a2b895 0%, #679460 100%);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 20px;
-}
-
-.blocked-user-info h4 {
-  margin: 0 0 4px 0;
-  font-size: 16px;
+.blocked-user-item span {
   font-weight: 600;
   color: var(--text-primary);
 }
 
-.blocked-user-info p {
-  margin: 0;
-  font-size: 13px;
-  color: var(--text-secondary);
-}
-
 .unblock-btn {
-  padding: 8px 20px;
+  padding: 8px 16px;
   background: transparent;
-  border: 2px solid #e74c3c;
+  border: 1px solid #e74c3c;
   color: #e74c3c;
   border-radius: 20px;
+  font-size: 13px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
@@ -193,9 +173,13 @@ input:checked + .slider:before {
   color: white;
 }
 
-/* Soporte */
+/* --- FORMULARIO DE SOPORTE --- */
 .support-form {
   margin-bottom: 30px;
+  background: var(--bg-secondary);
+  padding: 20px;
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
 }
 
 .support-form h3 {
@@ -221,10 +205,11 @@ input:checked + .slider:before {
 .form-group textarea {
   width: 100%;
   padding: 12px 16px;
-  border: 2px solid var(--border-color);
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
   border-radius: 8px;
   font-size: 14px;
-  font-family: inherit;
+  color: var(--text-primary);
   transition: all 0.3s ease;
   box-sizing: border-box;
 }
@@ -232,27 +217,14 @@ input:checked + .slider:before {
 .form-group input:focus,
 .form-group textarea:focus {
   outline: none;
-  border-color: #679460;
-  box-shadow: 0 0 0 3px rgba(103, 148, 96, 0.1);
-}
-
-.form-group textarea {
-  resize: vertical;
-  min-height: 100px;
-}
-
-.form-group small {
-  display: block;
-  margin-top: 6px;
-  font-size: 12px;
-  color: var(--text-secondary);
-  text-align: right;
+  border-color: #667eea;
+  box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
 }
 
 .submit-ticket-btn {
   width: 100%;
-  padding: 14px;
-  background: linear-gradient(135deg, #a2b895 0%, #679460 100%);
+  padding: 12px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
   color: white;
   border: none;
   border-radius: 8px;
@@ -264,26 +236,26 @@ input:checked + .slider:before {
 
 .submit-ticket-btn:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(103, 148, 96, 0.4);
+  box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
 }
 
 .submit-ticket-btn:disabled {
-  opacity: 0.5;
+  opacity: 0.6;
   cursor: not-allowed;
 }
 
-/* Tickets */
+/* --- LISTA DE TICKETS --- */
 .tickets-history {
   margin-top: 30px;
-  padding-top: 30px;
-  border-top: 2px solid var(--border-color);
+  padding-top: 20px;
+  border-top: 1px solid var(--border-color);
 }
 
 .tickets-history h3 {
   font-size: 18px;
   font-weight: 600;
   color: var(--text-primary);
-  margin: 0 0 20px 0;
+  margin-bottom: 15px;
 }
 
 .tickets-list {
@@ -296,149 +268,77 @@ input:checked + .slider:before {
   background: var(--bg-secondary);
   border-radius: 12px;
   border: 1px solid var(--border-color);
-  overflow: hidden;
+  padding: 16px;
   transition: all 0.3s ease;
 }
 
-.ticket-item.expanded {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.ticket-header {
+.ticket-header-simple {
   display: flex;
   justify-content: space-between;
-  align-items: center;
-  padding: 16px;
-  cursor: pointer;
-  transition: background 0.3s ease;
+  align-items: flex-start;
+  margin-bottom: 8px;
 }
 
-.ticket-header:hover {
-  background: var(--bg-tertiary);
-}
-
-.ticket-info h4 {
-  margin: 0 0 4px 0;
+.ticket-header-simple h4 {
+  margin: 0;
   font-size: 16px;
   font-weight: 600;
   color: var(--text-primary);
-}
-
-.ticket-date {
-  margin: 0;
-  font-size: 13px;
-  color: var(--text-secondary);
+  flex: 1;
 }
 
 .ticket-status {
-  padding: 6px 16px;
-  border-radius: 20px;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  white-space: nowrap;
+  margin-left: 10px;
 }
 
 .ticket-status.open {
-  background: #3498db;
-  color: white;
+  background: rgba(102, 126, 234, 0.15);
+  color: #667eea;
 }
 
-.ticket-status.in-progress {
-  background: #f39c12;
-  color: white;
-}
-
-.ticket-status.resolved {
-  background: #2ecc71;
-  color: white;
-}
-
-.ticket-status.closed {
-  background: #95a5a6;
-  color: white;
-}
-
-.ticket-details {
-  padding: 0 16px 16px 16px;
-  animation: slideDown 0.3s ease;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    max-height: 0;
-  }
-  to {
-    opacity: 1;
-    max-height: 500px;
-  }
-}
-
-.ticket-description,
-.ticket-response {
-  margin-bottom: 16px;
-}
-
-.ticket-description strong,
-.ticket-response strong {
-  display: block;
-  margin-bottom: 8px;
-  color: var(--text-primary);
-  font-size: 14px;
-}
-
-.ticket-description p,
-.ticket-response p {
-  margin: 0;
-  color: var(--text-primary);
-  line-height: 1.6;
-  font-size: 14px;
-}
-
-.ticket-response {
-  background: #e8f5e9;
-  padding: 16px;
-  border-radius: 8px;
-  border-left: 4px solid #679460;
-}
-
-.ticket-response small {
-  display: block;
-  margin-top: 8px;
+.ticket-date {
   font-size: 12px;
-  color: var(--text-secondary);
-  font-style: italic;
+  color: var(--text-muted);
+  margin: 0 0 8px 0;
 }
 
-.pending-response {
+.ticket-desc {
+  font-size: 14px;
   color: var(--text-secondary);
-  font-style: italic;
-  margin: 16px 0 0 0;
-  text-align: center;
+  margin: 0;
+  line-height: 1.5;
 }
 
-/* Cerrar Sesión */
+/* --- BOTÓN CERRAR SESIÓN --- */
 .logout-btn {
   width: 100%;
   padding: 16px;
-  background: #e74c3c;
-  color: white;
-  border: none;
-  border-radius: 8px;
+  background: transparent;
+  color: #e74c3c;
+  border: 2px solid #e74c3c;
+  border-radius: 12px;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 700;
   cursor: pointer;
   transition: all 0.3s ease;
+  margin-top: 20px;
 }
 
 .logout-btn:hover {
-  background: #c0392b;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(231, 76, 60, 0.4);
+  background: #e74c3c;
+  color: white;
 }
 
+/* --- RESPONSIVE --- */
 @media (max-width: 600px) {
   .settings-container {
-    padding: 20px 15px;
+    padding: 15px;
   }
 
   .settings-section {
@@ -448,7 +348,7 @@ input:checked + .slider:before {
   .setting-item {
     flex-direction: column;
     align-items: flex-start;
-    gap: 16px;
+    gap: 12px;
   }
 
   .toggle-switch {
@@ -458,9 +358,7 @@ input:checked + .slider:before {
   .blocked-user-item {
     flex-direction: column;
     gap: 12px;
-  }
-
-  .unblock-btn {
-    width: 100%;
+    align-items: stretch;
+    text-align: center;
   }
 }
