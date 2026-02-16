@@ -6,11 +6,17 @@ export interface Post {
   userAvatar?: string;
   image: string;
   text: string;
-  likes: number; // Contador total acumulado
-  likedBy: string[]; // Lista de nombres de usuarios para persistencia
+  likes: number; // Contador total acumulado (Tu corrección)
+  likedBy: string[]; // Lista de nombres para persistencia (Tu corrección)
   comments: Comment[];
   createdAt: Date;
   likedByMe?: boolean; // Propiedad virtual para el frontend
+  challengeInfo?: { // Mantenido: Información del reto de tu compañera
+    id: string;
+    title: string;
+    category: string;
+    points: number;
+  };
 }
 
 export interface Comment {
@@ -30,7 +36,6 @@ export class PostService {
     this.loadPosts();
   }
 
-  // Obtener usuario actual del almacenamiento
   private getCurrentUser(): string {
     return localStorage.getItem('userName') || 'Usuario';
   }
@@ -44,14 +49,18 @@ export class PostService {
         parsed.forEach((post: any) => {
           post.createdAt = new Date(post.createdAt);
           post.comments.forEach((c: any) => c.createdAt = new Date(c.createdAt));
-          // Aseguramos que el array likedBy exista
+          
           if (!post.likedBy || !Array.isArray(post.likedBy)) {
             post.likedBy = [];
+          }
+          
+          // Lógica de retos mantenida
+          if (post.challengeInfo && !post.challengeInfo.category) {
+            post.challengeInfo.category = this.inferCategoryFromId(post.challengeInfo.id);
           }
         });
 
         this.posts.set(parsed);
-        // Calcular el siguiente ID disponible
         const maxId = parsed.reduce((max: number, p: Post) => Math.max(max, p.id), 0);
         this.nextId = maxId + 1;
       } catch (e) {
@@ -63,7 +72,16 @@ export class PostService {
     }
   }
 
+  private inferCategoryFromId(id: string): string {
+    if (id.startsWith('mental')) return 'mental';
+    if (id.startsWith('physical')) return 'physical';
+    if (id.startsWith('mindfulness')) return 'mindfulness';
+    if (id.startsWith('nutrition')) return 'nutrition';
+    return 'mental';
+  }
+
   private initializeDefaults() {
+    // Mezcla de ambos: Datos profesionales de retos con tu sistema de likes
     const defaults: Post[] = [
       {
         id: 1,
@@ -71,10 +89,16 @@ export class PostService {
         userAvatar: '',
         image: 'https://picsum.photos/400/300',
         text: '🏃‍♀️ Corrí 10K hoy. ¡Me siento genial!',
-        likes: 12, // Ejemplo con número alto de likes
-        likedBy: [], // Vacío inicialmente
+        likes: 12, // Mantenemos tus likes profesionales
+        likedBy: [], 
         comments: [],
-        createdAt: new Date()
+        createdAt: new Date(),
+        challengeInfo: { 
+          id: 'physical-1',
+          title: 'Caminata de 30 minutos',
+          category: 'physical',
+          points: 75
+        }
       },
       {
         id: 2,
@@ -85,7 +109,13 @@ export class PostService {
         likes: 5,
         likedBy: [],
         comments: [],
-        createdAt: new Date()
+        createdAt: new Date(),
+        challengeInfo: { 
+          id: 'nutrition-2',
+          title: 'Hidratación consciente',
+          category: 'nutrition',
+          points: 70
+        }
       }
     ];
     this.posts.set(defaults);
@@ -97,11 +127,8 @@ export class PostService {
     localStorage.setItem('posts', JSON.stringify(this.posts()));
   }
 
-  // --- GETTERS ---
-
   getAllPosts(): Post[] {
     const currentUser = this.getCurrentUser();
-    // Mapeamos los posts para calcular 'likedByMe' en tiempo real
     return this.posts().map(p => ({
       ...p,
       likedByMe: p.likedBy.includes(currentUser)
@@ -116,9 +143,13 @@ export class PostService {
     return this.getAllPosts().find(p => p.id == id);
   }
 
-  // --- ACTIONS ---
-
-  addPost(postData: { image: string; text: string; user?: string; userAvatar?: string }) {
+  addPost(postData: { 
+    image: string; 
+    text: string; 
+    user?: string; 
+    userAvatar?: string;
+    challengeInfo?: any; 
+  }) {
     const userName = localStorage.getItem('userName') || 'Usuario';
     const userAvatar = localStorage.getItem('userAvatar') || '';
     
@@ -130,7 +161,8 @@ export class PostService {
       likes: 0,
       likedBy: [],
       comments: [],
-      createdAt: new Date()
+      createdAt: new Date(),
+      challengeInfo: postData.challengeInfo 
     };
 
     this.posts.update(p => [newPost, ...p]);
@@ -138,9 +170,7 @@ export class PostService {
     return newPost;
   }
 
-  /**
-   * Lógica corregida: Suma o resta 1 al contador actual de likes
-   */
+  // Tu lógica profesional de Likes mantenida intacta
   toggleLike(postId: number) {
     const currentUser = this.getCurrentUser();
 
@@ -152,11 +182,9 @@ export class PostService {
           let newLikesCount = p.likes;
 
           if (hasLiked) {
-            // Si ya dio like, lo quitamos de la lista y restamos 1 al total
             newLikedBy = newLikedBy.filter(u => u !== currentUser);
             newLikesCount = Math.max(0, p.likes - 1);
           } else {
-            // Si no dio like, lo añadimos a la lista y sumamos 1 al total
             newLikedBy.push(currentUser);
             newLikesCount = p.likes + 1;
           }
@@ -181,13 +209,7 @@ export class PostService {
             ...p,
             comments: [
               ...p.comments,
-              {
-                id: Date.now(),
-                user,
-                userAvatar,
-                text,
-                createdAt: new Date()
-              }
+              { id: Date.now(), user, userAvatar, text, createdAt: new Date() }
             ]
           };
         }
@@ -197,19 +219,9 @@ export class PostService {
     this.savePosts();
   }
 
-  updatePost(postId: number, data: { text?: string; image?: string }) {
+  updatePost(postId: number, data: any) {
     this.posts.update(posts =>
-      posts.map(p => {
-        if (p.id === postId) {
-          return {
-            ...p,
-            ...data,
-            text: data.text || p.text,
-            image: data.image || p.image
-          };
-        }
-        return p;
-      })
+      posts.map(p => (p.id === postId ? { ...p, ...data } : p))
     );
     this.savePosts();
   }
