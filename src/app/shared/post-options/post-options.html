@@ -14,35 +14,24 @@
     <button 
       class="option-item"
       (click)="handleAction('copy-link')">
-      <span class="option-icon">🔗</span>
       <span class="option-label">Copiar link</span>
     </button>
     
     <button 
       class="option-item"
-      (click)="handleAction('share')">
-      <span class="option-icon">📤</span>
-      <span class="option-label">Enviar a...</span>
-    </button>
-    
-    <button 
-      class="option-item"
       (click)="handleAction('mute')">
-      <span class="option-icon">🔇</span>
       <span class="option-label">Silenciar a {{ userId }}</span>
     </button>
     
     <button 
       class="option-item danger"
       (click)="handleAction('block')">
-      <span class="option-icon">🚫</span>
       <span class="option-label">Bloquear</span>
     </button>
     
     <button 
       class="option-item danger"
       (click)="handleAction('report')">
-      <span class="option-icon">⚠️</span>
       <span class="option-label">Reportar</span>
     </button>
   </div>
