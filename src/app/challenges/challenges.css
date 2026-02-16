@@ -397,24 +397,27 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 20px;
-  flex-wrap: wrap;
-  gap: 15px;
+  width: 100%;
+  gap: 10px;
 }
 
 .status-left {
   display: flex;
   align-items: center;
   gap: 10px;
+  min-width: 0; /* Permitir que se encoja si es necesario */
+  flex: 1;
 }
 
-/* Categoría */
+/* Contenedor de categoría */
 .challenge-category-icon {
   display: flex;
   align-items: center;
   gap: 10px;
-  padding: 8px 16px;
+  padding: 6px 16px;
   border-radius: 50px;
   border: 1px solid;
+  white-space: nowrap;
 }
 
 /* Colores para el contenedor de categoría */
@@ -440,14 +443,15 @@
 
 /* Icono de categoría */
 .category-icon {
-  font-size: 1.8rem;
-  width: 50px;
-  height: 50px;
+  font-size: 1.4rem;
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: 50%;
   color: white;
+  flex-shrink: 0;
 }
 
 /* Colores para el icono */
@@ -493,23 +497,32 @@
   color: var(--category-nutrition) !important;
 }
 
+/* Puntos de energía - SIEMPRE A LA DERECHA */
 .challenge-points {
   font-size: 1.2rem;
   font-weight: 700;
   color: #f6ad55;
   background: rgba(246, 173, 85, 0.15);
-  padding: 8px 16px;
+  padding: 6px 16px;
   border-radius: 50px;
   white-space: nowrap;
   flex-shrink: 0;
   border: 1px solid rgba(246, 173, 85, 0.2);
+  margin-left: auto; /* FORZAR a la derecha */
+  text-align: center;
+  min-width: 80px; /* Ancho mínimo para consistencia */
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
+/* Modo oscuro para puntos */
 [data-theme="dark"] .challenge-points {
   background: rgba(246, 173, 85, 0.25);
   color: #fbd38d;
   border-color: rgba(246, 173, 85, 0.3);
 }
+
 
 /* ===== CONTENIDO ===== */
 .challenge-title-simple {
@@ -1109,9 +1122,10 @@
 
 /* ===== RESPONSIVE ===== */
 @media (max-width: 768px) {
-  .challenges-page {
-    padding: 15px;
-    padding-top: 90px;
+  .challenge-status {
+    flex-direction: row; /* FORZAR a mantener fila */
+    flex-wrap: nowrap; /* NO permitir wrap */
+    gap: 8px;
   }
   
   .page-header {
@@ -1188,8 +1202,7 @@
   }
   
   .status-left {
-    width: 100%;
-    justify-content: space-between;
+    flex: 1;
   }
   
   .daily-tip {
@@ -1218,15 +1231,18 @@
 }
 
 @media (max-width: 480px) {
+  .challenge-status {
+    flex-wrap: wrap; /* Permitir wrap si no hay espacio */
+    gap: 10px;
+  }
   .status-left {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: 8px;
+    width: 100%;
+    justify-content: flex-start;
   }
   
   .challenge-points {
-    font-size: 1.1rem;
-    padding: 5px 12px;
+    margin-left: 0;
+    width: auto;
   }
   
   .simple-filters {

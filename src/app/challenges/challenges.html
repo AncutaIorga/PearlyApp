@@ -2,40 +2,37 @@
 
 <div class="challenges-page">
   <!-- Encabezado principal -->
-  <!-- Encabezado principal -->
-<header class="page-header">
-  <div class="header-main">
-    <!-- Contenedor del título con emoji -->
-    <div class="header-content">
-      <div class="header-emoji">🍃</div>
-      <div class="header-text">
-        <h1>Retos de Bienestar</h1>
-        <p class="header-subtitle">Cuida tu cuerpo y mente con desafíos diarios</p>
+  <header class="page-header">
+    <div class="header-main">
+      <!-- Contenedor del título con emoji -->
+      <div class="header-content">
+        <div class="header-emoji">🍃</div>
+        <div class="header-text">
+          <h1>Retos de Bienestar</h1>
+          <p class="header-subtitle">Cuida tu cuerpo y mente con desafíos diarios</p>
+        </div>
+      </div>
+      
+      <!-- Estadísticas rápidas - ahora en línea -->
+      <div class="quick-stats">
+        <div class="stat-bubble energy">
+          <span class="stat-number">{{ energyPoints }} ⚡</span>
+          <span class="stat-label">Energía</span>
+        </div>
+        <div class="stat-bubble streak">
+          <span class="stat-number">{{ currentStreak }} {{ currentStreak > 0 ? '🔥' : '📅' }}</span>
+          <span class="stat-label">Racha</span>
+        </div>
       </div>
     </div>
-    
-    <!-- Estadísticas rápidas - ahora en línea -->
-    <div class="quick-stats">
-      <div class="stat-bubble energy">
-        <span class="stat-number">{{ energyPoints }} ⚡</span>
-        <span class="stat-label">Energía</span>
-      </div>
-      <div class="stat-bubble streak">
-        <span class="stat-number">{{ currentStreak }} {{ currentStreak > 0 ? '🔥' : '📅' }}</span>
-        <span class="stat-label">Racha</span>
-      </div>
-    </div>
-  </div>
-</header>
+  </header>
 
   <!-- Sección de balance -->
   <section class="balance-section">
     <div class="balance-header">
       <div>
         <h2>Tu balance mente-cuerpo</h2>
-        <!-- Ya eliminado el texto de retos completados -->
       </div>
-      <!-- ELIMINÉ EL SCORE {{ wellnessScore }}/100 -->
     </div>
     
     <div class="balance-bars">
@@ -79,7 +76,7 @@
     <div 
       *ngFor="let challenge of filteredChallenges"
       class="challenge-card-simple {{challenge.category}}"
-      [class.completed]="challenge.completed">
+      [class.completed]="challenge.completed === true">
       
       <!-- Categoría y puntos en la misma línea -->
       <div class="challenge-status">
@@ -110,11 +107,11 @@
       <!-- Botón de acción -->
       <button 
         (click)="handleChallengeAction(challenge)"
-        [disabled]="challenge.completed"
+        [disabled]="challenge.completed === true"
         class="action-btn"
-        [class.completed-btn]="challenge.completed">
-          <span *ngIf="challenge.completed" class="btn-text">✅ COMPLETADO</span>
-          <span *ngIf="!challenge.completed" class="btn-text">✨ COMENZAR</span> 
+        [class.completed-btn]="challenge.completed === true">
+          <span *ngIf="challenge.completed === true" class="btn-text">✅ COMPLETADO</span>
+          <span *ngIf="challenge.completed === false" class="btn-text">✨ COMENZAR</span> 
       </button>
     </div>
   </div>
@@ -127,7 +124,7 @@
     </div>
 
     <div class="daily-cards-container">
-      <div class="daily-challenge-card" *ngFor="let daily of dailyChallenges"[attr.data-daily-id]="daily.id">
+      <div class="daily-challenge-card" *ngFor="let daily of dailyChallenges" [attr.data-daily-id]="daily.id">
         <!-- SOLO PUNTOS, NO DÍA -->
         <div class="daily-card-header">
           <span class="points-badge">+{{ daily.points }} ⚡</span>
@@ -144,10 +141,10 @@
         
         <button 
           (click)="completeDailyChallenge(daily.id)"
-          [disabled]="daily.completed"
+          [disabled]="daily.completed === true"
           class="daily-action-btn"
-          [class.claimed]="daily.completed">
-          {{ daily.completed ? '✅ COMPLETADO' : '✨ COMENZAR' }}
+          [class.claimed]="daily.completed === true">
+          {{ daily.completed === true ? '✅ COMPLETADO' : '✨ COMENZAR' }}
         </button>
       </div>
     </div>
