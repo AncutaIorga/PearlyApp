@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, ViewChild, ElementRef } from '@angular/core';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -9,6 +9,16 @@ import { NavbarComponent } from '../shared/navbar/navbar';
 import { NotificationService } from '../services/notification';
 import { TimeAgoPipe } from '../pipes/time-ago-pipe';
 
+interface DailyChallenge {
+  id: string;
+  title: string;
+  description: string;
+  points: number;
+  completed: boolean;
+  tags: string[];
+  category?: string;
+}
+
 @Component({
   standalone: true,
   imports: [NavbarComponent, CommonModule, FormsModule, TimeAgoPipe, RouterModule],
@@ -18,6 +28,8 @@ import { TimeAgoPipe } from '../pipes/time-ago-pipe';
 export class ProfileComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private route = inject(ActivatedRoute);
+  
+  @ViewChild('fileInput') fileInput!: ElementRef; // AÑADIR ESTA LÍNEA
   
   user: any = {};
   isOwnProfile = true; // Controla si puedo editar o no
@@ -30,9 +42,13 @@ export class ProfileComponent implements OnInit {
   editPostData: any = {};
   newComment = '';
   
+  // Nueva variable para la imagen seleccionada
+  selectedAvatarFile: File | null = null;
+  avatarPreview: string | null = null;
+  
   userStats = { posts: 0, followers: 0, following: 0 };
   posts: Post[] = [];
-  dailyChallenges: any[] = []; // Solo para mi perfil
+  pendingDailyChallenges: DailyChallenge[] = []; // Retos diarios pendientes
 
   constructor(
     private userService: UserService,
@@ -88,7 +104,7 @@ export class ProfileComponent implements OnInit {
   loadMyData() {
     this.loadUserPosts();
     this.updateStats();
-    this.loadDailyChallenges(); // Solo cargo retos si soy yo
+    this.loadPendingDailyChallenges(); // Cargo retos pendientes
   }
 
   loadUserPosts() {
@@ -106,7 +122,114 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  // --- MÉTODOS DE EDICIÓN (Solo funcionan si isOwnProfile es true) ---
+  // --- CARGAR RETOS DIARIOS PENDIENTES ---
+  private loadPendingDailyChallenges() {
+    const userData = this.userService.getUser();
+    const userId = userData?.email ? userData.email.replace(/[.#$[\]]/g, '_') : 'anonymous';
+    const savedProgress = localStorage.getItem(`pearly-wellness-progress-${userId}`);
+    
+    if (savedProgress) {
+      try {
+        const progress = JSON.parse(savedProgress);
+        if (progress.dailyChallenges && Array.isArray(progress.dailyChallenges)) {
+          // Filtrar solo retos diarios NO completados
+          const pending = progress.dailyChallenges.filter((d: any) => d.completed === false);
+          
+          // Mapear a objetos con información completa
+          this.pendingDailyChallenges = pending.map((d: any) => ({
+            id: d.id,
+            title: this.getDailyChallengeTitle(d.id),
+            description: this.getDailyChallengeDescription(d.id),
+            points: this.getDailyChallengePoints(d.id),
+            completed: false,
+            tags: this.getDailyChallengeTags(d.id),
+            category: this.getDailyChallengeCategory(d.id)
+          }));
+        }
+      } catch (error) {
+        console.error('Error cargando retos pendientes:', error);
+        this.pendingDailyChallenges = [];
+      }
+    } else {
+      this.pendingDailyChallenges = [];
+    }
+  }
+
+  private getDailyChallengeTitle(id: string): string {
+    const titles: Record<string, string> = {
+      'daily-1': 'Meditación matutina',
+      'daily-2': 'Estiramientos básicos',
+      'daily-3': 'Reflexión diaria',
+      'daily-4': 'Hidratación completa',
+      'daily-5': 'Pausa digital',
+      'daily-6': 'Respiración consciente'
+    };
+    return titles[id] || 'Reto diario';
+  }
+
+  private getDailyChallengeDescription(id: string): string {
+    const descriptions: Record<string, string> = {
+      'daily-1': 'Dedica 5 minutos por la mañana para meditar y centrar tu mente.',
+      'daily-2': 'Realiza 10 minutos de estiramientos para activar tu cuerpo.',
+      'daily-3': 'Tómate un momento para reflexionar sobre tu día.',
+      'daily-4': 'Bebe al menos 2 litros de agua durante el día.',
+      'daily-5': 'Descansa 20 minutos sin mirar ninguna pantalla.',
+      'daily-6': 'Practica la respiración profunda durante 3 minutos.'
+    };
+    return descriptions[id] || 'Completa este reto diario para mantener tu bienestar.';
+  }
+
+  private getDailyChallengePoints(id: string): number {
+    const points: Record<string, number> = {
+      'daily-1': 30,
+      'daily-2': 25,
+      'daily-3': 20,
+      'daily-4': 35,
+      'daily-5': 30,
+      'daily-6': 20
+    };
+    return points[id] || 25;
+  }
+
+  private getDailyChallengeTags(id: string): string[] {
+    const tags: Record<string, string[]> = {
+      'daily-1': ['Mindfulness', '5 min'],
+      'daily-2': ['Físico', '10 min'],
+      'daily-3': ['Mental', '5 min'],
+      'daily-4': ['Nutrición', 'Salud'],
+      'daily-5': ['Digital', '20 min'],
+      'daily-6': ['Respiración', 'Calma']
+    };
+    return tags[id] || ['Bienestar'];
+  }
+
+  private getDailyChallengeCategory(id: string): string {
+    const categories: Record<string, string> = {
+      'daily-1': 'mindfulness',
+      'daily-2': 'physical',
+      'daily-3': 'mental',
+      'daily-4': 'nutrition',
+      'daily-5': 'mental',
+      'daily-6': 'mindfulness'
+    };
+    return categories[id] || 'mental';
+  }
+
+  // --- MÉTODOS DE EDICIÓN (con soporte para cambio de foto) ---
+
+  onAvatarSelected(event: any) {
+    const file = event.target.files[0];
+    if (file) {
+      this.selectedAvatarFile = file;
+      
+      // Crear preview
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        this.avatarPreview = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  }
 
   toggleEdit() {
     if (!this.isOwnProfile) return;
@@ -117,12 +240,25 @@ export class ProfileComponent implements OnInit {
         this.notificationService.warning('Nombre inválido');
         return;
       }
+      
+      // Si hay nueva imagen seleccionada, actualizar avatar
+      if (this.avatarPreview) {
+        this.editableUser.avatar = this.avatarPreview;
+      }
+      
       this.user = { ...this.editableUser };
       this.userService.updateUser(this.user);
       localStorage.setItem('userName', this.user.name);
+      
+      // Limpiar la selección de archivo
+      this.selectedAvatarFile = null;
+      this.avatarPreview = null;
+      
       this.notificationService.showProfileUpdated();
     } else {
       this.editableUser = { ...this.user };
+      this.avatarPreview = null;
+      this.selectedAvatarFile = null;
     }
     this.editing = !this.editing;
   }
@@ -130,6 +266,8 @@ export class ProfileComponent implements OnInit {
   cancelEdit() {
     this.editing = false;
     this.editableUser = {};
+    this.avatarPreview = null;
+    this.selectedAvatarFile = null;
   }
 
   // --- MODALES Y ACCIONES ---
@@ -173,25 +311,36 @@ export class ProfileComponent implements OnInit {
     return post.user === currentUserName;
   }
 
-  // --- RETOS (Código simplificado, mantén tu lógica completa si la tienes) ---
-  loadDailyChallenges() {
-     // Aquí va tu lógica de cargar retos del localStorage...
-     // Si la perdiste, avísame, pero asumo que ya la tienes del paso anterior.
-     // Para que no de error la compilación, inicializo vacío:
-     this.dailyChallenges = []; 
-  }
+  // --- NAVEGACIÓN A RETOS ---
   
   goToDailyChallenge(id: string) {
+    // Guardar el ID del reto para enfocarlo en la página de challenges
+    if (id !== 'all') {
+      localStorage.setItem('focusDailyChallenge', id);
+    }
     this.router.navigate(['/challenges']);
   }
 
-  // Gestión de post propio
+  getCategoryIcon(category: string): string {
+    const icons: Record<string, string> = {
+      'mental': '🧠',
+      'physical': '💪',
+      'mindfulness': '🌿',
+      'nutrition': '🍎'
+    };
+    return icons[category] || '🌟';
+  }
+
+  // --- GESTIÓN DE POSTS PROPIOS ---
+
   openEditPostModal(post: Post) {
     this.editingPost = post;
     this.editPostData = { text: post.text, image: post.image };
   }
   
-  closeEditPostModal() { this.editingPost = null; }
+  closeEditPostModal() { 
+    this.editingPost = null; 
+  }
   
   saveEditedPost() {
     if(this.editingPost) {
@@ -202,11 +351,23 @@ export class ProfileComponent implements OnInit {
   }
   
   deletePost(id: number) {
-    if(confirm('¿Eliminar?')) {
+    if(confirm('¿Eliminar esta publicación?')) {
         this.postService.deletePost(id);
         this.loadUserPosts();
         this.closeImageModal();
         this.closeEditPostModal();
+        this.notificationService.success('Publicación eliminada');
     }
+  }
+
+  openFileSelector() {
+    // Crear un input de tipo file temporal
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (event: any) => {
+      this.onAvatarSelected(event);
+    };
+    input.click();
   }
 }
