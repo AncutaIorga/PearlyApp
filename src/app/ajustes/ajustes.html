@@ -73,13 +73,13 @@
         <p class="section-description">Gestiona los usuarios que has bloqueado desde el feed</p>
       </div>
       
-      @if (blockedUsers.length === 0) {
+      @if (blockedUsers().length === 0) {
         <div class="empty-state">
           <p>No has bloqueado a ningún usuario</p>
         </div>
       } @else {
         <div class="blocked-users-list">
-          @for (user of blockedUsers; track user.id) {
+          @for (user of blockedUsers(); track user.id) {
             <div class="blocked-user-item">
               <div class="blocked-user-info">
                  <div class="blocked-avatar-container">
@@ -99,6 +99,45 @@
               </div>
               <button class="unblock-btn" (click)="unblockUser(user.id)">
                 Desbloquear
+              </button>
+            </div>
+          }
+        </div>
+      }
+    </div>
+
+    <div class="settings-section">
+      <div class="section-header">
+        <h2>🔕 Usuarios silenciados</h2>
+        <p class="section-description">Gestiona a los usuarios que has silenciado del feed</p>
+      </div>
+      
+      @if (blockService.mutedUsers().length === 0) {
+        <div class="empty-state">
+          <p>No has silenciado a ningún usuario</p>
+        </div>
+      } @else {
+        <div class="blocked-users-list">
+          @for (user of blockService.mutedUsers(); track user.name) {
+            <div class="blocked-user-item">
+              <div class="blocked-user-info">
+                 <div class="blocked-avatar-container">
+                    @if (user.avatar) {
+                      <img [src]="user.avatar" [alt]="user.name" class="blocked-img">
+                    } @else {
+                      <div class="blocked-avatar-placeholder">
+                        {{ user.name.charAt(0).toUpperCase() }}
+                      </div>
+                    }
+                 </div>
+                 
+                 <div style="margin-left: 12px">
+                   <h4 style="margin: 0; color: var(--text-primary)">{{ user.name }}</h4>
+                   <p style="margin: 0; font-size: 12px; color: var(--text-muted)">Silenciado</p>
+                 </div>
+              </div>
+              <button class="unblock-btn" (click)="blockService.unmuteUser(user.name)">
+                Desilenciar
               </button>
             </div>
           }

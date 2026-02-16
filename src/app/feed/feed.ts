@@ -1,9 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { PostService, Post } from '../services/post';
+import { PostService } from '../services/post';
+import { BlockService } from '../services/block';
 import { PostCardComponent } from '../shared/post-card/post-card';
 import { NavbarComponent } from '../shared/navbar/navbar';
-import { MuteService } from '../services/mute';
 
 @Component({
   standalone: true,
@@ -12,13 +12,18 @@ import { MuteService } from '../services/mute';
   styleUrl: './feed.css'
 })
 export class FeedComponent {
-  posts: Post[] = [];
+  private postService = inject(PostService);
+  private blockService = inject(BlockService);
 
-  constructor(
-    private postService: PostService,
-    private muteService: MuteService
-  ) {
+  // Renombrado a 'posts' para que coincida con tu HTML
+  posts = computed(() => {
     const allPosts = this.postService.getAllPosts();
-    this.posts = allPosts.filter(p => !this.muteService.isMuted(p.user));
-  }
+    const blocks = this.blockService.blockedUsers();
+    const mutes = this.blockService.mutedUsers();
+    
+    return allPosts.filter(post => 
+      !blocks.some(b => b.name === post.user) && 
+      !mutes.some(m => m.name === post.user)
+    );
+  });
 }

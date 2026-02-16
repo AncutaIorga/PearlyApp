@@ -6,8 +6,8 @@ export interface Post {
   userAvatar?: string;
   image: string;
   text: string;
-  likes: number;
-  likedBy: string[]; // Lista de usuarios que han dado like
+  likes: number; // Contador total acumulado
+  likedBy: string[]; // Lista de nombres de usuarios para persistencia
   comments: Comment[];
   createdAt: Date;
   likedByMe?: boolean; // Propiedad virtual para el frontend
@@ -71,17 +71,9 @@ export class PostService {
         userAvatar: '',
         image: 'https://picsum.photos/400/300',
         text: '🏃‍♀️ Corrí 10K hoy. ¡Me siento genial!',
-        likes: 2,
-        likedBy: ['Luis', 'Ana'], // Usuarios simulados que dieron like
-        comments: [
-          {
-            id: 101,
-            user: 'Luis',
-            userAvatar: '',
-            text: '¡Increíble! 💪',
-            createdAt: new Date()
-          }
-        ],
+        likes: 12, // Ejemplo con número alto de likes
+        likedBy: [], // Vacío inicialmente
+        comments: [],
         createdAt: new Date()
       },
       {
@@ -90,8 +82,8 @@ export class PostService {
         userAvatar: '',
         image: 'https://picsum.photos/400/301',
         text: '💧 Meta de hidratación cumplida: 2L de agua.',
-        likes: 1,
-        likedBy: ['Neli'],
+        likes: 5,
+        likedBy: [],
         comments: [],
         createdAt: new Date()
       }
@@ -146,6 +138,9 @@ export class PostService {
     return newPost;
   }
 
+  /**
+   * Lógica corregida: Suma o resta 1 al contador actual de likes
+   */
   toggleLike(postId: number) {
     const currentUser = this.getCurrentUser();
 
@@ -154,25 +149,27 @@ export class PostService {
         if (p.id === postId) {
           const hasLiked = p.likedBy.includes(currentUser);
           let newLikedBy = [...p.likedBy];
+          let newLikesCount = p.likes;
 
           if (hasLiked) {
-            // Si ya dio like, lo quitamos
+            // Si ya dio like, lo quitamos de la lista y restamos 1 al total
             newLikedBy = newLikedBy.filter(u => u !== currentUser);
+            newLikesCount = Math.max(0, p.likes - 1);
           } else {
-            // Si no dio like, lo añadimos
+            // Si no dio like, lo añadimos a la lista y sumamos 1 al total
             newLikedBy.push(currentUser);
+            newLikesCount = p.likes + 1;
           }
 
           return {
             ...p,
             likedBy: newLikedBy,
-            likes: newLikedBy.length
+            likes: newLikesCount
           };
         }
         return p;
       })
     );
-    // Guardamos INMEDIATAMENTE para que persista al refrescar
     this.savePosts();
   }
 

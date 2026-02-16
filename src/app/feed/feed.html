@@ -2,10 +2,13 @@
 
 <div class="feed-container theme-transition">
   <div class="feed">
-    @if (posts.length === 0) {
-      <p class="empty-feed">No hay publicaciones todavía</p>
+    @if (posts().length === 0) {
+      <div class="empty-feed">
+        <p>No hay publicaciones para mostrar</p>
+        <small>Es posible que los usuarios estén bloqueados o silenciados.</small>
+      </div>
     } @else {
-      @for (post of posts; track post.id) {
+      @for (post of posts(); track post.id) {
         <app-post-card [post]="post"></app-post-card>
       }
     }
