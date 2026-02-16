@@ -9,17 +9,13 @@
         <h2>🎨 Apariencia</h2>
         <p class="section-description">Personaliza el aspecto de la aplicación</p>
       </div>
-      
       <div class="setting-item">
         <div class="setting-info">
           <h3>Modo oscuro</h3>
           <p>Cambia entre tema claro y oscuro</p>
         </div>
         <label class="toggle-switch">
-          <input 
-            type="checkbox" 
-            [checked]="isDarkMode()"
-            (change)="toggleTheme()">
+          <input type="checkbox" [checked]="isDarkMode()" (change)="toggleTheme()">
           <span class="slider"></span>
         </label>
       </div>
@@ -30,38 +26,13 @@
         <h2>🔒 Privacidad</h2>
         <p class="section-description">Controla quién puede ver tu perfil y actividad</p>
       </div>
-      
       <div class="setting-item">
         <div class="setting-info">
           <h3>Cuenta privada</h3>
           <p>Solo tus seguidores pueden ver tus publicaciones</p>
         </div>
         <label class="toggle-switch">
-          <input 
-            type="checkbox" 
-            [(ngModel)]="privacySettings.isPrivate"
-            (change)="updatePrivacy()">
-          <span class="slider"></span>
-        </label>
-      </div>
-    </div>
-
-    <div class="settings-section">
-      <div class="section-header">
-        <h2>🔔 Notificaciones</h2>
-        <p class="section-description">Gestiona tus preferencias de notificaciones</p>
-      </div>
-      
-      <div class="setting-item">
-        <div class="setting-info">
-          <h3>Nuevos seguidores</h3>
-          <p>Recibe notificaciones cuando alguien te siga</p>
-        </div>
-        <label class="toggle-switch">
-          <input 
-            type="checkbox" 
-            [(ngModel)]="notificationSettings.followers"
-            (change)="updateNotifications()">
+          <input type="checkbox" [(ngModel)]="privacySettings.isPrivate" (change)="updatePrivacy()">
           <span class="slider"></span>
         </label>
       </div>
@@ -70,7 +41,7 @@
     <div class="settings-section">
       <div class="section-header">
         <h2>🚫 Usuarios bloqueados</h2>
-        <p class="section-description">Gestiona los usuarios que has bloqueado desde el feed</p>
+        <p class="section-description">Gestiona los usuarios que has bloqueado</p>
       </div>
       
       @if (blockedUsers().length === 0) {
@@ -78,23 +49,22 @@
           <p>No has bloqueado a ningún usuario</p>
         </div>
       } @else {
-        <div class="blocked-users-list">
-          @for (user of blockedUsers(); track user.id) {
+        <div class="blocked-users-list preview-mode">
+          @for (user of blockedUsers().slice(0, 3); track user.id) {
             <div class="blocked-user-item">
               <div class="blocked-user-info">
                  <div class="blocked-avatar-container">
-                    @if (user.avatar) {
-                      <img [src]="user.avatar" [alt]="user.name" class="blocked-img">
-                    } @else {
+                    @if (user.avatar) { 
+                      <img [src]="user.avatar" class="blocked-img"> 
+                    } @else { 
                       <div class="blocked-avatar-placeholder">
                         {{ user.name.charAt(0).toUpperCase() }}
-                      </div>
+                      </div> 
                     }
                  </div>
-                 
-                 <div style="margin-left: 12px">
-                   <h4 style="margin: 0; color: var(--text-primary)">{{ user.name }}</h4>
-                   <p style="margin: 0; font-size: 12px; color: var(--text-muted)">Bloqueado</p>
+                 <div class="blocked-user-text">
+                   <h4>{{ user.name }}</h4>
+                   <p>Bloqueado</p>
                  </div>
               </div>
               <button class="unblock-btn" (click)="unblockUser(user.id)">
@@ -103,6 +73,12 @@
             </div>
           }
         </div>
+        
+        @if (blockedUsers().length > 3) {
+          <button class="view-more-btn" (click)="openBlockedModal()">
+            Ver todos ({{ blockedUsers().length }})
+          </button>
+        }
       }
     </div>
 
@@ -111,7 +87,6 @@
         <h2>🔕 Usuarios silenciados</h2>
         <p class="section-description">Gestiona a los usuarios que has silenciado del feed</p>
       </div>
-      
       @if (blockService.mutedUsers().length === 0) {
         <div class="empty-state">
           <p>No has silenciado a ningún usuario</p>
@@ -122,23 +97,15 @@
             <div class="blocked-user-item">
               <div class="blocked-user-info">
                  <div class="blocked-avatar-container">
-                    @if (user.avatar) {
-                      <img [src]="user.avatar" [alt]="user.name" class="blocked-img">
-                    } @else {
-                      <div class="blocked-avatar-placeholder">
-                        {{ user.name.charAt(0).toUpperCase() }}
-                      </div>
-                    }
+                    @if (user.avatar) { <img [src]="user.avatar" class="blocked-img"> }
+                    @else { <div class="blocked-avatar-placeholder">{{ user.name.charAt(0).toUpperCase() }}</div> }
                  </div>
-                 
-                 <div style="margin-left: 12px">
-                   <h4 style="margin: 0; color: var(--text-primary)">{{ user.name }}</h4>
-                   <p style="margin: 0; font-size: 12px; color: var(--text-muted)">Silenciado</p>
+                 <div class="blocked-user-text">
+                   <h4>{{ user.name }}</h4>
+                   <p>Silenciado</p>
                  </div>
               </div>
-              <button class="unblock-btn" (click)="blockService.unmuteUser(user.name)">
-                Desilenciar
-              </button>
+              <button class="unblock-btn" (click)="blockService.unmuteUser(user.name)">Desilenciar</button>
             </div>
           }
         </div>
@@ -153,63 +120,52 @@
 
       <div class="support-form">
         <h3>Crear nuevo ticket</h3>
-        
         <div class="form-group">
           <label>Asunto *</label>
-          <input 
-            type="text" 
-            [(ngModel)]="newTicket.subject"
-            placeholder="Ej: Error al cargar fotos">
+          <input type="text" [(ngModel)]="newTicket.subject" placeholder="Ej: Error al cargar fotos">
         </div>
-
         <div class="form-group">
           <label>Descripción *</label>
-          <textarea 
-            [(ngModel)]="newTicket.description"
-            placeholder="Explica qué sucede..."
-            rows="4"></textarea>
+          <textarea [(ngModel)]="newTicket.description" placeholder="Explica qué sucede..." rows="4"></textarea>
         </div>
-
-        <button 
-          class="submit-ticket-btn"
-          (click)="submitTicket()"
-          [disabled]="!newTicket.subject || !newTicket.description || loading.tickets">
+        <button class="submit-ticket-btn" (click)="submitTicket()" [disabled]="!newTicket.subject || !newTicket.description || loading.tickets">
           {{ loading.tickets ? 'Enviando...' : 'Enviar ticket' }}
         </button>
-      </div>
-
-      <div class="tickets-history">
-        <h3>Mis tickets recientes</h3>
-        
-        @if (tickets().length === 0) {
-          <div class="empty-state">
-            <p>No tienes tickets de soporte pendientes</p>
-          </div>
-        } @else {
-          <div class="tickets-list">
-            @for (ticket of tickets(); track ticket.id) {
-              <div class="ticket-item" style="padding: 15px; margin-bottom: 10px;">
-                <div class="ticket-header-simple" style="display: flex; justify-content: space-between;">
-                  <h4 style="margin: 0;">{{ ticket.subject }}</h4>
-                  <span class="ticket-status open" style="font-size: 10px; padding: 2px 8px; background: #e0e7ff; color: #4338ca; border-radius: 10px;">
-                    Abierto
-                  </span>
-                </div>
-                <p class="ticket-date" style="font-size: 12px; color: var(--text-muted); margin: 5px 0;">
-                  {{ formatDate(ticket.createdAt) }}
-                </p>
-                <p class="ticket-desc" style="font-size: 14px; margin: 5px 0;">{{ ticket.description }}</p>
-              </div>
-            }
-          </div>
-        }
       </div>
     </div>
 
     <div class="settings-section logout-section" style="border: none; background: transparent; box-shadow: none;">
-      <button class="logout-btn" (click)="logout()">
-        🚪 Cerrar sesión
-      </button>
+      <button class="logout-btn" (click)="logout()">🚪 Cerrar sesión</button>
     </div>
   </div>
 </div>
+
+@if (showBlockedModal) {
+  <div class="modal-overlay" (click)="closeBlockedModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3>Lista completa de bloqueados</h3>
+        <button class="close-icon" (click)="closeBlockedModal()">✕</button>
+      </div>
+      <div class="modal-scroll-area">
+        <div class="blocked-users-list">
+          @for (user of blockedUsers(); track user.id) {
+            <div class="blocked-user-item">
+              <div class="blocked-user-info">
+                 <div class="blocked-avatar-container">
+                    @if (user.avatar) { <img [src]="user.avatar" class="blocked-img"> }
+                    @else { <div class="blocked-avatar-placeholder">{{ user.name.charAt(0).toUpperCase() }}</div> }
+                 </div>
+                 <div class="blocked-user-text">
+                   <h4>{{ user.name }}</h4>
+                   <p>Bloqueado</p>
+                 </div>
+              </div>
+              <button class="unblock-btn" (click)="unblockUser(user.id)">Desbloquear</button>
+            </div>
+          }
+        </div>
+      </div>
+    </div>
+  </div>
+}

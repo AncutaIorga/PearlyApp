@@ -25,11 +25,14 @@ export class AjustesComponent implements OnInit {
   public authService = inject(AuthService);
   public userService = inject(UserService);
 
-  // Solución TS2488: Usamos funciones computed para que el HTML reciba el array
+  // Signals para reactividad
   public blockedUsers = computed(() => this.blockService.blockedUsers());
   public mutedUsers = computed(() => this.blockService.mutedUsers());
   public tickets: Signal<SupportTicket[]> = this.supportService.getTicketsSignal();
   
+  // Variables para el Modal
+  showBlockedModal = false;
+
   loading = { privacy: false, notifications: false, tickets: false };
   privacySettings = { isPrivate: false };
   notificationSettings = { followers: true, comments: true, likes: true };
@@ -42,7 +45,13 @@ export class AjustesComponent implements OnInit {
     }
   }
 
+  // --- Lógica de Modal ---
+  openBlockedModal() { this.showBlockedModal = true; }
+  closeBlockedModal() { this.showBlockedModal = false; }
+
+  // --- Otros Métodos ---
   isDarkMode() { return this.themeService.isDarkMode(); }
+  
   toggleTheme() {
     const newTheme = this.themeService.toggleTheme();
     this.notificationService.showThemeChanged(newTheme);
@@ -59,6 +68,8 @@ export class AjustesComponent implements OnInit {
   unblockUser(id: number) {
     this.blockService.unblockUser(id).subscribe(() => {
       this.notificationService.success('Usuario desbloqueado');
+      // Si la lista queda vacía, cerramos el modal automáticamente
+      if (this.blockedUsers().length === 0) this.closeBlockedModal();
     });
   }
 
