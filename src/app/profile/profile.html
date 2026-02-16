@@ -5,13 +5,32 @@
     <div class="profile-layout">
       <div class="profile-left">
         <div class="profile-header">
-          <div class="profile-avatar">
-            @if (user.avatar) {
+          <!-- AVATAR CON OPCIÓN DE CAMBIAR -->
+          <div class="profile-avatar" (click)="editing && fileInput.nativeElement.click()" [style.cursor]="editing ? 'pointer' : 'default'">
+            @if (avatarPreview) {
+              <img [src]="avatarPreview" alt="Avatar preview">
+            } @else if (user.avatar) {
               <img [src]="user.avatar" alt="Avatar">
             } @else {
               <span>{{ user.name?.charAt(0).toUpperCase() }}</span>
             }
+            
+            @if (editing) {
+              <div class="avatar-edit-overlay">
+                <span>📷 Cambiar</span>
+              </div>
+            }
           </div>
+          
+          <!-- Input oculto para seleccionar archivo -->
+          @if (editing) {
+            <input 
+              #fileInput
+              type="file" 
+              style="display: none" 
+              accept="image/*" 
+              (change)="onAvatarSelected($event)">
+          }
           
           @if (isOwnProfile) {
             <button class="edit-btn" (click)="toggleEdit()">
@@ -24,7 +43,7 @@
           
           @if (!editing) {
             <h2>{{ user.name }}</h2>
-            <p class="bio">{{ user.bio }}</p>
+            <p class="bio">{{ user.bio || 'Sin biografía aún' }}</p>
             
             <div class="stats">
               <div class="stat-item">
@@ -45,30 +64,60 @@
           
           @if (editing && isOwnProfile) {
             <input class="edit-input" [(ngModel)]="editableUser.name" placeholder="Nombre" />
-            <textarea class="edit-textarea" [(ngModel)]="editableUser.bio" placeholder="Biografía" maxlength="150"></textarea>
-            <input class="edit-input" [(ngModel)]="editableUser.avatar" placeholder="URL Imagen" />
+            <textarea class="edit-textarea" [(ngModel)]="editableUser.bio" placeholder="Biografía (máx 150 caracteres)" maxlength="150"></textarea>
+            <small class="helper-text">Haz clic en la foto para cambiarla</small>
           }
         </div>
         
+        <!-- SECCIÓN DE RETOS DIARIOS PENDIENTES -->
         @if (isOwnProfile) {
           <div class="challenges-section">
-            <h3>RETOS DIARIOS</h3>
+            <h3>⏳ RETOS DIARIOS PENDIENTES</h3>
             <div class="challenges-list">
-               <div class="challenge-item" (click)="goToDailyChallenge('all')">
-                 <div class="challenge-icon">🌟</div>
-                 <div class="challenge-info">
-                   <div class="challenge-title">Ir a mis retos</div>
-                 </div>
-               </div>
+              @if (pendingDailyChallenges.length === 0) {
+                <div class="no-challenges-message">
+                  <div class="challenge-icon">🎉</div>
+                  <div class="challenge-info">
+                    <div class="challenge-title">¡Todos los retos completados hoy!</div>
+                    <div class="challenge-progress">Vuelve mañana para más retos</div>
+                  </div>
+                </div>
+              } @else {
+                @for (challenge of pendingDailyChallenges; track challenge.id) {
+                  <div class="challenge-item" (click)="goToDailyChallenge(challenge.id)">
+                    <div class="challenge-icon">{{ getCategoryIcon(challenge.category || 'mental') }}</div>
+                    <div class="challenge-info">
+                      <div class="challenge-title">{{ challenge.title }}</div>
+                      <div class="challenge-progress">
+                        <span class="points">+{{ challenge.points }} ⚡</span>
+                        <span class="tags">{{ challenge.tags.join(' • ') }}</span>
+                      </div>
+                    </div>
+                  </div>
+                }
+              }
+              
+              <!-- Enlace a todos los retos -->
+              <div class="challenge-item view-all" (click)="goToDailyChallenge('all')">
+                <div class="challenge-icon">🌟</div>
+                <div class="challenge-info">
+                  <div class="challenge-title">Ver todos los retos</div>
+                  <div class="challenge-progress">Explora más retos de bienestar</div>
+                </div>
+              </div>
             </div>
           </div>
         }
       </div>
       
       <div class="profile-right">
+        <h3 style="margin-top: 0; margin-bottom: 20px;">📸 PUBLICACIONES</h3>
         @if (posts.length === 0) {
           <div class="no-posts">
             <p>📸 No hay publicaciones aún</p>
+            @if (isOwnProfile) {
+              <p class="no-posts-hint">¡Comparte tu primer logro saludable!</p>
+            }
           </div>
         } @else {
           <div class="posts-grid">
@@ -78,6 +127,12 @@
                 <div class="post-overlay">
                   <span>❤️ {{ post.likes }}</span>
                 </div>
+                @if (isPostOwner(post)) {
+                  <div class="post-actions-overlay" (click)="$event.stopPropagation()">
+                    <button class="mini-edit-btn" (click)="openEditPostModal(post)">✏️</button>
+                    <button class="mini-delete-btn" (click)="deletePost(post.id)">🗑️</button>
+                  </div>
+                }
               </div>
             }
           </div>
@@ -87,6 +142,7 @@
   </div>
 </div>
 
+<!-- MODAL DE IMAGEN -->
 @if (selectedPost) {
   <div class="image-modal" (click)="closeImageModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
@@ -99,38 +155,121 @@
         
         <div class="modal-sidebar">
           <div class="modal-header">
-             <div class="modal-user-info">
-               <strong>{{ selectedPost.user }}</strong>
-               <p class="modal-time">{{ selectedPost.createdAt | timeAgo }}</p>
-             </div>
-             @if (isPostOwner(selectedPost)) {
-               <button class="delete-post-btn" (click)="deletePost(selectedPost.id)">🗑️</button>
-             }
+            <div class="modal-user-info">
+              @if (selectedPost.userAvatar) {
+                <img [src]="selectedPost.userAvatar" class="modal-user-avatar">
+              } @else {
+                <div class="modal-user-avatar-placeholder">{{ selectedPost.user.charAt(0).toUpperCase() }}</div>
+              }
+              <div>
+                <strong>{{ selectedPost.user }}</strong>
+                <p class="modal-time">{{ selectedPost.createdAt | timeAgo }}</p>
+              </div>
+            </div>
+            @if (isPostOwner(selectedPost)) {
+              <div class="modal-post-actions">
+                <button class="edit-post-btn" (click)="openEditPostModal(selectedPost)">✏️ Editar</button>
+                <button class="delete-post-btn" (click)="deletePost(selectedPost.id)">🗑️ Eliminar</button>
+              </div>
+            }
           </div>
           
           <div class="modal-description">
             <p>{{ selectedPost.text }}</p>
+            @if (selectedPost.challengeInfo) {
+              <div class="post-challenge-badge" [ngClass]="selectedPost.challengeInfo.category">
+                <span>{{ getCategoryIcon(selectedPost.challengeInfo.category) }}</span>
+                <span>{{ selectedPost.challengeInfo.title }}</span>
+                <span class="points">+{{ selectedPost.challengeInfo.points }} ⚡</span>
+              </div>
+            }
           </div>
           
           <div class="modal-comments">
-            @for (c of selectedPost.comments; track c.id) {
-              <div class="comment-item">
-                <strong>{{ c.user }}:</strong> {{ c.text }}
-              </div>
+            <h4>Comentarios ({{ selectedPost.comments.length }})</h4>
+            @if (selectedPost.comments.length === 0) {
+              <p class="no-comments">No hay comentarios aún. ¡Sé el primero!</p>
+            } @else {
+              @for (c of selectedPost.comments; track c.id) {
+                <div class="comment-item">
+                  <div class="comment-header">
+                    @if (c.userAvatar) {
+                      <img [src]="c.userAvatar" class="comment-avatar">
+                    } @else {
+                      <div class="comment-avatar-placeholder">{{ c.user.charAt(0).toUpperCase() }}</div>
+                    }
+                    <div class="comment-info">
+                      <strong>{{ c.user }}</strong>
+                      <span class="comment-time">{{ c.createdAt | timeAgo }}</span>
+                    </div>
+                  </div>
+                  <p class="comment-text">{{ c.text }}</p>
+                </div>
+              }
             }
           </div>
           
           <div class="modal-actions">
             <button class="like-btn" [class.liked]="selectedPost.likedByMe" (click)="toggleLike()">
-               {{ selectedPost.likedByMe ? '❤️' : '🤍' }}
+              {{ selectedPost.likedByMe ? '❤️' : '🤍' }}
             </button>
-            <span class="likes-count">{{ selectedPost.likes }} likes</span>
+            <span class="likes-count">{{ selectedPost.likes }} {{ selectedPost.likes === 1 ? 'like' : 'likes' }}</span>
           </div>
           
           <div class="modal-comment-input">
-             <input [(ngModel)]="newComment" placeholder="Comentar..." (keyup.enter)="addComment()">
-             <button (click)="addComment()">Enviar</button>
+            <input 
+              [(ngModel)]="newComment" 
+              placeholder="Añade un comentario..." 
+              (keyup.enter)="addComment()"
+              maxlength="200">
+            <button 
+              class="post-comment-btn" 
+              (click)="addComment()"
+              [disabled]="!newComment.trim()">
+              Publicar
+            </button>
           </div>
+        </div>
+      </div>
+    </div>
+  </div>
+}
+
+<!-- MODAL DE EDICIÓN DE POST -->
+@if (editingPost) {
+  <div class="edit-post-modal" (click)="closeEditPostModal()">
+    <div class="edit-post-content" (click)="$event.stopPropagation()">
+      <h3>✏️ Editar publicación</h3>
+      
+      <div class="edit-post-form">
+        <div class="form-group">
+          <label>Texto:</label>
+          <textarea 
+            [(ngModel)]="editPostData.text" 
+            placeholder="Escribe tu publicación..."
+            maxlength="500"></textarea>
+          <small>{{ editPostData.text?.length || 0 }}/500</small>
+        </div>
+        
+        <div class="form-group">
+          <label>URL de imagen:</label>
+          <input 
+            type="text" 
+            [(ngModel)]="editPostData.image" 
+            placeholder="https://ejemplo.com/imagen.jpg">
+        </div>
+        
+        @if (editPostData.image) {
+          <div class="current-image-preview">
+            <p>Vista previa:</p>
+            <img [src]="editPostData.image" class="preview-img" alt="Preview">
+          </div>
+        }
+        
+        <div class="edit-post-buttons">
+          <button class="save-post-btn" (click)="saveEditedPost()">Guardar cambios</button>
+          <button class="cancel-post-btn" (click)="closeEditPostModal()">Cancelar</button>
+          <button class="delete-post-btn-in-modal" (click)="deletePost(editingPost.id)">Eliminar publicación</button>
         </div>
       </div>
     </div>

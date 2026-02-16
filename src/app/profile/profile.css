@@ -968,3 +968,154 @@
     width: 100%;
   }
 }
+
+
+/* Añadir al final del archivo */
+
+/* Overlay para cambio de avatar */
+.avatar-edit-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.profile-avatar {
+  position: relative;
+}
+
+.profile-avatar:hover .avatar-edit-overlay {
+  opacity: 1;
+}
+
+/* Badge de reto en el modal */
+.post-challenge-badge {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 15px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  background: var(--bg-tertiary);
+  border-left: 4px solid;
+  animation: slideIn 0.3s ease;
+}
+
+.post-challenge-badge.mental {
+  border-left-color: #8B5CF6;
+  background: rgba(139, 92, 246, 0.1);
+}
+
+.post-challenge-badge.physical {
+  border-left-color: #EF4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.post-challenge-badge.mindfulness {
+  border-left-color: #10B981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.post-challenge-badge.nutrition {
+  border-left-color: #F59E0B;
+  background: rgba(245, 158, 11, 0.1);
+}
+
+.post-challenge-badge .points {
+  margin-left: auto;
+  font-weight: 700;
+  color: #f6ad55;
+  background: rgba(246, 173, 85, 0.15);
+  padding: 4px 12px;
+  border-radius: 50px;
+  font-size: 0.9rem;
+}
+
+/* Mejoras para la lista de retos */
+.challenge-item .challenge-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.9rem;
+}
+
+.challenge-item .points {
+  font-weight: 700;
+  color: #f6ad55;
+  background: rgba(246, 173, 85, 0.15);
+  padding: 2px 10px;
+  border-radius: 50px;
+  font-size: 0.85rem;
+}
+
+.challenge-item .tags {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.challenge-item.view-all {
+  background: linear-gradient(135deg, rgba(74, 144, 226, 0.1), rgba(92, 219, 149, 0.1));
+  border: 2px dashed var(--border-color);
+}
+
+.challenge-item.view-all:hover {
+  border-color: #4a90e2;
+}
+
+/* Estilo para mensaje sin retos */
+.no-challenges-message {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 25px;
+  background: rgba(16, 185, 129, 0.1);
+  border-radius: 16px;
+  border: 2px solid rgba(16, 185, 129, 0.2);
+  text-align: left;
+}
+
+.no-challenges-message .challenge-icon {
+  font-size: 2.5rem;
+}
+
+.no-challenges-message .challenge-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  margin-bottom: 5px;
+  color: var(--text-primary);
+}
+
+.no-challenges-message .challenge-progress {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+/* Responsive para los badges */
+@media (max-width: 768px) {
+  .post-challenge-badge {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  .post-challenge-badge .points {
+    margin-left: 0;
+    width: 100%;
+    text-align: center;
+  }
+  
+  .challenge-item .challenge-progress {
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+}
