@@ -3,6 +3,21 @@
   <div class="create-post">
     <h2>Comparte tu logro 🌟</h2>
     <form (ngSubmit)="submit()">
+      <!-- Sección de Reto -->
+      <div class="form-group">
+        <label class="section-label">🎯 ¿Qué reto has completado?</label>
+        <select 
+          [(ngModel)]="selectedChallengeId" 
+          name="challengeId" 
+          class="challenge-select"
+          (change)="onChallengeSelected()">
+          <option value="" disabled selected>Selecciona un reto completado</option>
+          <option *ngFor="let challenge of availableChallenges" [value]="challenge.id">
+            {{ challenge.title }} ({{ getCategoryName(challenge.category) }} - +{{ challenge.points }} ⚡)
+          </option>
+        </select>
+      </div>
+
       <!-- Sección de Imagen -->
       <div class="form-group">
         <div class="image-upload-container">
@@ -19,6 +34,7 @@
           }
         </div>
       </div>
+
       <!-- Sección de Descripción -->
       <div class="form-group">
         <textarea 
@@ -27,8 +43,22 @@
           placeholder="Describe tu logro saludable del día... ¿Qué has conseguido hoy?"
           rows="6"></textarea>
       </div>
+
+      <!-- Resumen del reto seleccionado -->
+      @if (selectedChallenge) {
+        <div class="challenge-summary" [ngClass]="selectedChallenge.category">
+          <div class="summary-header">
+            <span class="summary-icon">{{ getCategoryIcon(selectedChallenge.category) }}</span>
+            <span class="summary-title">{{ selectedChallenge.title }}</span>
+          </div>
+          <div class="summary-points">+{{ selectedChallenge.points }} ⚡ Energía</div>
+        </div>
+      }
+
       <div class="form-actions">
-        <button type="submit" class="btn-primary">Publicar logro</button>
+        <button type="submit" class="btn-primary" [disabled]="!selectedChallengeId || !text.trim()">
+          {{ selectedChallengeId ? 'Publicar logro del reto' : 'Selecciona un reto para publicar' }}
+        </button>
       </div>
     </form>
   </div>

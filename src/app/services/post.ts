@@ -11,6 +11,12 @@ export interface Post {
   comments: Comment[];
   createdAt: Date;
   likedByMe?: boolean; // Propiedad virtual para el frontend
+  challengeInfo?: { // NUEVO: Información del reto asociado
+    id: string;
+    title: string;
+    category: string;
+    points: number;
+  };
 }
 
 export interface Comment {
@@ -48,6 +54,10 @@ export class PostService {
           if (!post.likedBy || !Array.isArray(post.likedBy)) {
             post.likedBy = [];
           }
+          // Aseguramos que challengeInfo exista si estaba en el post guardado
+          if (post.challengeInfo && !post.challengeInfo.category) {
+            post.challengeInfo.category = this.inferCategoryFromId(post.challengeInfo.id);
+          }
         });
 
         this.posts.set(parsed);
@@ -61,6 +71,14 @@ export class PostService {
     } else {
       this.initializeDefaults();
     }
+  }
+
+  private inferCategoryFromId(id: string): string {
+    if (id.startsWith('mental')) return 'mental';
+    if (id.startsWith('physical')) return 'physical';
+    if (id.startsWith('mindfulness')) return 'mindfulness';
+    if (id.startsWith('nutrition')) return 'nutrition';
+    return 'mental';
   }
 
   private initializeDefaults() {
@@ -82,7 +100,13 @@ export class PostService {
             createdAt: new Date()
           }
         ],
-        createdAt: new Date()
+        createdAt: new Date(),
+        challengeInfo: { // Añadido ejemplo de reto
+          id: 'physical-1',
+          title: 'Caminata de 30 minutos',
+          category: 'physical',
+          points: 75
+        }
       },
       {
         id: 2,
@@ -93,7 +117,13 @@ export class PostService {
         likes: 1,
         likedBy: ['Neli'],
         comments: [],
-        createdAt: new Date()
+        createdAt: new Date(),
+        challengeInfo: { // Añadido ejemplo de reto
+          id: 'nutrition-2',
+          title: 'Hidratación consciente',
+          category: 'nutrition',
+          points: 70
+        }
       }
     ];
     this.posts.set(defaults);
@@ -126,7 +156,18 @@ export class PostService {
 
   // --- ACTIONS ---
 
-  addPost(postData: { image: string; text: string; user?: string; userAvatar?: string }) {
+  addPost(postData: { 
+    image: string; 
+    text: string; 
+    user?: string; 
+    userAvatar?: string;
+    challengeInfo?: { // NUEVO: Aceptar challengeInfo
+      id: string;
+      title: string;
+      category: string;
+      points: number;
+    };
+  }) {
     const userName = localStorage.getItem('userName') || 'Usuario';
     const userAvatar = localStorage.getItem('userAvatar') || '';
     
@@ -138,7 +179,8 @@ export class PostService {
       likes: 0,
       likedBy: [],
       comments: [],
-      createdAt: new Date()
+      createdAt: new Date(),
+      challengeInfo: postData.challengeInfo // Guardar la info del reto
     };
 
     this.posts.update(p => [newPost, ...p]);
