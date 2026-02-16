@@ -7,9 +7,10 @@ export interface Post {
   image: string;
   text: string;
   likes: number;
+  likedBy: string[]; // Lista de usuarios que han dado like
   comments: Comment[];
   createdAt: Date;
-  likedByMe?: boolean;
+  likedByMe?: boolean; // Propiedad virtual para el frontend
 }
 
 export interface Comment {
@@ -29,26 +30,32 @@ export class PostService {
     this.loadPosts();
   }
 
+  // Obtener usuario actual del almacenamiento
+  private getCurrentUser(): string {
+    return localStorage.getItem('userName') || 'Usuario';
+  }
+
   private loadPosts() {
     const savedPosts = localStorage.getItem('posts');
 
     if (savedPosts) {
       try {
         const parsed = JSON.parse(savedPosts);
-        // Recuperar fechas correctamente (JSON las guarda como string)
         parsed.forEach((post: any) => {
           post.createdAt = new Date(post.createdAt);
-          post.comments.forEach((c: any) => {
-            c.createdAt = new Date(c.createdAt);
-          });
+          post.comments.forEach((c: any) => c.createdAt = new Date(c.createdAt));
+          // Aseguramos que el array likedBy exista
+          if (!post.likedBy || !Array.isArray(post.likedBy)) {
+            post.likedBy = [];
+          }
         });
 
         this.posts.set(parsed);
-        // Actualizar el nextId para no sobrescribir posts
+        // Calcular el siguiente ID disponible
         const maxId = parsed.reduce((max: number, p: Post) => Math.max(max, p.id), 0);
         this.nextId = maxId + 1;
       } catch (e) {
-        console.error('Error al leer posts, reiniciando...', e);
+        console.error('Error cargando posts, reiniciando...', e);
         this.initializeDefaults();
       }
     } else {
@@ -64,7 +71,8 @@ export class PostService {
         userAvatar: '',
         image: 'https://picsum.photos/400/300',
         text: '🏃‍♀️ Corrí 10K hoy. ¡Me siento genial!',
-        likes: 12,
+        likes: 2,
+        likedBy: ['Luis', 'Ana'], // Usuarios simulados que dieron like
         comments: [
           {
             id: 101,
@@ -74,8 +82,7 @@ export class PostService {
             createdAt: new Date()
           }
         ],
-        createdAt: new Date(),
-        likedByMe: false
+        createdAt: new Date()
       },
       {
         id: 2,
@@ -83,10 +90,10 @@ export class PostService {
         userAvatar: '',
         image: 'https://picsum.photos/400/301',
         text: '💧 Meta de hidratación cumplida: 2L de agua.',
-        likes: 8,
+        likes: 1,
+        likedBy: ['Neli'],
         comments: [],
-        createdAt: new Date(),
-        likedByMe: false
+        createdAt: new Date()
       }
     ];
     this.posts.set(defaults);
@@ -98,72 +105,75 @@ export class PostService {
     localStorage.setItem('posts', JSON.stringify(this.posts()));
   }
 
-  // ✅ GETTERS
+  // --- GETTERS ---
+
   getAllPosts(): Post[] {
-    return this.posts();
+    const currentUser = this.getCurrentUser();
+    // Mapeamos los posts para calcular 'likedByMe' en tiempo real
+    return this.posts().map(p => ({
+      ...p,
+      likedByMe: p.likedBy.includes(currentUser)
+    }));
   }
 
   getPostsByUser(userName: string): Post[] {
-    return this.posts().filter(p => p.user === userName);
+    return this.getAllPosts().filter(p => p.user === userName);
   }
 
   getPostById(id: number | string): Post | undefined {
-    return this.posts().find(p => p.id == id);
+    return this.getAllPosts().find(p => p.id == id);
   }
 
-  // ✅ ACTIONS
+  // --- ACTIONS ---
+
   addPost(postData: { image: string; text: string; user?: string; userAvatar?: string }) {
     const userName = localStorage.getItem('userName') || 'Usuario';
-    const userAvatarFromStorage = localStorage.getItem('userAvatar') || '';
+    const userAvatar = localStorage.getItem('userAvatar') || '';
     
     const newPost: Post = {
       ...postData,
       id: this.nextId++,
       user: postData.user || userName,
-      userAvatar: postData.userAvatar || userAvatarFromStorage,
+      userAvatar: postData.userAvatar || userAvatar,
       likes: 0,
+      likedBy: [],
       comments: [],
-      createdAt: new Date(),
-      likedByMe: false
+      createdAt: new Date()
     };
 
     this.posts.update(p => [newPost, ...p]);
-    this.savePosts(); // Guardar cambios
+    this.savePosts();
     return newPost;
   }
 
-  updatePost(postId: number, data: { text?: string; image?: string }) {
-    this.posts.update(posts =>
-      posts.map(p => {
-        if (p.id === postId) {
-          return {
-            ...p,
-            ...data,
-            text: data.text || p.text,
-            image: data.image || p.image
-          };
-        }
-        return p;
-      })
-    );
-    this.savePosts(); // Guardar cambios
-  }
-
   toggleLike(postId: number) {
+    const currentUser = this.getCurrentUser();
+
     this.posts.update(posts =>
       posts.map(p => {
         if (p.id === postId) {
-          const isLikedNow = !p.likedByMe;
+          const hasLiked = p.likedBy.includes(currentUser);
+          let newLikedBy = [...p.likedBy];
+
+          if (hasLiked) {
+            // Si ya dio like, lo quitamos
+            newLikedBy = newLikedBy.filter(u => u !== currentUser);
+          } else {
+            // Si no dio like, lo añadimos
+            newLikedBy.push(currentUser);
+          }
+
           return {
             ...p,
-            likes: isLikedNow ? p.likes + 1 : p.likes - 1,
-            likedByMe: isLikedNow
+            likedBy: newLikedBy,
+            likes: newLikedBy.length
           };
         }
         return p;
       })
     );
-    this.savePosts(); // Guardar inmediatamente
+    // Guardamos INMEDIATAMENTE para que persista al refrescar
+    this.savePosts();
   }
 
   addComment(postId: number, text: string, user: string, userAvatar?: string) {
@@ -187,11 +197,28 @@ export class PostService {
         return p;
       })
     );
-    this.savePosts(); // Guardar cambios
+    this.savePosts();
+  }
+
+  updatePost(postId: number, data: { text?: string; image?: string }) {
+    this.posts.update(posts =>
+      posts.map(p => {
+        if (p.id === postId) {
+          return {
+            ...p,
+            ...data,
+            text: data.text || p.text,
+            image: data.image || p.image
+          };
+        }
+        return p;
+      })
+    );
+    this.savePosts();
   }
 
   deletePost(postId: number) {
     this.posts.update(posts => posts.filter(p => p.id !== postId));
-    this.savePosts(); // Guardar cambios
+    this.savePosts();
   }
 }

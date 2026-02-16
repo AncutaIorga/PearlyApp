@@ -1,6 +1,6 @@
-import { Injectable, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Injectable, signal, inject } from '@angular/core';
+import { Observable, of, delay } from 'rxjs';
+import { PostService } from './post'; 
 
 export interface BlockedUser {
   id: number;
@@ -9,106 +9,86 @@ export interface BlockedUser {
   blockedAt: Date;
 }
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable({ providedIn: 'root' })
 export class BlockService {
-  private readonly API_URL = '/api/users';
-  
   private blockedUsers = signal<BlockedUser[]>([]);
+  private postService = inject(PostService);
 
-  constructor(private http: HttpClient) {}
+  constructor() {
+    this.loadFromStorage();
+  }
+
+  private loadFromStorage() {
+    const saved = localStorage.getItem('blocked-users');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        this.blockedUsers.set(parsed);
+      } catch (e) {
+        console.error('Error cargando bloqueados', e);
+      }
+    }
+  }
+
+  private saveToStorage() {
+    localStorage.setItem('blocked-users', JSON.stringify(this.blockedUsers()));
+  }
 
   /**
-   * Obtiene la lista de usuarios bloqueados desde el backend
+   * Obtiene la lista de usuarios bloqueados
    */
   getBlockedUsers(): Observable<BlockedUser[]> {
-    return this.http.get<BlockedUser[]>(`${this.API_URL}/me/blocked`).pipe(
-      tap(users => {
-        const parsed = users.map(u => ({
-          ...u,
-          blockedAt: new Date(u.blockedAt)
-        }));
-        this.blockedUsers.set(parsed);
-      })
-    );
+    return of(this.blockedUsers()).pipe(delay(200));
   }
 
   /**
-   * Bloquea a un usuario (por ID)
-   */
-  blockUser(userId: number): Observable<void> {
-    return this.http.post<void>(`${this.API_URL}/${userId}/block`, {}).pipe(
-      tap(() => {
-        // Actualizar estado local llamando la lista
-        this.getBlockedUsers().subscribe();
-      })
-    );
-  }
-
-  /**
-   * Desbloquea a un usuario (por ID)
-   */
-  unblockUser(userId: number): Observable<void> {
-    return this.http.delete<void>(`${this.API_URL}/${userId}/block`).pipe(
-      tap(() => {
-        this.blockedUsers.update(users => users.filter(u => u.id !== userId));
-      })
-    );
-  }
-
-  /**
-   * Bloquear usuario por username (actualiza al instante el estado local)
+   * Bloquea a un usuario capturando su avatar de los posts existentes
    */
   blockUserByUsername(username: string): Observable<void> {
-    // Actualiza local
-    const list = this.blockedUsers();
-    if (!list.some(u => u.name === username)) {
-      this.blockedUsers.set([
-        ...list,
+    const currentList = this.blockedUsers();
+    
+    if (!currentList.some(u => u.name === username)) {
+      // Buscar avatar del usuario en los posts para guardarlo en la lista de bloqueados
+      const userPosts = this.postService.getPostsByUser(username);
+      const userAvatar = userPosts.length > 0 ? userPosts[0].userAvatar : '';
+
+      this.blockedUsers.update(users => [
+        ...users,
         {
-          id: Date.now(), // id temporal
+          id: Date.now(),
           name: username,
+          avatar: userAvatar,
           blockedAt: new Date()
         }
       ]);
+      this.saveToStorage();
     }
-
-    // Opcional: enviar al backend
-    this.http.post(`${this.API_URL}/block`, { username }).subscribe();
-
-    return new Observable<void>(obs => {
-      obs.next();
-      obs.complete();
-    });
+    return of(void 0).pipe(delay(300));
   }
 
   /**
-   * Desbloquear usuario por username (actualiza al instante el estado local)
+   * Desbloquea por ID (Usado en Ajustes)
+   */
+  unblockUser(userId: number): Observable<void> {
+    this.blockedUsers.update(users => users.filter(u => u.id !== userId));
+    this.saveToStorage();
+    return of(void 0).pipe(delay(300));
+  }
+
+  /**
+   * Desbloquea por nombre (Usado en PostOptions)
    */
   unblockUserByUsername(username: string): Observable<void> {
-    this.blockedUsers.update(list => list.filter(u => u.name !== username));
-
-    // Opcional: enviar al backend
-    this.http.post(`${this.API_URL}/unblock`, { username }).subscribe();
-
-    return new Observable<void>(obs => {
-      obs.next();
-      obs.complete();
-    });
+    this.blockedUsers.update(users => users.filter(u => u.name !== username));
+    this.saveToStorage();
+    return of(void 0).pipe(delay(300));
   }
 
   /**
-   * Verifica si un usuario está bloqueado (usa la señal local)
+   * Verifica si un usuario está en la lista de bloqueados
+   * ESTA ES LA FUNCIÓN QUE FALTABA
    */
   isBlocked(username: string): boolean {
     return this.blockedUsers().some(u => u.name === username);
-  }
-
-  /**
-   * Devuelve snapshot de usuarios bloqueados
-   */
-  getBlockedUsersSnapshot(): BlockedUser[] {
-    return this.blockedUsers();
   }
 }

@@ -1,8 +1,7 @@
 <div class="post-card theme-transition">
-  <!-- Header del post -->
   <div class="card-header">
     <div class="user-section">
-      <div class="avatar">
+     <div class="avatar" [routerLink]="['/profile', post.user]" style="cursor: pointer">
         @if (post.userAvatar) {
           <img [src]="post.userAvatar" [alt]="post.user">
         } @else {
@@ -10,10 +9,11 @@
         }
       </div>
       <div class="user-info">
-        <h3>{{ post.user }}</h3>
+        <h3 [routerLink]="['/profile', post.user]" style="cursor: pointer">{{ post.user }}</h3>
         <span class="time">{{ post.createdAt | timeAgo }}</span>
       </div>
     </div>
+    
     <app-post-options 
       [postId]="post.id" 
       [userId]="post.user"
@@ -21,14 +21,11 @@
     </app-post-options>
   </div>
 
-  <!-- Imagen del post -->
-  <img [src]="post.image" [alt]="'Logro de ' + post.user" class="post-image" (click)="toggleComments()">
+  <img [src]="post.image" [alt]="post.text" class="post-image" (click)="toggleComments()">
 
-  <!-- Contenido del post -->
   <div class="card-body">
     <p class="post-text">{{ post.text }}</p>
     
-    <!-- Barra de acciones -->
     <div class="card-footer">
       <button class="like-btn" [class.liked]="isLiked" (click)="toggleLike()">
         <span class="heart">{{ isLiked ? '❤️' : '🤍' }}</span>
@@ -36,60 +33,30 @@
       </button>
       
       <div class="action-buttons">
-        <button class="action-btn" (click)="toggleComments()" title="Comentarios">
+        <button class="action-btn" (click)="toggleComments()">
           💬 <span class="count">{{ post.comments.length }}</span>
         </button>
       </div>
     </div>
-
-    <!-- Sección de comentarios (expandible) -->
+    
     @if (showComments) {
       <div class="comments-section">
-        <!-- Lista de comentarios -->
         <div class="comments-list">
           @for (comment of post.comments; track comment.id) {
             <div class="comment-item">
               <div class="comment-avatar">
-                @if (comment.userAvatar) {
-                  <img [src]="comment.userAvatar" [alt]="comment.user">
-                } @else {
-                  <span>{{ comment.user.charAt(0).toUpperCase() }}</span>
-                }
+                 <span>{{ comment.user.charAt(0).toUpperCase() }}</span>
               </div>
               <div class="comment-content">
-                <div class="comment-header">
-                  <strong>{{ comment.user }}</strong>
-                  <span class="comment-time">{{ comment.createdAt | timeAgo }}</span>
-                </div>
+                <strong>{{ comment.user }}</strong>
                 <p class="comment-text">{{ comment.text }}</p>
               </div>
             </div>
-          } @empty {
-            <p class="no-comments">No hay comentarios aún. ¡Sé el primero en comentar!</p>
           }
         </div>
-
-        <!-- Input para nuevo comentario -->
         <div class="comment-input">
-          <div class="comment-avatar small">
-            @if (getCurrentUserAvatar()) {
-              <img [src]="getCurrentUserAvatar()" [alt]="getCurrentUserName()">
-            } @else {
-              <span>{{ getCurrentUserName().charAt(0).toUpperCase() }}</span>
-            }
-          </div>
-          <input 
-            type="text" 
-            [(ngModel)]="newComment"
-            placeholder="Añade un comentario..."
-            (keyup.enter)="addComment()"
-            maxlength="200">
-          <button 
-            class="send-btn"
-            (click)="addComment()"
-            [disabled]="!newComment.trim()">
-            Enviar
-          </button>
+          <input [(ngModel)]="newComment" placeholder="Añade un comentario..." (keyup.enter)="addComment()">
+          <button class="send-btn" (click)="addComment()">Enviar</button>
         </div>
       </div>
     }

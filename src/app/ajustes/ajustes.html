@@ -70,7 +70,7 @@
     <div class="settings-section">
       <div class="section-header">
         <h2>🚫 Usuarios bloqueados</h2>
-        <p class="section-description">Gestiona los usuarios que has bloqueado</p>
+        <p class="section-description">Gestiona los usuarios que has bloqueado desde el feed</p>
       </div>
       
       @if (blockedUsers.length === 0) {
@@ -81,7 +81,22 @@
         <div class="blocked-users-list">
           @for (user of blockedUsers; track user.id) {
             <div class="blocked-user-item">
-              <span>{{ user.name }}</span>
+              <div class="blocked-user-info">
+                 <div class="blocked-avatar-container">
+                    @if (user.avatar) {
+                      <img [src]="user.avatar" [alt]="user.name" class="blocked-img">
+                    } @else {
+                      <div class="blocked-avatar-placeholder">
+                        {{ user.name.charAt(0).toUpperCase() }}
+                      </div>
+                    }
+                 </div>
+                 
+                 <div style="margin-left: 12px">
+                   <h4 style="margin: 0; color: var(--text-primary)">{{ user.name }}</h4>
+                   <p style="margin: 0; font-size: 12px; color: var(--text-muted)">Bloqueado</p>
+                 </div>
+              </div>
               <button class="unblock-btn" (click)="unblockUser(user.id)">
                 Desbloquear
               </button>
@@ -94,7 +109,7 @@
     <div class="settings-section">
       <div class="section-header">
         <h2>💡 Soporte y ayuda</h2>
-        <p class="section-description">Envía tus consultas o reporta problemas</p>
+        <p class="section-description">Envía tus consultas o reporta problemas técnicos</p>
       </div>
 
       <div class="support-form">
@@ -105,14 +120,14 @@
           <input 
             type="text" 
             [(ngModel)]="newTicket.subject"
-            placeholder="Describe brevemente el problema">
+            placeholder="Ej: Error al cargar fotos">
         </div>
 
         <div class="form-group">
           <label>Descripción *</label>
           <textarea 
             [(ngModel)]="newTicket.description"
-            placeholder="Detalla tu problema..."
+            placeholder="Explica qué sucede..."
             rows="4"></textarea>
         </div>
 
@@ -129,18 +144,22 @@
         
         @if (tickets().length === 0) {
           <div class="empty-state">
-            <p>No tienes tickets de soporte</p>
+            <p>No tienes tickets de soporte pendientes</p>
           </div>
         } @else {
           <div class="tickets-list">
             @for (ticket of tickets(); track ticket.id) {
-              <div class="ticket-item">
-                <div class="ticket-header-simple">
-                  <h4>{{ ticket.subject }}</h4>
-                  <span class="ticket-status open">Abierto</span>
+              <div class="ticket-item" style="padding: 15px; margin-bottom: 10px;">
+                <div class="ticket-header-simple" style="display: flex; justify-content: space-between;">
+                  <h4 style="margin: 0;">{{ ticket.subject }}</h4>
+                  <span class="ticket-status open" style="font-size: 10px; padding: 2px 8px; background: #e0e7ff; color: #4338ca; border-radius: 10px;">
+                    Abierto
+                  </span>
                 </div>
-                <p class="ticket-date">{{ formatDate(ticket.createdAt) }}</p>
-                <p class="ticket-desc">{{ ticket.description }}</p>
+                <p class="ticket-date" style="font-size: 12px; color: var(--text-muted); margin: 5px 0;">
+                  {{ formatDate(ticket.createdAt) }}
+                </p>
+                <p class="ticket-desc" style="font-size: 14px; margin: 5px 0;">{{ ticket.description }}</p>
               </div>
             }
           </div>
@@ -148,7 +167,7 @@
       </div>
     </div>
 
-    <div class="settings-section logout-section">
+    <div class="settings-section logout-section" style="border: none; background: transparent; box-shadow: none;">
       <button class="logout-btn" (click)="logout()">
         🚪 Cerrar sesión
       </button>
