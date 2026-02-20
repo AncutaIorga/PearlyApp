@@ -1,84 +1,9 @@
-.post-options-container {
-  position: relative;
-}
-
-.options-trigger {
-  background: none;
-  border: none;
-  cursor: pointer;
-  padding: 8px;
-  border-radius: 50%;
-  color: #666;
-  transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.options-trigger:hover {
-  background-color: #f0f0f0;
-  color: #333;
-}
-
-.options-menu {
-  position: absolute;
-  right: 0;
-  top: 100%;
-  margin-top: 4px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
-  min-width: 220px;
-  z-index: 1000;
-  overflow: hidden;
-  border: 1px solid #e0e0e0;
-  animation: slideDown 0.2s ease;
-}
-
-@keyframes slideDown {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.option-item {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  font-size: 14px;
-  color: #333;
-  text-align: left;
-}
-
-.option-item:hover {
-  background-color: #f5f5f5;
-}
-
-.option-item.danger {
-  color: #dc3545;
-}
-
-.option-item.danger:hover {
-  background-color: #fff5f5;
-}
-
-.option-icon {
-  font-size: 18px;
-  width: 20px;
-  text-align: center;
-}
-
-.option-label {
-  flex: 1;
-}
+.post-options-container { position: relative; }
+.options-trigger { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; border-radius: 4px; }
+.options-trigger:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+.options-menu { position: absolute; right: 0; top: 100%; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; box-shadow: var(--shadow-md); min-width: 150px; z-index: 100; overflow: hidden; padding: 4px; }
+.option-item { width: 100%; text-align: left; padding: 10px 12px; background: transparent; border: none; font-size: 13px; color: var(--text-primary); cursor: pointer; border-radius: 4px; }
+.option-item:hover { background: var(--bg-tertiary); }
+.option-item.danger { color: var(--danger-color); }
+.option-item.danger:hover { background: #FEE2E2; color: #991B1B; }
+[data-theme="dark"] .option-item.danger:hover { background: rgba(239, 68, 68, 0.1); color: #FCA5A5; }

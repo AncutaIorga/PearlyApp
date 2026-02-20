@@ -1,383 +1,73 @@
-/* =========================================
-   ESTILOS GENERALES DEL NAVBAR
-   ========================================= */
-
 .navbar {
   background: var(--navbar-bg);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
   padding: 16px 32px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: var(--shadow-md);
+  border-bottom: 1px solid var(--border-color);
   position: sticky;
   top: 0;
   z-index: 100;
-  transition: all 0.3s ease;
 }
 
-/* Tema oscuro para navbar */
-[data-theme="dark"] .navbar {
-  background: linear-gradient(135deg, #2d2d2d 0%, #1a1a1a 100%);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
-  border-bottom: 1px solid #404040;
-}
-
-.nav-left {
-  display: flex;
-  align-items: center;
-}
+.nav-left { display: flex; align-items: center; }
 
 .logo {
-  font-size: 26px;
-  font-weight: 800;
-  color: #9b8e87;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text-primary);
   text-decoration: none;
-  transition: all 0.3s ease;
+  letter-spacing: -0.5px;
 }
 
-[data-theme="dark"] .logo {
-  color: #b0b0b0;
-}
-
-.logo:hover {
-  transform: scale(1.05);
-  text-shadow: 0 0 20px rgba(231, 210, 210, 0.3);
-}
-
-[data-theme="dark"] .logo:hover {
-  text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
-}
-
-/* =========================================
-   ESTILOS DEL BUSCADOR (NUEVO)
-   ========================================= */
-
-.search-container {
-  position: relative;
-  width: 300px; /* Ancho estándar */
-  margin: 0 20px;
-  z-index: 102;
-  transition: all 0.3s ease;
-}
-
+.search-container { position: relative; width: 300px; margin: 0 20px; }
 .search-box {
-  display: flex;
-  align-items: center;
-  background: var(--input-bg); /* Usa variable global o #fff */
-  border: 1px solid var(--border-color);
+  display: flex; align-items: center;
+  background: var(--bg-tertiary);
+  border: 1px solid transparent;
   border-radius: 20px;
   padding: 8px 16px;
-  transition: all 0.3s ease;
 }
-
-/* Efecto focus en el buscador */
 .search-box:focus-within {
-  border-color: #9b8e87;
-  box-shadow: 0 0 0 2px rgba(155, 142, 135, 0.2);
-}
-
-[data-theme="dark"] .search-box:focus-within {
-  border-color: #b0b0b0;
-  box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
-}
-
-.search-icon {
-  margin-right: 10px;
-  font-size: 14px;
-  color: #9b8e87;
-  opacity: 0.8;
-}
-
-[data-theme="dark"] .search-icon {
-  color: #b0b0b0;
-}
-
-.search-box input {
-  border: none;
-  background: transparent;
-  width: 100%;
-  padding: 0;
-  outline: none;
-  color: var(--text-primary);
-  font-size: 14px;
-  font-weight: 500;
-}
-
-.clear-search {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  font-size: 14px;
-  cursor: pointer;
-  padding: 0 4px;
-}
-
-/* Dropdown de Resultados */
-.search-results {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  margin-top: 12px;
   background: var(--card-bg);
-  border-radius: 12px;
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--border-color);
-  overflow: hidden;
-  max-height: 300px;
-  overflow-y: auto;
-  animation: slideDown 0.2s ease;
+  border-color: var(--accent-color);
+  box-shadow: 0 0 0 3px var(--accent-light);
 }
+.search-icon { color: var(--text-muted); margin-right: 10px; font-size: 14px; }
+.search-box input { border: none; background: transparent; width: 100%; outline: none; color: var(--text-primary); font-size: 14px; }
 
-.search-result-item {
-  display: flex;
-  align-items: center;
-  padding: 12px 16px;
-  cursor: pointer;
-  transition: background 0.2s;
-  border-bottom: 1px solid var(--border-color);
+.search-results {
+  position: absolute; top: 100%; left: 0; right: 0; margin-top: 8px;
+  background: var(--card-bg); border-radius: 12px; border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg); overflow: hidden; max-height: 300px; overflow-y: auto;
 }
+.search-result-item { padding: 12px 16px; display: flex; align-items: center; cursor: pointer; border-bottom: 1px solid var(--border-color); }
+.search-result-item:hover { background: var(--bg-tertiary); }
+.result-avatar { width: 32px; height: 32px; border-radius: 50%; background: var(--border-color); color: var(--text-secondary); display: flex; align-items: center; justify-content: center; margin-right: 12px; font-size: 14px; font-weight: 600; }
+.result-name { font-weight: 500; font-size: 14px; color: var(--text-primary); }
 
-.search-result-item:last-child {
-  border-bottom: none;
-}
-
-.search-result-item:hover {
-  background: var(--bg-tertiary);
-}
-
-.result-avatar {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #9b8e87; /* Usando tu color de acento */
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  margin-right: 12px;
-  font-weight: bold;
-  font-size: 14px;
-}
-
-[data-theme="dark"] .result-avatar {
-  background: #5a5a5a;
-}
-
-.result-info {
-  display: flex;
-  flex-direction: column;
-}
-
-.result-name {
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--text-primary);
-}
-
-.result-bio {
-  font-size: 12px;
-  color: var(--text-muted);
-}
-
-.no-results {
-  padding: 20px;
-  text-align: center;
-  color: var(--text-muted);
-  font-size: 14px;
-}
-
-/* Overlay para cerrar al hacer click fuera */
-.search-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  z-index: 101;
-  background: transparent; /* Invisible */
-}
-
-/* =========================================
-   ENLACES Y BOTONES DE NAVEGACIÓN
-   ========================================= */
-
-.nav-links {
-  display: flex;
-  gap: 24px;
-  align-items: center;
-  position: relative;
-}
-
+.nav-links { display: flex; gap: 8px; align-items: center; }
 .nav-links a {
-  color: #9b8e87;
-  text-decoration: none;
-  font-weight: 600;
-  font-size: 16px;
-  transition: all 0.3s ease;
-  padding: 8px 16px;
-  border-radius: 8px;
+  color: var(--text-secondary); text-decoration: none; font-weight: 500; font-size: 15px;
+  padding: 8px 16px; border-radius: 8px; transition: all 0.2s;
 }
-
-[data-theme="dark"] .nav-links a {
-  color: #b0b0b0;
-}
-
-.nav-links a:hover,
-.nav-links a.active {
-  background: rgba(255, 255, 255, 0.2);
-  transform: translateY(-2px);
-  color: #7a6e68; /* Un poco más oscuro al hover */
-}
-
-[data-theme="dark"] .nav-links a:hover,
-[data-theme="dark"] .nav-links a.active {
-  background: rgba(255, 255, 255, 0.1);
-  color: #ffffff;
-}
+.nav-links a:hover, .nav-links a.active { color: var(--text-primary); background: var(--bg-tertiary); }
 
 .settings-btn {
-  background: rgba(255, 255, 255, 0.2);
-  border: none;
-  color: #9b8e87;
-  padding: 8px;
-  border-radius: 50%;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: transparent; border: none; color: var(--text-secondary);
+  padding: 8px; border-radius: 50%; cursor: pointer; display: flex; align-items: center;
 }
-
-[data-theme="dark"] .settings-btn {
-  background: rgba(255, 255, 255, 0.1);
-  color: #b0b0b0;
-}
-
-.settings-btn:hover {
-  background: rgba(255, 255, 255, 0.3);
-  transform: rotate(90deg);
-}
-
-[data-theme="dark"] .settings-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-/* =========================================
-   MENÚ DE AJUSTES (DROPDOWN)
-   ========================================= */
+.settings-btn:hover { background: var(--bg-tertiary); color: var(--text-primary); }
 
 .settings-menu {
-  position: absolute;
-  right: 0;
-  top: calc(100% + 12px);
-  background: var(--settings-menu-bg);
-  border-radius: 12px;
-  box-shadow: var(--shadow-lg);
-  min-width: 220px;
-  overflow: hidden;
-  border: 1px solid var(--border-color);
-  animation: slideDown 0.2s ease;
-  z-index: 1000;
+  position: absolute; right: 0; top: calc(100% + 12px); background: var(--settings-menu-bg);
+  border-radius: 12px; box-shadow: var(--shadow-lg); min-width: 220px; border: 1px solid var(--border-color); z-index: 1000;
 }
-
 .setting-item {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 16px;
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: background-color 0.2s;
-  font-size: 14px;
-  color: var(--text-primary);
-  text-align: left;
+  width: 100%; display: flex; align-items: center; gap: 12px; padding: 12px 16px;
+  background: none; border: none; cursor: pointer; font-size: 14px; color: var(--text-primary);
 }
-
-.setting-item:hover {
-  background-color: var(--bg-tertiary); 
-}
-
-.setting-item.danger {
-  color: #dc3545; 
-}
-
-[data-theme="dark"] .setting-item.danger {
-  color: #ff6b6b; 
-}
-
-.setting-item.danger:hover {
-  background-color: var(--btn-danger-bg);
-}
-
-[data-theme="dark"] .setting-item.danger:hover {
-  background-color: #3a1a1a;
-}
-
-.setting-icon {
-  font-size: 18px;
-  width: 24px;
-  text-align: center;
-}
-
-.setting-label {
-  flex: 1;
-  font-weight: 500;
-}
-
-.setting-divider {
-  height: 1px;
-  background: var(--border-color);
-  margin: 4px 0;
-}
-
-[data-theme="dark"] .setting-divider {
-  background: #404040;
-}
-
-/* =========================================
-   ANIMACIONES Y RESPONSIVE
-   ========================================= */
-
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-10px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@media (max-width: 768px) {
-  .navbar {
-    padding: 12px 20px;
-  }
-
-  .logo {
-    font-size: 22px;
-  }
-
-  /* Ajustes del buscador en móvil */
-  .search-container {
-    width: 40px; /* Colapsado inicialmente */
-    margin: 0 10px;
-  }
-
-  .search-container.active {
-    position: absolute;
-    left: 10px;
-    right: 10px;
-    width: auto;
-    margin: 0;
-  }
-
-  .nav-links {
-    gap: 12px;
-  }
-
-  .nav-links a {
-    display: none; /* Ocultar textos en móvil para dar espacio al buscador */
-  }
-
-  .settings-menu {
-    right: -10px;
-  }
-}
+.setting-item:hover { background-color: var(--bg-tertiary); }
+.setting-item.danger { color: var(--danger-color); }
