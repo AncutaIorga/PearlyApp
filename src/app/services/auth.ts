@@ -2,7 +2,7 @@ import { Injectable, signal, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { NotificationService } from './notification';
 
-interface User {
+export interface User { // 👈 Cambiado a export para que el Navbar pueda leerlo
   name: string;
   email: string;
   password: string;
@@ -16,15 +16,14 @@ export class AuthService {
   user = signal<{ name: string; email: string } | null>(null);
   private notificationService = inject(NotificationService);
   
-  private registeredUsers: User[] = [
-    {
-      name: 'Neli',
-      email: 'neli@gmail.com',
-      password: 'Neli404_'
-    }
-  ];
+  // 🚨 ARREGLO: Inicializamos vacío y luego cargamos de localStorage
+  private registeredUsers: User[] = [];
 
   constructor(private router: Router) {
+    // 1. Cargamos los usuarios guardados del localStorage
+    this.loadUsersFromStorage();
+
+    // 2. Comprobamos si hay alguien logueado
     this.isAuthenticated = localStorage.getItem('isLoggedIn') === 'true';
     
     if (this.isAuthenticated) {
@@ -32,6 +31,27 @@ export class AuthService {
       const userEmail = localStorage.getItem('userEmail') || '';
       this.user.set({ name: userName, email: userEmail });
     }
+  }
+
+  // --- NUEVA FUNCIÓN: CARGAR USUARIOS ---
+  private loadUsersFromStorage() {
+    const savedUsers = localStorage.getItem('all_registered_users');
+    if (savedUsers) {
+      this.registeredUsers = JSON.parse(savedUsers);
+    } 
+    
+    // Si está vacío (primera vez que entra), añadimos a Neli por defecto
+    if (this.registeredUsers.length === 0) {
+      this.registeredUsers = [
+        { name: 'Neli', email: 'neli@gmail.com', password: 'Neli404_' }
+      ];
+      this.saveUsersToStorage();
+    }
+  }
+
+  // --- NUEVA FUNCIÓN: GUARDAR USUARIOS ---
+  private saveUsersToStorage() {
+    localStorage.setItem('all_registered_users', JSON.stringify(this.registeredUsers));
   }
 
   private isValidEmail(email: string): boolean {
@@ -77,7 +97,7 @@ export class AuthService {
     }
 
     if (!this.isValidEmail(email)) {
-      this.notificationService.warning('Por favor ingresa un email válido');
+      this.notificationService.warning('El formato del correo es incorrecto.');
       return false;
     }
 
@@ -112,7 +132,7 @@ export class AuthService {
     }
 
     if (!this.isValidEmail(email)) {
-      this.notificationService.warning('Por favor ingresa un email válido');
+      this.notificationService.warning('El formato del correo es incorrecto.');
       return false;
     }
 
@@ -138,7 +158,10 @@ export class AuthService {
       password: password
     };
 
+    // 🚨 ARREGLO: Añadimos y GUARDAMOS permanentemente
     this.registeredUsers.push(newUser);
+    this.saveUsersToStorage();
+
     this.isAuthenticated = true;
     localStorage.setItem('isLoggedIn', 'true');
     localStorage.setItem('userName', newUser.name);
@@ -153,9 +176,15 @@ export class AuthService {
   logout() {
     this.isAuthenticated = false;
     this.user.set(null);
+    
+    // 🚨 ARREGLO MUY IMPORTANTE 🚨
+    // No podemos hacer localStorage.clear() porque borraría la base de datos de usuarios registrados (all_registered_users).
+    // En su lugar, borramos solo los datos de sesión activa:
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('userName');
     localStorage.removeItem('userEmail');
+    // Si tenías progreso de retos, puedes hacer removeItem de esas keys también.
+    
     this.notificationService.showLogout();
     this.router.navigate(['/login']);
   }
@@ -165,6 +194,10 @@ export class AuthService {
   }
 
   getRegisteredUsers(): User[] {
+    // Si por lo que sea el array en memoria está vacío, lo intenta cargar de localStorage
+    if (this.registeredUsers.length === 0) {
+       this.loadUsersFromStorage();
+    }
     return this.registeredUsers;
   }
 

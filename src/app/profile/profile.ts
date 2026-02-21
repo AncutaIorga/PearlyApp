@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -29,12 +29,9 @@ export class ProfileComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private route = inject(ActivatedRoute);
   
-  @ViewChild('fileInput') fileInput!: ElementRef; // AÑADIR ESTA LÍNEA
-  
   user: any = {};
-  isOwnProfile = true; // Controla si puedo editar o no
+  isOwnProfile = true; 
   
-  // Variables de edición y modal
   editing = false;
   editableUser: any = {};
   selectedPost: Post | null = null;
@@ -42,13 +39,12 @@ export class ProfileComponent implements OnInit {
   editPostData: any = {};
   newComment = '';
   
-  // Nueva variable para la imagen seleccionada
   selectedAvatarFile: File | null = null;
   avatarPreview: string | null = null;
   
   userStats = { posts: 0, followers: 0, following: 0 };
   posts: Post[] = [];
-  pendingDailyChallenges: DailyChallenge[] = []; // Retos diarios pendientes
+  pendingDailyChallenges: DailyChallenge[] = []; 
 
   constructor(
     private userService: UserService,
@@ -63,17 +59,14 @@ export class ProfileComponent implements OnInit {
       return;
     }
 
-    // Suscribirse a cambios en la URL (por si navegamos de un perfil a otro)
     this.route.paramMap.subscribe(params => {
       const usernameParam = params.get('username');
       const currentUserName = localStorage.getItem('userName');
 
       if (usernameParam && usernameParam !== currentUserName) {
-        // PERFIL DE OTRA PERSONA
         this.isOwnProfile = false;
         this.loadOtherUserProfile(usernameParam);
       } else {
-        // MI PERFIL
         this.isOwnProfile = true;
         this.userService.syncWithAuthData();
         this.user = this.userService.getUser();
@@ -82,9 +75,7 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  // Cargar datos de otro usuario (Simulado para frontend)
   loadOtherUserProfile(username: string) {
-    // Buscamos si tiene posts para coger su avatar
     const userPosts = this.postService.getPostsByUser(username);
     const avatar = userPosts.length > 0 ? userPosts[0].userAvatar : '';
 
@@ -93,7 +84,7 @@ export class ProfileComponent implements OnInit {
       bio: `Perfil público de ${username}. Usuario de PearlyApp.`,
       avatar: avatar,
       achievements: Math.floor(Math.random() * 10),
-      followers: 120, // Datos simulados
+      followers: 120, 
       following: 45
     };
     
@@ -104,7 +95,7 @@ export class ProfileComponent implements OnInit {
   loadMyData() {
     this.loadUserPosts();
     this.updateStats();
-    this.loadPendingDailyChallenges(); // Cargo retos pendientes
+    this.loadPendingDailyChallenges(); 
   }
 
   loadUserPosts() {
@@ -122,7 +113,6 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  // --- CARGAR RETOS DIARIOS PENDIENTES ---
   private loadPendingDailyChallenges() {
     const userData = this.userService.getUser();
     const userId = userData?.email ? userData.email.replace(/[.#$[\]]/g, '_') : 'anonymous';
@@ -132,10 +122,8 @@ export class ProfileComponent implements OnInit {
       try {
         const progress = JSON.parse(savedProgress);
         if (progress.dailyChallenges && Array.isArray(progress.dailyChallenges)) {
-          // Filtrar solo retos diarios NO completados
           const pending = progress.dailyChallenges.filter((d: any) => d.completed === false);
           
-          // Mapear a objetos con información completa
           this.pendingDailyChallenges = pending.map((d: any) => ({
             id: d.id,
             title: this.getDailyChallengeTitle(d.id),
@@ -157,12 +145,8 @@ export class ProfileComponent implements OnInit {
 
   private getDailyChallengeTitle(id: string): string {
     const titles: Record<string, string> = {
-      'daily-1': 'Meditación matutina',
-      'daily-2': 'Estiramientos básicos',
-      'daily-3': 'Reflexión diaria',
-      'daily-4': 'Hidratación completa',
-      'daily-5': 'Pausa digital',
-      'daily-6': 'Respiración consciente'
+      'daily-1': 'Meditación matutina', 'daily-2': 'Estiramientos básicos', 'daily-3': 'Reflexión diaria',
+      'daily-4': 'Hidratación completa', 'daily-5': 'Pausa digital', 'daily-6': 'Respiración consciente'
     };
     return titles[id] || 'Reto diario';
   }
@@ -180,54 +164,77 @@ export class ProfileComponent implements OnInit {
   }
 
   private getDailyChallengePoints(id: string): number {
-    const points: Record<string, number> = {
-      'daily-1': 30,
-      'daily-2': 25,
-      'daily-3': 20,
-      'daily-4': 35,
-      'daily-5': 30,
-      'daily-6': 20
-    };
+    const points: Record<string, number> = { 'daily-1': 30, 'daily-2': 25, 'daily-3': 20, 'daily-4': 35, 'daily-5': 30, 'daily-6': 20 };
     return points[id] || 25;
   }
 
   private getDailyChallengeTags(id: string): string[] {
     const tags: Record<string, string[]> = {
-      'daily-1': ['Mindfulness', '5 min'],
-      'daily-2': ['Físico', '10 min'],
-      'daily-3': ['Mental', '5 min'],
-      'daily-4': ['Nutrición', 'Salud'],
-      'daily-5': ['Digital', '20 min'],
-      'daily-6': ['Respiración', 'Calma']
+      'daily-1': ['Mindfulness', '5 min'], 'daily-2': ['Físico', '10 min'], 'daily-3': ['Mental', '5 min'],
+      'daily-4': ['Nutrición', 'Salud'], 'daily-5': ['Digital', '20 min'], 'daily-6': ['Respiración', 'Calma']
     };
     return tags[id] || ['Bienestar'];
   }
 
   private getDailyChallengeCategory(id: string): string {
     const categories: Record<string, string> = {
-      'daily-1': 'mindfulness',
-      'daily-2': 'physical',
-      'daily-3': 'mental',
-      'daily-4': 'nutrition',
-      'daily-5': 'mental',
-      'daily-6': 'mindfulness'
+      'daily-1': 'mindfulness', 'daily-2': 'physical', 'daily-3': 'mental',
+      'daily-4': 'nutrition', 'daily-5': 'mental', 'daily-6': 'mindfulness'
     };
     return categories[id] || 'mental';
   }
 
-  // --- MÉTODOS DE EDICIÓN (con soporte para cambio de foto) ---
+  // Comprimir imágenes mediante Canvas
+  compressImage(file: File): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(file);
+      reader.onload = (event: any) => {
+        const img = new Image();
+        img.src = event.target.result;
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_WIDTH = 800;
+          let width = img.width;
+          let height = img.height;
 
-  onAvatarSelected(event: any) {
+          if (width > MAX_WIDTH) {
+            height *= MAX_WIDTH / width;
+            width = MAX_WIDTH;
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          
+          if (ctx) {
+            ctx.drawImage(img, 0, 0, width, height);
+            resolve(canvas.toDataURL('image/jpeg', 0.8));
+          } else {
+            resolve(event.target.result); 
+          }
+        };
+        img.onerror = (err) => reject(err);
+      };
+      reader.onerror = (err) => reject(err);
+    });
+  }
+
+  // Cambio de foto instantáneo
+  async onAvatarSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
-      this.selectedAvatarFile = file;
-      
-      // Crear preview
-      const reader = new FileReader();
-      reader.onload = (e: any) => {
-        this.avatarPreview = e.target.result;
-      };
-      reader.readAsDataURL(file);
+      try {
+        this.selectedAvatarFile = file;
+        const optimizedImage = await this.compressImage(file);
+        
+        this.avatarPreview = optimizedImage;
+        this.user.avatar = optimizedImage; // UI Inmediata
+        
+        this.notificationService.success('¡Foto procesada con éxito!');
+      } catch (error) {
+        this.notificationService.error('Error al procesar la imagen.');
+      }
     }
   }
 
@@ -235,13 +242,11 @@ export class ProfileComponent implements OnInit {
     if (!this.isOwnProfile) return;
 
     if (this.editing) {
-      // Guardar cambios
       if (!this.editableUser.name || this.editableUser.name.trim().length < 2) {
-        this.notificationService.warning('Nombre inválido');
+        this.notificationService.warning('El nombre debe tener al menos 2 caracteres.');
         return;
       }
       
-      // Si hay nueva imagen seleccionada, actualizar avatar
       if (this.avatarPreview) {
         this.editableUser.avatar = this.avatarPreview;
       }
@@ -250,7 +255,6 @@ export class ProfileComponent implements OnInit {
       this.userService.updateUser(this.user);
       localStorage.setItem('userName', this.user.name);
       
-      // Limpiar la selección de archivo
       this.selectedAvatarFile = null;
       this.avatarPreview = null;
       
@@ -270,11 +274,7 @@ export class ProfileComponent implements OnInit {
     this.selectedAvatarFile = null;
   }
 
-  // --- MODALES Y ACCIONES ---
-
-  openImageModal(post: Post) {
-    this.selectedPost = post;
-  }
+  openImageModal(post: Post) { this.selectedPost = post; }
 
   closeImageModal() {
     this.selectedPost = null;
@@ -284,9 +284,9 @@ export class ProfileComponent implements OnInit {
   toggleLike() {
     if (this.selectedPost) {
       this.postService.toggleLike(this.selectedPost.id);
-      // Recargar post actualizado
-      const updated = this.postService.getPostById(this.selectedPost.id);
-      if (updated) this.selectedPost = updated;
+      this.selectedPost.likedByMe = !this.selectedPost.likedByMe;
+      this.selectedPost.likes += this.selectedPost.likedByMe ? 1 : -1;
+      this.loadUserPosts(); 
     }
   }
 
@@ -310,11 +310,8 @@ export class ProfileComponent implements OnInit {
     const currentUserName = localStorage.getItem('userName');
     return post.user === currentUserName;
   }
-
-  // --- NAVEGACIÓN A RETOS ---
   
   goToDailyChallenge(id: string) {
-    // Guardar el ID del reto para enfocarlo en la página de challenges
     if (id !== 'all') {
       localStorage.setItem('focusDailyChallenge', id);
     }
@@ -323,15 +320,10 @@ export class ProfileComponent implements OnInit {
 
   getCategoryIcon(category: string): string {
     const icons: Record<string, string> = {
-      'mental': '🧠',
-      'physical': '💪',
-      'mindfulness': '🌿',
-      'nutrition': '🍎'
+      'mental': '🧠', 'physical': '💪', 'mindfulness': '🌿', 'nutrition': '🍎'
     };
     return icons[category] || '🌟';
   }
-
-  // --- GESTIÓN DE POSTS PROPIOS ---
 
   openEditPostModal(post: Post) {
     this.editingPost = post;
@@ -360,8 +352,8 @@ export class ProfileComponent implements OnInit {
     }
   }
 
+  // Esta función crea el input mágicamente por detrás
   openFileSelector() {
-    // Crear un input de tipo file temporal
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';

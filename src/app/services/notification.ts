@@ -28,66 +28,26 @@ export class NotificationService {
 
   constructor() {}
 
-  /**
-   * Muestra una notificación de éxito
-   */
   success(message: string, options?: Partial<AppNotification>) {
-    return this.show({
-      type: 'success',
-      message,
-      title: options?.title || '✅ Éxito',
-      duration: options?.duration ?? this.defaultDuration,
-      dismissible: options?.dismissible ?? true,
-      ...options
-    });
+    return this.show({ type: 'success', message, title: options?.title || '✅ Éxito', duration: options?.duration ?? this.defaultDuration, dismissible: options?.dismissible ?? true, ...options });
   }
 
-  /**
-   * Muestra una notificación de error
-   */
   error(message: string, options?: Partial<AppNotification>) {
-    return this.show({
-      type: 'error',
-      message,
-      title: options?.title || '❌ Error',
-      duration: options?.duration ?? this.defaultDuration * 1.5,
-      dismissible: options?.dismissible ?? true,
-      ...options
-    });
+    return this.show({ type: 'error', message, title: options?.title || '❌ Error', duration: options?.duration ?? this.defaultDuration * 1.5, dismissible: options?.dismissible ?? true, ...options });
   }
 
-  /**
-   * Muestra una notificación informativa
-   */
   info(message: string, options?: Partial<AppNotification>) {
-    return this.show({
-      type: 'info',
-      message,
-      title: options?.title || 'ℹ️ Información',
-      duration: options?.duration ?? this.defaultDuration,
-      dismissible: options?.dismissible ?? true,
-      ...options
-    });
+    return this.show({ type: 'info', message, title: options?.title || 'ℹ️ Información', duration: options?.duration ?? this.defaultDuration, dismissible: options?.dismissible ?? true, ...options });
   }
 
-  /**
-   * Muestra una notificación de advertencia
-   */
   warning(message: string, options?: Partial<AppNotification>) {
-    return this.show({
-      type: 'warning',
-      message,
-      title: options?.title || '⚠️ Advertencia',
-      duration: options?.duration ?? this.defaultDuration,
-      dismissible: options?.dismissible ?? true,
-      ...options
-    });
+    return this.show({ type: 'warning', message, title: options?.title || '⚠️ Advertencia', duration: options?.duration ?? this.defaultDuration, dismissible: options?.dismissible ?? true, ...options });
   }
 
-  /**
-   * Muestra una notificación personalizada
-   */
   show(notification: Omit<AppNotification, 'id' | 'createdAt'>) {
+    // ARREGLO #1: Limpiar array para dejar solo 1 notificación en pantalla
+    this.notifications.set([]); 
+    
     const id = this.nextId++;
     const newNotification: AppNotification = {
       ...notification,
@@ -106,222 +66,122 @@ export class NotificationService {
     return id;
   }
 
-  /**
-   * Cierra una notificación específica
-   */
   dismiss(id: number) {
     this.notifications.update(notifications => 
       notifications.filter(n => n.id !== id)
     );
   }
 
-  /**
-   * Cierra todas las notificaciones
-   */
   dismissAll() {
     this.notifications.set([]);
   }
 
   // ===== MÉTODOS ESPECÍFICOS PARA CADA SERVICIO =====
 
-  // Para AuthService
   showWelcome(name: string) {
-    this.success(`¡Bienvenido de vuelta, ${name}!`, {
-      title: '👋 Hola',
-      duration: 4000
-    });
+    this.success(`¡Bienvenido de vuelta, ${name}!`, { title: '👋 Hola', duration: 4000 });
   }
 
   showLoginError() {
-    this.error('Email o contraseña incorrectos', {
-      title: '🔐 Error de autenticación'
-    });
+    this.error('El correo electrónico o la contraseña son incorrectos.', { title: '🔐 Acceso denegado' });
   }
 
   showRegistrationSuccess(name: string) {
-    this.success(`¡Cuenta creada exitosamente! Bienvenido, ${name}`, {
-      title: '🎉 Registro completado',
-      duration: 6000
-    });
+    this.success(`¡Cuenta creada exitosamente! Bienvenido, ${name}`, { title: '🎉 Registro completado', duration: 6000 });
   }
 
   showLogout() {
-    this.info('Sesión cerrada correctamente', {
-      title: '👋 Hasta pronto',
-      duration: 3000
-    });
+    this.info('Sesión cerrada correctamente', { title: '👋 Hasta pronto', duration: 3000 });
   }
 
-  // Para PostService
   showPostCreated() {
-    this.success('Publicación creada exitosamente', {
-      title: '📝 Nueva publicación'
-    });
+    this.success('Publicación creada exitosamente', { title: '📝 Nueva publicación' });
   }
 
   showPostDeleted() {
-    this.success('Publicación eliminada', {
-      title: '🗑️ Publicación eliminada'
-    });
+    this.success('Publicación eliminada', { title: '🗑️ Publicación eliminada' });
   }
 
   showPostUpdated() {
-    this.success('Publicación actualizada', {
-      title: '✏️ Cambios guardados'
-    });
+    this.success('Publicación actualizada', { title: '✏️ Cambios guardados' });
   }
 
   showPostLiked(liked: boolean, userName: string) {
     if (liked) {
-      this.info(`Te gusta la publicación de ${userName}`, {
-        title: '❤️ Like',
-        duration: 2000
-      });
+      this.info(`Te gusta la publicación de ${userName}`, { title: '❤️ Like', duration: 2000 });
     }
   }
 
   showCommentAdded() {
-    this.success('Comentario agregado', {
-      title: '💬 Comentario',
-      duration: 3000
-    });
+    this.success('Comentario agregado', { title: '💬 Comentario', duration: 3000 });
   }
 
-  // Para UserService
   showProfileUpdated() {
-    this.success('Perfil actualizado correctamente', {
-      title: '👤 Perfil'
-    });
+    this.success('Perfil actualizado correctamente', { title: '👤 Perfil' });
   }
 
   showPrivacyUpdated(isPrivate: boolean) {
-    const message = isPrivate 
-      ? 'Tu cuenta ahora es privada' 
-      : 'Tu cuenta ahora es pública';
-    
-    this.info(message, {
-      title: '🔒 Privacidad',
-      duration: 4000
-    });
+    const message = isPrivate ? 'Tu cuenta ahora es privada' : 'Tu cuenta ahora es pública';
+    this.info(message, { title: '🔒 Privacidad', duration: 4000 });
   }
 
   showMessageSettingsUpdated(onlyFollowers: boolean) {
-    const message = onlyFollowers
-      ? 'Solo tus seguidores pueden escribirte'
-      : 'Todos pueden escribirte mensajes';
-    
-    this.info(message, {
-      title: '💬 Mensajes',
-      duration: 4000
-    });
+    const message = onlyFollowers ? 'Solo tus seguidores pueden escribirte' : 'Todos pueden escribirte mensajes';
+    this.info(message, { title: '💬 Mensajes', duration: 4000 });
   }
 
-  // Para ThemeService
   showThemeChanged(theme: 'light' | 'dark') {
-    const message = theme === 'dark' 
-      ? '🌙 Modo oscuro activado' 
-      : '☀️ Modo claro activado';
-    
-    this.info(message, {
-      duration: 2000,
-      dismissible: false
-    });
+    const message = theme === 'dark' ? '🌙 Modo oscuro activado' : '☀️ Modo claro activado';
+    this.info(message, { duration: 2000, dismissible: false });
   }
 
-  // Para BlockService
   showUserBlocked(userName: string) {
-    this.info(`Usuario ${userName} bloqueado`, {
-      title: '🚫 Usuario bloqueado',
-      duration: 4000
-    });
+    this.info(`Usuario ${userName} bloqueado`, { title: '🚫 Usuario bloqueado', duration: 4000 });
   }
 
   showUserUnblocked(userName: string) {
-    this.info(`Usuario ${userName} desbloqueado`, {
-      title: '✅ Usuario desbloqueado',
-      duration: 4000
-    });
+    this.info(`Usuario ${userName} desbloqueado`, { title: '✅ Usuario desbloqueado', duration: 4000 });
   }
 
-  // Para SupportService
   showTicketCreated(ticketId: number) {
-    this.success(`Ticket #${ticketId} creado. Te responderemos pronto.`, {
-      title: '🎫 Ticket de soporte',
-      duration: 8000
-    });
+    this.success(`Ticket #${ticketId} creado. Te responderemos pronto.`, { title: '🎫 Ticket de soporte', duration: 8000 });
   }
 
   showTicketError() {
-    this.error('Error al crear el ticket. Intenta de nuevo.', {
-      title: '❌ Error en soporte'
-    });
+    this.error('Error al crear el ticket. Intenta de nuevo.', { title: '❌ Error en soporte' });
   }
 
-  // Para Challenges
   showChallengeCompleted(title: string, points: number) {
-    this.success(`"${title}" completado - +${points} ⚡`, {
-      title: '🏆 Reto completado',
-      duration: 5000
-    });
+    this.success(`"${title}" completado - +${points} ⚡`, { title: '🏆 Reto completado', duration: 5000 });
   }
 
   showDailyChallengeCompleted(title: string, points: number) {
-    this.success(`Reto diario: "${title}" - +${points} ⚡`, {
-      title: '✨ ¡Buen trabajo!',
-      duration: 5000
-    });
+    this.success(`Reto diario: "${title}" - +${points} ⚡`, { title: '✨ ¡Buen trabajo!', duration: 5000 });
   }
 
   showStreakUpdated(streak: number) {
     if (streak > 0) {
-      this.info(`¡Llevas ${streak} día${streak > 1 ? 's' : ''} seguidos! 🔥`, {
-        title: '📅 Racha',
-        duration: 4000
-      });
+      this.info(`¡Llevas ${streak} día${streak > 1 ? 's' : ''} seguidos! 🔥`, { title: '📅 Racha', duration: 4000 });
     }
   }
 
   showEnergyGained(points: number) {
-    this.success(`+${points} ⚡ energía ganada`, {
-      title: '⚡ Energía',
-      duration: 3000
-    });
+    this.success(`+${points} ⚡ energía ganada`, { title: '⚡ Energía', duration: 3000 });
   }
 
-  // Para operaciones de copiar/compartir
   showLinkCopied() {
-    this.success('Link copiado al portapapeles', {
-      title: '🔗 Enlace copiado',
-      duration: 2000
-    });
+    this.success('Link copiado al portapapeles', { title: '🔗 Enlace copiado', duration: 2000 });
   }
 
   showUserReported() {
-    this.success('Contenido reportado. Gracias por tu colaboración.', {
-      title: '⚠️ Reporte enviado',
-      duration: 4000
-    });
+    this.success('Contenido reportado. Gracias por tu colaboración.', { title: '⚠️ Reporte enviado', duration: 4000 });
   }
 
-  // Para errores genéricos
   showError(message: string) {
-    this.error(message, {
-      title: '❌ Error'
-    });
+    this.error(message, { title: '❌ Error' });
   }
 
-  // Para confirmaciones con acción
   showConfirmAction(message: string, actionLabel: string, actionHandler: () => void) {
-    return this.show({
-      type: 'info',
-      title: '🤔 Confirmación',
-      message,
-      duration: 10000,
-      dismissible: true,
-      action: {
-        label: actionLabel,
-        handler: actionHandler
-      }
-    });
+    return this.show({ type: 'info', title: '🤔 Confirmación', message, duration: 10000, dismissible: true, action: { label: actionLabel, handler: actionHandler } });
   }
 }

@@ -3,14 +3,9 @@
   <div class="create-post">
     <h2>Comparte tu logro 🌟</h2>
     <form (ngSubmit)="submit()">
-      <!-- Sección de Reto -->
       <div class="form-group">
         <label class="section-label">🎯 ¿Qué reto has completado?</label>
-        <select 
-          [(ngModel)]="selectedChallengeId" 
-          name="challengeId" 
-          class="challenge-select"
-          (change)="onChallengeSelected()">
+        <select [(ngModel)]="selectedChallengeId" name="challengeId" class="challenge-select" (change)="onChallengeSelected()">
           <option value="" disabled selected>Selecciona un reto completado</option>
           <option *ngFor="let challenge of availableChallenges" [value]="challenge.id">
             {{ challenge.title }} ({{ getCategoryName(challenge.category) }} - +{{ challenge.points }} ⚡)
@@ -18,14 +13,9 @@
         </select>
       </div>
 
-      <!-- Sección de Imagen -->
       <div class="form-group">
         <div class="image-upload-container">
-          <input 
-            type="file" 
-            id="imageInput" 
-            accept="image/*" 
-            (change)="onImageSelected($event)">
+          <input type="file" id="imageInput" accept="image/*" (change)="onImageSelected($event)">
           @if (selectedImage) {
             <div class="image-preview">
               <img [src]="selectedImage" alt="Preview">
@@ -35,16 +25,16 @@
         </div>
       </div>
 
-      <!-- Sección de Descripción -->
       <div class="form-group">
         <textarea 
           [(ngModel)]="text" 
           name="text" 
           placeholder="Describe tu logro saludable del día... ¿Qué has conseguido hoy?"
+          maxlength="250"
           rows="6"></textarea>
+          <small style="color: gray; display: block; text-align: right;">{{ text?.length || 0 }}/250 caracteres</small>
       </div>
 
-      <!-- Resumen del reto seleccionado -->
       @if (selectedChallenge) {
         <div class="challenge-summary" [ngClass]="selectedChallenge.category">
           <div class="summary-header">
@@ -56,8 +46,8 @@
       }
 
       <div class="form-actions">
-        <button type="submit" class="btn-primary" [disabled]="!selectedChallengeId || !text.trim()">
-          {{ selectedChallengeId ? 'Publicar logro del reto' : 'Selecciona un reto para publicar' }}
+        <button type="submit" class="btn-primary" [disabled]="!selectedImage || !text.trim() || !selectedChallengeId">
+          Publicar
         </button>
       </div>
     </form>

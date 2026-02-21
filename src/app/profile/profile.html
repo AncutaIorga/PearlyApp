@@ -3,10 +3,11 @@
 <div class="profile-container">
   <div class="profile">
     <div class="profile-layout">
+      
       <div class="profile-left">
         <div class="profile-header">
-          <!-- AVATAR CON OPCIÓN DE CAMBIAR -->
-          <div class="profile-avatar" (click)="editing && fileInput.nativeElement.click()" [style.cursor]="editing ? 'pointer' : 'default'">
+          
+          <div class="profile-avatar" (click)="editing && openFileSelector()" [style.cursor]="editing ? 'pointer' : 'default'">
             @if (avatarPreview) {
               <img [src]="avatarPreview" alt="Avatar preview">
             } @else if (user.avatar) {
@@ -17,29 +18,10 @@
             
             @if (editing) {
               <div class="avatar-edit-overlay">
-                <span>📷 Cambiar</span>
+                <span class="edit-icon">[◉°]</span>
               </div>
             }
           </div>
-          
-          <!-- Input oculto para seleccionar archivo -->
-          @if (editing) {
-            <input 
-              #fileInput
-              type="file" 
-              style="display: none" 
-              accept="image/*" 
-              (change)="onAvatarSelected($event)">
-          }
-          
-          @if (isOwnProfile) {
-            <button class="edit-btn" (click)="toggleEdit()">
-              {{ editing ? 'Guardar' : 'Editar perfil' }}
-            </button>
-            @if (editing) {
-              <button class="cancel-btn" (click)="cancelEdit()">Cancelar</button>
-            }
-          }
           
           @if (!editing) {
             <h2>{{ user.name }}</h2>
@@ -57,19 +39,38 @@
               </div>
             </div>
 
-            @if (!isOwnProfile) {
-              <button class="btn-primary" style="margin-top: 15px; width: 100%">Seguir</button>
-            }
+            <div class="profile-actions">
+              @if (isOwnProfile) {
+                <button class="btn-rect secondary" (click)="toggleEdit()">Editar Perfil</button>
+                <button routerLink="/post-create" class="btn-rect primary">➕ Crear Publicación</button>
+              } @else {
+                <button class="btn-rect primary" style="width: 100%">Seguir</button>
+              }
+            </div>
           }
           
           @if (editing && isOwnProfile) {
-            <input class="edit-input" [(ngModel)]="editableUser.name" placeholder="Nombre" />
-            <textarea class="edit-textarea" [(ngModel)]="editableUser.bio" placeholder="Biografía (máx 150 caracteres)" maxlength="150"></textarea>
-            <small class="helper-text">Haz clic en la foto para cambiarla</small>
+            <p class="avatar-hint">Haz clic en la foto para cambiarla</p>
+            
+            <div class="edit-mode-form">
+              <div class="form-group">
+                <label>Nombre de usuario</label>
+                <input class="edit-input" [(ngModel)]="editableUser.name" placeholder="Tu nombre" />
+              </div>
+              
+              <div class="form-group">
+                <label>Biografía</label>
+                <textarea class="edit-textarea" [(ngModel)]="editableUser.bio" placeholder="Cuenta algo sobre ti (máx 150 caracteres)" maxlength="150" rows="3"></textarea>
+              </div>
+              
+              <div class="edit-buttons">
+                <button class="btn-rect primary" (click)="toggleEdit()">Guardar</button>
+                <button class="btn-rect secondary" (click)="cancelEdit()">Cancelar</button>
+              </div>
+            </div>
           }
         </div>
         
-        <!-- SECCIÓN DE RETOS DIARIOS PENDIENTES -->
         @if (isOwnProfile) {
           <div class="challenges-section">
             <h3>⏳ RETOS DIARIOS PENDIENTES</h3>
@@ -89,7 +90,7 @@
                     <div class="challenge-info">
                       <div class="challenge-title">{{ challenge.title }}</div>
                       <div class="challenge-progress">
-                        <span class="points">+{{ challenge.points }} ⚡</span>
+                        <span class="points">+{{ challenge.points }} ✨ Brillos</span>
                         <span class="tags">{{ challenge.tags.join(' • ') }}</span>
                       </div>
                     </div>
@@ -97,7 +98,6 @@
                 }
               }
               
-              <!-- Enlace a todos los retos -->
               <div class="challenge-item view-all" (click)="goToDailyChallenge('all')">
                 <div class="challenge-icon">🌟</div>
                 <div class="challenge-info">
@@ -111,10 +111,9 @@
       </div>
       
       <div class="profile-right">
-        <h3 style="margin-top: 0; margin-bottom: 20px;">📸 PUBLICACIONES</h3>
         @if (posts.length === 0) {
           <div class="no-posts">
-            <p>📸 No hay publicaciones aún</p>
+            <p> No hay publicaciones aún</p>
             @if (isOwnProfile) {
               <p class="no-posts-hint">¡Comparte tu primer logro saludable!</p>
             }
@@ -127,12 +126,6 @@
                 <div class="post-overlay">
                   <span>❤️ {{ post.likes }}</span>
                 </div>
-                @if (isPostOwner(post)) {
-                  <div class="post-actions-overlay" (click)="$event.stopPropagation()">
-                    <button class="mini-edit-btn" (click)="openEditPostModal(post)">✏️</button>
-                    <button class="mini-delete-btn" (click)="deletePost(post.id)">🗑️</button>
-                  </div>
-                }
               </div>
             }
           </div>
@@ -142,7 +135,6 @@
   </div>
 </div>
 
-<!-- MODAL DE IMAGEN -->
 @if (selectedPost) {
   <div class="image-modal" (click)="closeImageModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
@@ -168,19 +160,19 @@
             </div>
             @if (isPostOwner(selectedPost)) {
               <div class="modal-post-actions">
-                <button class="edit-post-btn" (click)="openEditPostModal(selectedPost)">✏️ Editar</button>
-                <button class="delete-post-btn" (click)="deletePost(selectedPost.id)">🗑️ Eliminar</button>
+                <button class="edit-post-btn" (click)="openEditPostModal(selectedPost)">Editar</button>
+                <button class="delete-post-btn" (click)="deletePost(selectedPost.id)">Eliminar</button>
               </div>
             }
           </div>
           
           <div class="modal-description">
-            <p>{{ selectedPost.text }}</p>
+            <p class="post-text-wrap">{{ selectedPost.text }}</p>
             @if (selectedPost.challengeInfo) {
               <div class="post-challenge-badge" [ngClass]="selectedPost.challengeInfo.category">
                 <span>{{ getCategoryIcon(selectedPost.challengeInfo.category) }}</span>
                 <span>{{ selectedPost.challengeInfo.title }}</span>
-                <span class="points">+{{ selectedPost.challengeInfo.points }} ⚡</span>
+                <span class="points">+{{ selectedPost.challengeInfo.points }} ✨ Brillos</span>
               </div>
             }
           </div>
@@ -203,7 +195,7 @@
                       <span class="comment-time">{{ c.createdAt | timeAgo }}</span>
                     </div>
                   </div>
-                  <p class="comment-text">{{ c.text }}</p>
+                  <p class="comment-text-wrap">{{ c.text }}</p>
                 </div>
               }
             }
@@ -217,17 +209,8 @@
           </div>
           
           <div class="modal-comment-input">
-            <input 
-              [(ngModel)]="newComment" 
-              placeholder="Añade un comentario..." 
-              (keyup.enter)="addComment()"
-              maxlength="200">
-            <button 
-              class="post-comment-btn" 
-              (click)="addComment()"
-              [disabled]="!newComment.trim()">
-              Publicar
-            </button>
+            <input [(ngModel)]="newComment" placeholder="Añade un comentario..." (keyup.enter)="addComment()" maxlength="200">
+            <button class="post-comment-btn" (click)="addComment()" [disabled]="!newComment.trim()">Publicar</button>
           </div>
         </div>
       </div>
@@ -235,41 +218,20 @@
   </div>
 }
 
-<!-- MODAL DE EDICIÓN DE POST -->
 @if (editingPost) {
-  <div class="edit-post-modal" (click)="closeEditPostModal()">
-    <div class="edit-post-content" (click)="$event.stopPropagation()">
-      <h3>✏️ Editar publicación</h3>
-      
+  <div class="edit-post-modal"> 
+    <div class="edit-post-content">
+      <h3>Editar publicación</h3>
       <div class="edit-post-form">
         <div class="form-group">
-          <label>Texto:</label>
-          <textarea 
-            [(ngModel)]="editPostData.text" 
-            placeholder="Escribe tu publicación..."
-            maxlength="500"></textarea>
-          <small>{{ editPostData.text?.length || 0 }}/500</small>
+          <label>Texto (máx. 250):</label>
+          <textarea [(ngModel)]="editPostData.text" placeholder="Escribe tu publicación..." maxlength="250"></textarea>
+          <small>{{ editPostData.text.length }}/250</small>
         </div>
         
-        <div class="form-group">
-          <label>URL de imagen:</label>
-          <input 
-            type="text" 
-            [(ngModel)]="editPostData.image" 
-            placeholder="https://ejemplo.com/imagen.jpg">
-        </div>
-        
-        @if (editPostData.image) {
-          <div class="current-image-preview">
-            <p>Vista previa:</p>
-            <img [src]="editPostData.image" class="preview-img" alt="Preview">
-          </div>
-        }
-        
-        <div class="edit-post-buttons">
-          <button class="save-post-btn" (click)="saveEditedPost()">Guardar cambios</button>
-          <button class="cancel-post-btn" (click)="closeEditPostModal()">Cancelar</button>
-          <button class="delete-post-btn-in-modal" (click)="deletePost(editingPost.id)">Eliminar publicación</button>
+        <div class="edit-buttons">
+          <button class="btn-rect primary" (click)="saveEditedPost()">Guardar cambios</button>
+          <button class="btn-rect secondary" (click)="closeEditPostModal()">Cancelar</button>
         </div>
       </div>
     </div>

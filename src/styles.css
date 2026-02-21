@@ -115,3 +115,51 @@ input:focus, textarea:focus, select:focus {
 }
 .btn-secondary:hover { background: var(--border-color); }
 hr, .divider { border-color: var(--border-color); }
+
+/* Arreglo para palabras larguísimas que rompen el diseño */
+p, h1, h2, h3, h4, span, div, .post-text, .comment-text {
+  word-wrap: break-word !important;
+  overflow-wrap: break-word !important;
+  word-break: break-word !important;
+}
+
+/* Arreglo para las cajas de estadísticas del perfil */
+.stat-item {
+  flex: 1; /* Hace que se repartan el ancho a partes iguales */
+  min-width: 80px;
+}
+
+/* Evitar que la imagen en "crear post" se vuelva gigante (Arreglo #13) */
+.image-preview img {
+  width: 100%;
+  max-height: 400px;
+  object-fit: contain; /* Contain impide que la imagen se recorte o deforme */
+  border-radius: 12px;
+}
+/* =========================================
+   PARCHE NUCLEAR: BOTONES DEL PERFIL
+   ========================================= */
+.profile-actions-center {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  margin-top: 20px !important;
+}
+
+/* Aplicamos margen obligatorio a cualquier botón dentro de esa caja */
+.profile-actions-center > * {
+  display: block !important;
+  width: 100% !important;
+  position: relative !important;
+  top: 0 !important;
+  bottom: 0 !important;
+  transform: none !important; /* Evita que un hover antiguo los desplace */
+  margin-top: 0 !important;
+  margin-bottom: 20px !important; /* ESPACIO DE 20PX HACIA ABAJO */
+  box-sizing: border-box !important;
+}
+
+/* Al último botón le quitamos el margen de abajo para que quede cuadrado */
+.profile-actions-center > *:last-child {
+  margin-bottom: 0 !important;
+}

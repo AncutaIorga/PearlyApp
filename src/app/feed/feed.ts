@@ -1,4 +1,4 @@
-import { Component, inject, computed } from '@angular/core';
+import { Component, inject, computed, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { PostService } from '../services/post';
 import { BlockService } from '../services/block';
@@ -11,11 +11,14 @@ import { NavbarComponent } from '../shared/navbar/navbar';
   templateUrl: './feed.html',
   styleUrl: './feed.css'
 })
-export class FeedComponent {
+export class FeedComponent implements OnInit {
   private postService = inject(PostService);
   private blockService = inject(BlockService);
 
-  // Renombrado a 'posts' para que coincida con tu HTML
+  // Variable que controla si se muestra o no el popup del tutorial
+  showTutorial = false;
+
+  // Calculamos los posts excluyendo a los usuarios bloqueados o silenciados
   posts = computed(() => {
     const allPosts = this.postService.getAllPosts();
     const blocks = this.blockService.blockedUsers();
@@ -26,4 +29,21 @@ export class FeedComponent {
       !mutes.some(m => m.name === post.user)
     );
   });
+
+  ngOnInit() {
+    // ARREGLO ONBOARDING: Comprueba en LocalStorage si el usuario ya vio el tutorial
+    const tutorialDone = localStorage.getItem('tutorialPearlyDone');
+    
+    // Si no lo ha hecho, se activa la variable que muestra el HTML del tutorial
+    if (!tutorialDone) {
+      this.showTutorial = true;
+    }
+  }
+
+  // Método que se ejecuta cuando el usuario pulsa "¡Empezar ahora!" en el tutorial
+  closeTutorial() {
+    this.showTutorial = false;
+    // Guardamos en LocalStorage que ya lo ha visto para que no le vuelva a salir mañana
+    localStorage.setItem('tutorialPearlyDone', 'true');
+  }
 }

@@ -3,4 +3,71 @@
   min-height: calc(100vh - 64px);
   padding: 40px 20px;
 }
-.feed { max-width: 600px; margin: 0 auto; }
+
+.feed {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+/* =========================================
+   ONBOARDING TUTORIAL
+   ========================================= */
+.onboarding-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.tutorial-card {
+  background: var(--card-bg);
+  padding: 32px;
+  border-radius: 16px; /* Coherente con .create-post */
+  max-width: 400px;
+  width: 100%;
+  text-align: center;
+  border: 1px solid var(--border-color);
+  box-shadow: var(--shadow-lg);
+}
+
+.t-icon { font-size: 48px; margin-bottom: 16px; }
+
+.t-list {
+  text-align: left;
+  list-style: none;
+  padding: 16px;
+  margin: 20px 0;
+  background: var(--bg-tertiary);
+  border-radius: 8px;
+}
+
+.t-list li {
+  margin-bottom: 12px;
+  font-size: 14px;
+  color: var(--text-primary);
+}
+
+/* BOTÓN UNIFICADO (8px de radio como crear post) */
+.btn-primary-rect {
+  width: 100%;
+  padding: 12px 24px;
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border: none;
+  border-radius: 8px; /* EL CAMBIO CLAVE */
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-primary-rect:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}

@@ -15,7 +15,7 @@ interface Challenge {
   completed: boolean;
   inProgress: boolean;
   benefits?: string[];
-  order?: number; // Para mantener el orden original
+  order?: number; 
 }
 
 interface DailyChallenge {
@@ -75,35 +75,28 @@ export class ChallengesComponent implements OnInit {
   challenges: Challenge[] = [];
   dailyChallenges: DailyChallenge[] = [];
   private currentUserId: string = 'anonymous';
-  private originalChallenges: Challenge[] = []; // Guardar orden original
+  private originalChallenges: Challenge[] = []; 
   
   get filteredChallenges(): Challenge[] {
     let filtered = this.challenges;
     
-    // Filtrar por categoría si no es 'all'
     if (this.activeFilter !== 'all') {
       filtered = this.challenges.filter(c => c.category === this.activeFilter);
     }
     
-    // Separar completados y no completados
     const completed = filtered.filter(c => c.completed === true);
     const notCompleted = filtered.filter(c => c.completed === false);
     
-    // Ordenar no completados aleatoriamente
     const shuffledNotCompleted = this.shuffleArray([...notCompleted]);
     
-    // Si es 'all', mantener orden aleatorio, si es por categoría, ordenar por puntos o ID
     if (this.activeFilter === 'all') {
-      // Para 'all': aleatorio + completados abajo
       return [...shuffledNotCompleted, ...completed];
     } else {
-      // Para categorías específicas: ordenar por puntos o como prefieras
       const sortedNotCompleted = shuffledNotCompleted.sort((a, b) => b.points - a.points);
       return [...sortedNotCompleted, ...completed];
     }
   }
   
-  // Función para mezclar array aleatoriamente (Fisher-Yates)
   private shuffleArray(array: any[]): any[] {
     for (let i = array.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
@@ -113,7 +106,6 @@ export class ChallengesComponent implements OnInit {
   }
   
   ngOnInit() {
-    // Obtener el email del usuario actual como identificador único
     const userData = this.user();
     if (userData && userData.email) {
       this.currentUserId = userData.email.replace(/[.#$[\]]/g, '_');
@@ -121,16 +113,12 @@ export class ChallengesComponent implements OnInit {
       this.currentUserId = 'anonymous';
     }
     
-    // Inicializar retos SIN COMPLETAR siempre primero
     this.initializeChallengesAsNotCompleted();
     this.initializeDailyChallengesAsNotCompleted();
     
-    // Guardar orden original
     this.originalChallenges = [...this.challenges];
     
-    // Cargar progreso específico del usuario
     this.loadUserProgress();
-    
     this.calculateTotalChallenges();
     
     setTimeout(() => {
@@ -176,306 +164,41 @@ export class ChallengesComponent implements OnInit {
   
   private initializeChallengesAsNotCompleted() {
     this.challenges = [
-      // ===== RETOS MENTALES (6) =====
-      {
-        id: 'mental-1',
-        title: 'Diario de gratitud',
-        description: 'Escribe 3 cosas por las que estés agradecido hoy.',
-        category: 'mental',
-        points: 40,
-        completed: false,
-        inProgress: false,
-        benefits: ['Mejora ánimo', 'Reduce ansiedad', 'Aumenta felicidad']
-      },
-      {
-        id: 'mental-2',
-        title: 'Digital detox por 1 hora',
-        description: 'Desconéctate de todas las pantallas durante una hora completa.',
-        category: 'mental',
-        points: 60,
-        completed: false,
-        inProgress: false,
-        benefits: ['Reduce estrés digital', 'Mejora concentración', 'Aumenta productividad']
-      },
-      {
-        id: 'mental-3',
-        title: 'Lectura de 20 minutos',
-        description: 'Lee un libro o artículo que te inspire durante 20 minutos.',
-        category: 'mental',
-        points: 45,
-        completed: false,
-        inProgress: false,
-        benefits: ['Estimula mente', 'Reduce estrés', 'Aumenta conocimiento']
-      },
-      {
-        id: 'mental-4',
-        title: 'Visualización positiva',
-        description: 'Imagina tu mejor versión y visualiza tus metas cumplidas por 5 minutos.',
-        category: 'mental',
-        points: 35,
-        completed: false,
-        inProgress: false,
-        benefits: ['Aumenta motivación', 'Clarifica objetivos', 'Reduce ansiedad']
-      },
-      {
-        id: 'mental-5',
-        title: 'Afirmaciones matutinas',
-        description: 'Repite 5 afirmaciones positivas frente al espejo.',
-        category: 'mental',
-        points: 30,
-        completed: false,
-        inProgress: false,
-        benefits: ['Mejora autoestima', 'Reduce diálogo interno negativo', 'Empodera']
-      },
-      {
-        id: 'mental-6',
-        title: 'Organizar un espacio',
-        description: 'Ordena un cajón, estante o área pequeña de tu hogar.',
-        category: 'mental',
-        points: 65,
-        completed: false,
-        inProgress: false,
-        benefits: ['Reduce ansiedad', 'Aumenta sensación de control', 'Claridad mental']
-      },
-      
-      // ===== RETOS FÍSICOS (6) =====
-      {
-        id: 'physical-1',
-        title: 'Caminata de 30 minutos',
-        description: 'Da un paseo al aire libre durante 30 minutos para activar tu cuerpo y mente.',
-        category: 'physical',
-        points: 75,
-        completed: false,
-        inProgress: false,
-        benefits: ['Mejora circulación', 'Quema calorías', 'Despeja mente']
-      },
-      {
-        id: 'physical-2',
-        title: 'Entrenamiento de fuerza',
-        description: 'Completa una rutina básica de ejercicios de fuerza en casa (15 min).',
-        category: 'physical',
-        points: 100,
-        completed: false,
-        inProgress: false,
-        benefits: ['Tonifica músculos', 'Fortalece huesos', 'Mejora metabolismo']
-      },
-      {
-        id: 'physical-3',
-        title: 'Rutina de estiramientos',
-        description: 'Realiza 15 minutos de estiramientos para mejorar tu flexibilidad.',
-        category: 'physical',
-        points: 55,
-        completed: false,
-        inProgress: false,
-        benefits: ['Previene lesiones', 'Mejora postura', 'Reduce tensión muscular']
-      },
-      {
-        id: 'physical-4',
-        title: 'Subir escaleras',
-        description: 'Sube y baja escaleras durante 10 minutos en lugar de usar el ascensor.',
-        category: 'physical',
-        points: 85,
-        completed: false,
-        inProgress: false,
-        benefits: ['Fortalece piernas', 'Mejora capacidad cardiovascular', 'Quema calorías']
-      },
-      {
-        id: 'physical-5',
-        title: 'Baile libre',
-        description: 'Pon tu música favorita y baila durante 15 minutos.',
-        category: 'physical',
-        points: 60,
-        completed: false,
-        inProgress: false,
-        benefits: ['Libera endorfinas', 'Mejora coordinación', 'Divertido']
-      },
-      {
-        id: 'physical-6',
-        title: 'Yoga matutino',
-        description: 'Realiza 20 minutos de yoga para activar el cuerpo.',
-        category: 'physical',
-        points: 90,
-        completed: false,
-        inProgress: false,
-        benefits: ['Mejora flexibilidad', 'Reduce estrés', 'Equilibra cuerpo-mente']
-      },
-      
-      // ===== RETOS MINDFULNESS (6) =====
-      {
-        id: 'mindfulness-1',
-        title: 'Meditación de 10 minutos',
-        description: 'Encuentra un lugar tranquilo y medita durante 10 minutos para calmar tu mente.',
-        category: 'mindfulness',
-        points: 50,
-        completed: false,
-        inProgress: false,
-        benefits: ['Reduce estrés', 'Mejora concentración', 'Aumenta claridad mental']
-      },
-      {
-        id: 'mindfulness-2',
-        title: 'Respiración profunda',
-        description: 'Practica la técnica de respiración 4-7-8 durante 5 minutos.',
-        category: 'mindfulness',
-        points: 35,
-        completed: false,
-        inProgress: false,
-        benefits: ['Calma sistema nervioso', 'Reduce ansiedad', 'Mejora sueño']
-      },
-      {
-        id: 'mindfulness-3',
-        title: 'Escaneo corporal',
-        description: 'Recorre mentalmente cada parte de tu cuerpo durante 10 minutos.',
-        category: 'mindfulness',
-        points: 65,
-        completed: false,
-        inProgress: false,
-        benefits: ['Conexión cuerpo-mente', 'Detecta tensiones', 'Relajación profunda']
-      },
-      {
-        id: 'mindfulness-4',
-        title: 'Observación consciente',
-        description: 'Observa un objeto durante 5 minutos con atención plena.',
-        category: 'mindfulness',
-        points: 40,
-        completed: false,
-        inProgress: false,
-        benefits: ['Entrena atención', 'Calma mente', 'Presente']
-      },
-      {
-        id: 'mindfulness-5',
-        title: 'Caminata mindfulness',
-        description: 'Camina 10 minutos prestando atención a cada paso y tu respiración.',
-        category: 'mindfulness',
-        points: 70,
-        completed: false,
-        inProgress: false,
-        benefits: ['Meditación en movimiento', 'Conexión con entorno', 'Paz interior']
-      },
-      {
-        id: 'mindfulness-6',
-        title: 'Gratitud mindfulness',
-        description: 'Siéntate 5 minutos sintiendo profundamente la gratitud por algo.',
-        category: 'mindfulness',
-        points: 75,
-        completed: false,
-        inProgress: false,
-        benefits: ['Cultiva bienestar', 'Aumenta felicidad', 'Conexión emocional']
-      },
-      
-      // ===== RETOS NUTRICIÓN (6) =====
-      {
-        id: 'nutrition-1',
-        title: 'Comida consciente',
-        description: 'Come al menos una comida hoy sin distracciones, enfocándote en cada bocado.',
-        category: 'nutrition',
-        points: 45,
-        completed: false,
-        inProgress: false,
-        benefits: ['Mejora digestión', 'Reconoce saciedad', 'Disfruta alimentos']
-      },
-      {
-        id: 'nutrition-2',
-        title: 'Hidratación consciente',
-        description: 'Toma 8 vasos de agua durante el día, registrando cada uno.',
-        category: 'nutrition',
-        points: 70,
-        completed: false,
-        inProgress: false,
-        benefits: ['Hidrata cuerpo', 'Mejora piel', 'Aumenta energía']
-      },
-      {
-        id: 'nutrition-3',
-        title: 'Desayuno saludable',
-        description: 'Prepara un desayuno equilibrado con proteínas, fibra y fruta.',
-        category: 'nutrition',
-        points: 55,
-        completed: false,
-        inProgress: false,
-        benefits: ['Energía duradera', 'Mejora metabolismo', 'Evita picos de hambre']
-      },
-      {
-        id: 'nutrition-4',
-        title: 'Batch cooking',
-        description: 'Prepara comidas saludables para 3 días (verduras, proteínas, granos).',
-        category: 'nutrition',
-        points: 90,
-        completed: false,
-        inProgress: false,
-        benefits: ['Ahorra tiempo', 'Evita comida chatarra', 'Planificación']
-      },
-      {
-        id: 'nutrition-5',
-        title: '5 porciones de vegetales',
-        description: 'Consume al menos 5 porciones de frutas y verduras hoy.',
-        category: 'nutrition',
-        points: 100,
-        completed: false,
-        inProgress: false,
-        benefits: ['Vitaminas y minerales', 'Fibra', 'Antioxidantes']
-      },
-      {
-        id: 'nutrition-6',
-        title: 'Reducir azúcar',
-        description: 'Evita azúcares añadidos durante todo el día.',
-        category: 'nutrition',
-        points: 85,
-        completed: false,
-        inProgress: false,
-        benefits: ['Estabiliza energía', 'Mejora salud dental', 'Control peso']
-      }
+      { id: 'mental-1', title: 'Diario de gratitud', description: 'Escribe 3 cosas por las que estés agradecido hoy.', category: 'mental', points: 40, completed: false, inProgress: false, benefits: ['Mejora ánimo', 'Reduce ansiedad', 'Aumenta felicidad'] },
+      { id: 'mental-2', title: 'Digital detox por 1 hora', description: 'Desconéctate de todas las pantallas durante una hora completa.', category: 'mental', points: 60, completed: false, inProgress: false, benefits: ['Reduce estrés digital', 'Mejora concentración', 'Aumenta productividad'] },
+      { id: 'mental-3', title: 'Lectura de 20 minutos', description: 'Lee un libro o artículo que te inspire durante 20 minutos.', category: 'mental', points: 45, completed: false, inProgress: false, benefits: ['Estimula mente', 'Reduce estrés', 'Aumenta conocimiento'] },
+      { id: 'mental-4', title: 'Visualización positiva', description: 'Imagina tu mejor versión y visualiza tus metas cumplidas por 5 minutos.', category: 'mental', points: 35, completed: false, inProgress: false, benefits: ['Aumenta motivación', 'Clarifica objetivos', 'Reduce ansiedad'] },
+      { id: 'mental-5', title: 'Afirmaciones matutinas', description: 'Repite 5 afirmaciones positivas frente al espejo.', category: 'mental', points: 30, completed: false, inProgress: false, benefits: ['Mejora autoestima', 'Reduce diálogo interno negativo', 'Empodera'] },
+      { id: 'mental-6', title: 'Organizar un espacio', description: 'Ordena un cajón, estante o área pequeña de tu hogar.', category: 'mental', points: 65, completed: false, inProgress: false, benefits: ['Reduce ansiedad', 'Aumenta sensación de control', 'Claridad mental'] },
+      { id: 'physical-1', title: 'Caminata de 30 minutos', description: 'Da un paseo al aire libre durante 30 minutos para activar tu cuerpo y mente.', category: 'physical', points: 75, completed: false, inProgress: false, benefits: ['Mejora circulación', 'Quema calorías', 'Despeja mente'] },
+      { id: 'physical-2', title: 'Entrenamiento de fuerza', description: 'Completa una rutina básica de ejercicios de fuerza en casa (15 min).', category: 'physical', points: 100, completed: false, inProgress: false, benefits: ['Tonifica músculos', 'Fortalece huesos', 'Mejora metabolismo'] },
+      { id: 'physical-3', title: 'Rutina de estiramientos', description: 'Realiza 15 minutos de estiramientos para mejorar tu flexibilidad.', category: 'physical', points: 55, completed: false, inProgress: false, benefits: ['Previene lesiones', 'Mejora postura', 'Reduce tensión muscular'] },
+      { id: 'physical-4', title: 'Subir escaleras', description: 'Sube y baja escaleras durante 10 minutos en lugar de usar el ascensor.', category: 'physical', points: 85, completed: false, inProgress: false, benefits: ['Fortalece piernas', 'Mejora capacidad cardiovascular', 'Quema calorías'] },
+      { id: 'physical-5', title: 'Baile libre', description: 'Pon tu música favorita y baila durante 15 minutos.', category: 'physical', points: 60, completed: false, inProgress: false, benefits: ['Libera endorfinas', 'Mejora coordinación', 'Divertido'] },
+      { id: 'physical-6', title: 'Yoga matutino', description: 'Realiza 20 minutos de yoga para activar el cuerpo.', category: 'physical', points: 90, completed: false, inProgress: false, benefits: ['Mejora flexibilidad', 'Reduce estrés', 'Equilibra cuerpo-mente'] },
+      { id: 'mindfulness-1', title: 'Meditación de 10 minutos', description: 'Encuentra un lugar tranquilo y medita durante 10 minutos para calmar tu mente.', category: 'mindfulness', points: 50, completed: false, inProgress: false, benefits: ['Reduce estrés', 'Mejora concentración', 'Aumenta claridad mental'] },
+      { id: 'mindfulness-2', title: 'Respiración profunda', description: 'Practica la técnica de respiración 4-7-8 durante 5 minutos.', category: 'mindfulness', points: 35, completed: false, inProgress: false, benefits: ['Calma sistema nervioso', 'Reduce ansiedad', 'Mejora sueño'] },
+      { id: 'mindfulness-3', title: 'Escaneo corporal', description: 'Recorre mentalmente cada parte de tu cuerpo durante 10 minutos.', category: 'mindfulness', points: 65, completed: false, inProgress: false, benefits: ['Conexión cuerpo-mente', 'Detecta tensiones', 'Relajación profunda'] },
+      { id: 'mindfulness-4', title: 'Observación consciente', description: 'Observa un objeto durante 5 minutos con atención plena.', category: 'mindfulness', points: 40, completed: false, inProgress: false, benefits: ['Entrena atención', 'Calma mente', 'Presente'] },
+      { id: 'mindfulness-5', title: 'Caminata mindfulness', description: 'Camina 10 minutos prestando atención a cada paso y tu respiración.', category: 'mindfulness', points: 70, completed: false, inProgress: false, benefits: ['Meditación en movimiento', 'Conexión con entorno', 'Paz interior'] },
+      { id: 'mindfulness-6', title: 'Gratitud mindfulness', description: 'Siéntate 5 minutos sintiendo profundamente la gratitud por algo.', category: 'mindfulness', points: 75, completed: false, inProgress: false, benefits: ['Cultiva bienestar', 'Aumenta felicidad', 'Conexión emocional'] },
+      { id: 'nutrition-1', title: 'Comida consciente', description: 'Come al menos una comida hoy sin distracciones, enfocándote en cada bocado.', category: 'nutrition', points: 45, completed: false, inProgress: false, benefits: ['Mejora digestión', 'Reconoce saciedad', 'Disfruta alimentos'] },
+      { id: 'nutrition-2', title: 'Hidratación consciente', description: 'Toma 8 vasos de agua durante el día, registrando cada uno.', category: 'nutrition', points: 70, completed: false, inProgress: false, benefits: ['Hidrata cuerpo', 'Mejora piel', 'Aumenta energía'] },
+      { id: 'nutrition-3', title: 'Desayuno saludable', description: 'Prepara un desayuno equilibrado con proteínas, fibra y fruta.', category: 'nutrition', points: 55, completed: false, inProgress: false, benefits: ['Energía duradera', 'Mejora metabolismo', 'Evita picos de hambre'] },
+      { id: 'nutrition-4', title: 'Batch cooking', description: 'Prepara comidas saludables para 3 días (verduras, proteínas, granos).', category: 'nutrition', points: 90, completed: false, inProgress: false, benefits: ['Ahorra tiempo', 'Evita comida chatarra', 'Planificación'] },
+      { id: 'nutrition-5', title: '5 porciones de vegetales', description: 'Consume al menos 5 porciones de frutas y verduras hoy.', category: 'nutrition', points: 100, completed: false, inProgress: false, benefits: ['Vitaminas y minerales', 'Fibra', 'Antioxidantes'] },
+      { id: 'nutrition-6', title: 'Reducir azúcar', description: 'Evita azúcares añadidos durante todo el día.', category: 'nutrition', points: 85, completed: false, inProgress: false, benefits: ['Estabiliza energía', 'Mejora salud dental', 'Control peso'] }
     ];
   }
   
   private initializeDailyChallengesAsNotCompleted() {
     this.dailyChallenges = [
-      {
-        id: 'daily-1',
-        title: 'Meditación matutina',
-        description: 'Dedica 5 minutos por la mañana para meditar y centrar tu mente.',
-        points: 30,
-        completed: false,
-        tags: ['Mindfulness', '5 min']
-      },
-      {
-        id: 'daily-2',
-        title: 'Estiramientos básicos',
-        description: 'Realiza 10 minutos de estiramientos para activar tu cuerpo.',
-        points: 25,
-        completed: false,
-        tags: ['Físico', '10 min']
-      },
-      {
-        id: 'daily-3',
-        title: 'Reflexión diaria',
-        description: 'Tómate un momento para reflexionar sobre tu día.',
-        points: 20,
-        completed: false,
-        tags: ['Mental', '5 min']
-      },
-      {
-        id: 'daily-4',
-        title: 'Hidratación completa',
-        description: 'Bebe al menos 2 litros de agua durante el día.',
-        points: 35,
-        completed: false,
-        tags: ['Nutrición', 'Salud']
-      },
-      {
-        id: 'daily-5',
-        title: 'Pausa digital',
-        description: 'Descansa 20 minutos sin mirar ninguna pantalla.',
-        points: 30,
-        completed: false,
-        tags: ['Digital', '20 min']
-      },
-      {
-        id: 'daily-6',
-        title: 'Respiración consciente',
-        description: 'Practica la respiración profunda durante 3 minutos.',
-        points: 20,
-        completed: false,
-        tags: ['Respiración', 'Calma']
-      }
+      { id: 'daily-1', title: 'Meditación matutina', description: 'Dedica 5 minutos por la mañana para meditar y centrar tu mente.', points: 30, completed: false, tags: ['Mindfulness', '5 min'] },
+      { id: 'daily-2', title: 'Estiramientos básicos', description: 'Realiza 10 minutos de estiramientos para activar tu cuerpo.', points: 25, completed: false, tags: ['Físico', '10 min'] },
+      { id: 'daily-3', title: 'Reflexión diaria', description: 'Tómate un momento para reflexionar sobre tu día.', points: 20, completed: false, tags: ['Mental', '5 min'] },
+      { id: 'daily-4', title: 'Hidratación completa', description: 'Bebe al menos 2 litros de agua durante el día.', points: 35, completed: false, tags: ['Nutrición', 'Salud'] },
+      { id: 'daily-5', title: 'Pausa digital', description: 'Descansa 20 minutos sin mirar ninguna pantalla.', points: 30, completed: false, tags: ['Digital', '20 min'] },
+      { id: 'daily-6', title: 'Respiración consciente', description: 'Practica la respiración profunda durante 3 minutos.', points: 20, completed: false, tags: ['Respiración', 'Calma'] }
     ];
   }
   
@@ -494,7 +217,6 @@ export class ChallengesComponent implements OnInit {
         this.completedChallenges = progress.completedChallenges || 0;
         this.dailyTip = progress.dailyTip || this.dailyTip;
         
-        // Aplicar estados completados SOLO si existen en el progreso guardado
         const savedChallenges = progress.challenges;
         if (savedChallenges && Array.isArray(savedChallenges) && savedChallenges.length > 0) {
           this.challenges = this.challenges.map(challenge => {
@@ -526,7 +248,6 @@ export class ChallengesComponent implements OnInit {
         this.resetToInitialState();
       }
     } else {
-      // No hay progreso para este usuario -> estado inicial
       this.resetToInitialState();
     }
     
@@ -546,7 +267,6 @@ export class ChallengesComponent implements OnInit {
     this.initializeChallengesAsNotCompleted();
     this.initializeDailyChallengesAsNotCompleted();
     
-    // Guardar el estado inicial para este usuario
     this.saveProgress();
   }
   
@@ -614,9 +334,13 @@ export class ChallengesComponent implements OnInit {
     return names[category] || 'Bienestar';
   }
   
+  // ARREGLO #5: POPUP DE CONFIRMACIÓN ANTES DE EMPEZAR RETO
   handleChallengeAction(challenge: Challenge) {
     if (challenge.completed) return;
-    this.completeChallenge(challenge.id);
+    
+    if (confirm(`¿Estás seguro de que quieres empezar el reto: "${challenge.title}"?`)) {
+      this.completeChallenge(challenge.id);
+    }
   }
   
   setFilter(filterId: string) {

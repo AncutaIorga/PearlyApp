@@ -11,9 +11,9 @@
         placeholder="Buscar usuarios..." 
         [(ngModel)]="searchQuery"
         (focus)="isSearchActive = true"
-        (input)="onSearchInput()"
+        (ngModelChange)="onSearchInput($event)" 
         #searchInput>
-      @if (searchQuery) {
+        @if (searchQuery) {
         <button class="clear-search" (click)="clearSearch()">✕</button>
       }
     </div>
@@ -21,15 +21,21 @@
     @if (isSearchActive && searchQuery) {
       <div class="search-results">
         @if (searchResults.length > 0) {
-          @for (user of searchResults; track user.id) {
-            <div class="search-result-item" (click)="goToUserProfile(user)">
+          @for (user of searchResults; track user.email) {
+            <div class="search-result-item" (click)="goToUserProfile(user.name)">
+              
               <div class="result-avatar">
-                <span>{{ user.name.charAt(0).toUpperCase() }}</span>
+                @if (getUserAvatar(user.name)) {
+                  <img [src]="getUserAvatar(user.name)" alt="Avatar" class="avatar-img">
+                } @else {
+                  <span>{{ user.name.charAt(0).toUpperCase() }}</span>
+                }
               </div>
+              
               <div class="result-info">
                 <span class="result-name">{{ user.name }}</span>
-                <span class="result-bio">{{ user.bio }}</span>
               </div>
+              
             </div>
           }
         } @else {

@@ -1,11 +1,10 @@
 <app-navbar></app-navbar>
 
-<div class="feed-container theme-transition">
+<div class="feed-container">
   <div class="feed">
     @if (posts().length === 0) {
-      <div class="empty-feed">
-        <p>No hay publicaciones para mostrar</p>
-        <small>Es posible que los usuarios estén bloqueados o silenciados.</small>
+      <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+        <p>No hay publicaciones para mostrar.</p>
       </div>
     } @else {
       @for (post of posts(); track post.id) {
@@ -14,3 +13,19 @@
     }
   </div>
 </div>
+
+@if (showTutorial) {
+  <div class="onboarding-overlay">
+    <div class="tutorial-card">
+      <div class="t-icon">🫧</div>
+      <h2>¡Bienvenido a PearlyApp!</h2>
+      <p class="t-desc">Tu espacio para mejorar tu salud física y mental.</p>
+      <ul class="t-list">
+        <li>🎯 <b>Completa Retos</b> diarios.</li>
+        <li>✨ <b>Gana Brillos</b> y mejora tu perfil.</li>
+        <li>📸 <b>Comparte</b> tus logros con la comunidad.</li>
+      </ul>
+      <button class="btn-primary-rect" (click)="closeTutorial()">¡Empezar ahora!</button>
+    </div>
+  </div>
+}
