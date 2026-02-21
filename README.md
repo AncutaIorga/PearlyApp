@@ -1,59 +1,68 @@
-# PearlyApp
+# 🫧 PearlyApp: Frontend Architecture & UI/UX
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 21.1.0.
+**PearlyApp** es una plataforma social enfocada en el bienestar personal, la salud y la gamificación de hábitos. Este documento detalla la arquitectura de su **Frontend** (la interfaz de usuario), desarrollado con **Angular 17+**, destacando su estructura modular, eficiencia de rendimiento y enfoque en la experiencia del usuario (UX).
 
-## Development server
+---
 
-To start a local development server, run:
+## 🚀 Arquitectura Base: Single Page Application (SPA)
 
-```bash
-ng serve
-```
+PearlyApp está diseñada como una **SPA** (_Single Page Application_).
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
+A diferencia de las aplicaciones web tradicionales que requieren descargar y recargar la página completa en cada interacción, una SPA carga un único documento HTML inicial. A partir de ese momento, el motor interno de Angular actualiza dinámicamente solo las secciones de la pantalla que el usuario solicita.
 
-## Code scaffolding
+**Beneficios de negocio y técnicos:**
 
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+- **Rendimiento superior (Native-like feel):** Las transiciones entre el _Feed_ y el _Perfil_ son instantáneas, ofreciendo una experiencia idéntica a la de una aplicación móvil instalada.
+- **Persistencia del estado:** El usuario no pierde su contexto (como un formulario a medio llenar o la posición de scroll) al navegar por la plataforma.
+- **Eficiencia de red:** Se reduce drásticamente la carga del servidor, ya que solo se intercambian datos puros (JSON) en lugar de interfaces gráficas completas.
 
-```bash
-ng generate component component-name
-```
+---
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## 📂 Estructura de Módulos (`src/app`)
 
-```bash
-ng generate --help
-```
+El código fuente está organizado siguiendo el principio de **Separación de Responsabilidades** (_Separation of Concerns_). Cada directorio tiene un propósito específico, facilitando el mantenimiento y la escalabilidad del proyecto.
 
-## Building
+### 🔐 1. Seguridad y Acceso (Access & Security Layer)
 
-To build the project run:
+Módulos dedicados a la protección de la aplicación y la validación de identidad.
 
-```bash
-ng build
-```
+- **`auth/`** _(Incluye `login/` y `register/`)_: Centraliza el flujo de autenticación de los usuarios. Valida los datos de entrada antes de enviarlos al servidor (Backend) para optimizar los recursos.
+- **`guards/`**: Actúan como filtros de protección en las rutas de navegación. Verifican que un usuario tenga una sesión activa antes de permitirle acceder a áreas restringidas (como el _Feed_), previniendo el acceso no autorizado.
+- **`interceptors/`**: Middleware que procesa las comunicaciones HTTP. Automáticamente adjunta los _Tokens_ de seguridad a cada petición que sale hacia la base de datos, garantizando que todas las transacciones estén autenticadas de forma transparente.
 
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
+### 📱 2. Módulos Core (Feature Modules)
 
-## Running unit tests
+Las funcionalidades principales que aportan valor directo al usuario.
 
-To execute unit tests with the [Vitest](https://vitest.dev/) test runner, use the following command:
+- **`feed/`**: El muro de actividad principal. Funciona como un componente inteligente que cruza las publicaciones entrantes con las preferencias de privacidad del usuario (descartando en tiempo real los posts de cuentas bloqueadas o silenciadas).
+- **`challenges/`**: El motor de gamificación. Gestiona la participación en retos de salud (Físico, Mente, Nutrición) y el sistema de recompensas, aislando esta lógica de la interacción puramente social.
+- **`post-create/`**: La interfaz dedicada a la creación de contenido, encargada de preprocesar imágenes y textos antes de su publicación.
+- **`profile/`** y **`account/`**:
+  - `profile`: Optimizado para la visualización de la actividad y estadísticas públicas del usuario.
+  - `account`: Entorno seguro para la gestión y actualización de datos personales e información sensible de la cuenta.
 
-```bash
-ng test
-```
+### ⚙️ 3. Gestión del Entorno (User Management)
 
-## Running end-to-end tests
+Herramientas para que el usuario controle su experiencia y privacidad.
 
-For end-to-end (e2e) testing, run:
+- **`ajustes/`**: Panel de configuración general. Incluye la gestión avanzada de moderación (bloqueos y silencios). Para mantener el rendimiento óptimo, implementa ventanas modales con _scroll_ dinámico, permitiendo manejar listas de cientos de usuarios sin afectar la velocidad de la interfaz.
+- **`privacy/`**: Controles de visibilidad que permiten al usuario alternar entre una cuenta pública y privada, actualizando el estado global de la plataforma al instante.
 
-```bash
-ng e2e
-```
+### 🧰 4. Arquitectura Transversal y Soporte (Shared & Core Utilities)
 
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
+Librerías internas que aseguran la consistencia visual y técnica en todo el proyecto.
 
-## Additional Resources
+- **`services/`**: El centro de gestión de datos (_State Management_). Gestiona la comunicación con la API y almacena la información temporal de la sesión actual, sincronizándose de forma segura con el almacenamiento local del navegador.
+- **`shared/`**: Componentes reutilizables que garantizan una identidad visual uniforme:
+  - `navbar/`: Menú de navegación global de la plataforma.
+  - `post-card/`: Componente estructurado que renderiza el contenido multimedia y las métricas (likes) de cada publicación.
+  - `post-options/`: Menú contextual independiente para ejecutar acciones rápidas de moderación (Silenciar/Bloquear).
+- **`notification/`**: Sistema de alertas emergentes no intrusivas (_Toasts_). Informa al usuario sobre el estado de sus acciones (ej. "Cambios guardados") sin interrumpir su navegación.
+- **`pipes/`**: Transformadores de datos en tiempo real. Se encargan de procesar información técnica (como fechas ISO del servidor) y convertirlas a formatos legibles para el usuario (ej. _"Publicado hace 10 minutos"_).
 
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+---
+
+## ⚡ Aspectos Técnicos Destacados
+
+- **Reactividad de Alto Rendimiento (Angular Signals):** La plataforma utiliza _Signals_ para la actualización de la interfaz. Si un usuario silencia a otro, la aplicación no necesita recargar la vista entera; el sistema notifica directamente al componente afectado, eliminando el contenido no deseado en milisegundos.
+- **Diseño UI/UX Escalable:** Integración nativa de temas dinámicos (_Dark / Light Mode_) a través de variables CSS y uso de diseño responsivo adaptado tanto a dispositivos móviles como a escritorio.
