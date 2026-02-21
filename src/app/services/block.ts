@@ -24,20 +24,26 @@ export class BlockService {
     this.loadFromStorage();
   }
 
+  // --- SEPARACIÓN DE DATOS POR USUARIO ---
+  private getKey(type: 'blocked' | 'muted'): string {
+    const email = localStorage.getItem('userEmail') || 'default';
+    return `${type}-users-${email}`;
+  }
+
   private loadFromStorage() {
-    const savedBlocks = localStorage.getItem('blocked-users');
+    const savedBlocks = localStorage.getItem(this.getKey('blocked'));
     if (savedBlocks) {
       try { this.blockedUsers.set(JSON.parse(savedBlocks)); } catch (e) {}
     }
-    const savedMutes = localStorage.getItem('muted-users');
+    const savedMutes = localStorage.getItem(this.getKey('muted'));
     if (savedMutes) {
       try { this.mutedUsers.set(JSON.parse(savedMutes)); } catch (e) {}
     }
   }
 
   private saveToStorage() {
-    localStorage.setItem('blocked-users', JSON.stringify(this.blockedUsers()));
-    localStorage.setItem('muted-users', JSON.stringify(this.mutedUsers()));
+    localStorage.setItem(this.getKey('blocked'), JSON.stringify(this.blockedUsers()));
+    localStorage.setItem(this.getKey('muted'), JSON.stringify(this.mutedUsers()));
   }
 
   isBlocked(username: string): boolean {
@@ -67,7 +73,6 @@ export class BlockService {
     return of(void 0).pipe(delay(100));
   }
 
-  // Corregido: añadida la función que pedía el error TS2551
   unblockUserByUsername(username: string): Observable<void> {
     this.blockedUsers.update(users => users.filter(u => u.name !== username));
     this.saveToStorage();

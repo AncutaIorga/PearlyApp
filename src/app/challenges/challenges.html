@@ -1,10 +1,8 @@
 <app-navbar></app-navbar>
 
 <div class="challenges-page">
-  <!-- Encabezado principal -->
   <header class="page-header">
     <div class="header-main">
-      <!-- Contenedor del título con emoji -->
       <div class="header-content">
         <div class="header-emoji">🍃</div>
         <div class="header-text">
@@ -13,7 +11,6 @@
         </div>
       </div>
       
-      <!-- Estadísticas rápidas - ahora en línea -->
       <div class="quick-stats">
         <div class="stat-bubble energy">
           <span class="stat-number">{{ energyPoints }} ⚡</span>
@@ -27,7 +24,6 @@
     </div>
   </header>
 
-  <!-- Sección de balance -->
   <section class="balance-section">
     <div class="balance-header">
       <div>
@@ -58,7 +54,6 @@
     </div>
   </section>
 
-  <!-- Filtros para bienestar -->
   <div class="simple-filters">
     <button 
       *ngFor="let filter of filters"
@@ -71,16 +66,13 @@
     </button>
   </div>
 
-  <!-- Retos de bienestar -->
   <div *ngIf="filteredChallenges.length > 0" class="challenges-cards">
     <div 
       *ngFor="let challenge of filteredChallenges"
       class="challenge-card-simple {{challenge.category}}"
       [class.completed]="challenge.completed === true">
       
-      <!-- Categoría y puntos en la misma línea -->
       <div class="challenge-status">
-        <!-- Categoría a la izquierda -->
         <div class="status-left">
           <div class="challenge-category-icon {{challenge.category}}">
             <span class="category-icon {{challenge.category}}">{{ getCategoryIcon(challenge.category) }}</span>
@@ -88,15 +80,12 @@
           </div>
         </div>
         
-        <!-- Puntos a la derecha -->
         <span class="challenge-points">+{{ challenge.points }} ⚡</span>
       </div>
 
-      <!-- Contenido -->
       <h3 class="challenge-title-simple">{{ challenge.title }}</h3>
       <p class="challenge-desc-simple">{{ challenge.description }}</p>
 
-      <!-- Beneficios -->
       <div class="benefits-list {{challenge.category}}" *ngIf="challenge.benefits && challenge.benefits.length > 0">
         <div *ngFor="let benefit of challenge.benefits" class="benefit-item">
           <span class="benefit-icon {{challenge.category}}">✨</span>
@@ -104,19 +93,16 @@
         </div>
       </div>
 
-      <!-- Botón de acción -->
       <button 
         (click)="handleChallengeAction(challenge)"
         [disabled]="challenge.completed === true"
         class="action-btn"
         [class.completed-btn]="challenge.completed === true">
-          <span *ngIf="challenge.completed === true" class="btn-text">✅ COMPLETADO</span>
-          <span *ngIf="challenge.completed === false" class="btn-text">✨ COMENZAR</span> 
+          <span class="btn-text">{{ getChallengeButtonText(challenge) }}</span>
       </button>
     </div>
   </div>
 
-  <!-- RETOS DIARIOS EN CAJA -->
   <section class="daily-section-box">
     <div class="daily-section-header">
       <h2>🌟 Retos Diarios</h2>
@@ -125,7 +111,6 @@
 
     <div class="daily-cards-container">
       <div class="daily-challenge-card" *ngFor="let daily of dailyChallenges" [attr.data-daily-id]="daily.id">
-        <!-- SOLO PUNTOS, NO DÍA -->
         <div class="daily-card-header">
           <span class="points-badge">+{{ daily.points }} ⚡</span>
         </div>
@@ -150,7 +135,6 @@
     </div>
   </section>
 
-  <!-- Consejo del día -->
   <div class="daily-tip">
     <div class="tip-icon">💡</div>
     <div class="tip-content">
@@ -160,7 +144,6 @@
     </div>
   </div>
 
-  <!-- Sin resultados o todo vacío -->
   <div *ngIf="filteredChallenges.length === 0 && activeFilter !== 'all'" class="empty-state wellness-empty">
     <div class="empty-icon">🔍</div>
     <h3>No hay retos en esta categoría</h3>
@@ -168,3 +151,27 @@
     <button (click)="resetFilters()" class="reset-btn wellness-reset">🌿 Ver todos los retos</button>
   </div>
 </div>
+
+@if (showCustomConfirmModal && challengeToConfirm) {
+  <div class="custom-modal-overlay" (click)="closeConfirmModal()">
+    <div class="custom-modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-icon">{{ getCategoryIcon(challengeToConfirm.category) }}</div>
+      <h3>{{ challengeToConfirm.title }}</h3>
+      
+      @if (['physical', 'mindfulness'].includes(challengeToConfirm.category)) {
+        <p>Este reto requiere tiempo. ¿Estás listo para iniciar el temporizador y comprometerte?</p>
+      } @else {
+        <p>¿Confirmas que has completado esta acción saludable hoy?</p>
+      }
+      
+      <div class="modal-points-badge">+{{ challengeToConfirm.points }} ⚡ Energía</div>
+      
+      <div class="modal-buttons">
+        <button class="btn-rect primary" (click)="confirmChallengeStart()">
+          {{ ['physical', 'mindfulness'].includes(challengeToConfirm.category) ? 'Sí, empezar ahora' : 'Sí, lo completé' }}
+        </button>
+        <button class="btn-rect secondary" (click)="closeConfirmModal()">Cancelar</button>
+      </div>
+    </div>
+  </div>
+}

@@ -13,7 +13,7 @@
             } @else if (user.avatar) {
               <img [src]="user.avatar" alt="Avatar">
             } @else {
-              <span>{{ user.name?.charAt(0).toUpperCase() }}</span>
+              <span>{{ user.name?.charAt(0)?.toUpperCase() }}</span>
             }
             
             @if (editing) {
@@ -31,20 +31,22 @@
               <div class="stat-item">
                 <strong>{{ userStats.posts }}</strong> <span>Posts</span>
               </div>
-              <div class="stat-item">
+              <div class="stat-item" style="cursor: pointer;" (click)="openFollowModal('followers')">
                 <strong>{{ userStats.followers }}</strong> <span>Seguidores</span>
               </div>
-              <div class="stat-item">
+              <div class="stat-item" style="cursor: pointer;" (click)="openFollowModal('following')">
                 <strong>{{ userStats.following }}</strong> <span>Siguiendo</span>
               </div>
             </div>
 
-            <div class="profile-actions">
+            <div class="profile-actions-center">
               @if (isOwnProfile) {
                 <button class="btn-rect secondary" (click)="toggleEdit()">Editar Perfil</button>
                 <button routerLink="/post-create" class="btn-rect primary">➕ Crear Publicación</button>
               } @else {
-                <button class="btn-rect primary" style="width: 100%">Seguir</button>
+                <button class="btn-rect" [ngClass]="isFollowing ? 'secondary' : 'primary'" style="width: 100%" (click)="toggleFollow()">
+                  {{ isFollowing ? 'Siguiendo' : 'Seguir' }}
+                </button>
               }
             </div>
           }
@@ -55,12 +57,12 @@
             <div class="edit-mode-form">
               <div class="form-group">
                 <label>Nombre de usuario</label>
-                <input class="edit-input" [(ngModel)]="editableUser.name" placeholder="Tu nombre" />
+                <input class="edit-input" [(ngModel)]="editableUser.name" placeholder="Tu nombre" maxlength="10" />
               </div>
               
               <div class="form-group">
                 <label>Biografía</label>
-                <textarea class="edit-textarea" [(ngModel)]="editableUser.bio" placeholder="Cuenta algo sobre ti (máx 150 caracteres)" maxlength="150" rows="3"></textarea>
+                <textarea class="edit-textarea" [(ngModel)]="editableUser.bio" placeholder="Cuenta algo sobre ti" maxlength="30" rows="2"></textarea>
               </div>
               
               <div class="edit-buttons">
@@ -113,6 +115,7 @@
       <div class="profile-right">
         @if (posts.length === 0) {
           <div class="no-posts">
+            <p>📸</p>
             <p> No hay publicaciones aún</p>
             @if (isOwnProfile) {
               <p class="no-posts-hint">¡Comparte tu primer logro saludable!</p>
@@ -134,6 +137,35 @@
     </div>
   </div>
 </div>
+
+
+@if (showFollowModal) {
+  <div class="image-modal" (click)="closeFollowModal()" style="z-index: 2500;">
+    <div class="modal-content" (click)="$event.stopPropagation()" style="max-width: 400px; background: var(--card-bg); padding: 24px; border-radius: 16px;">
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
+        <h3 style="margin: 0; color: var(--text-primary);">{{ followModalType === 'followers' ? 'Seguidores' : 'Siguiendo' }}</h3>
+        <button class="modal-close" style="position: static; transform: none; background: transparent; color: var(--text-secondary); border: none; font-size: 20px; padding: 0;" (click)="closeFollowModal()">✕</button>
+      </div>
+      
+      <div style="max-height: 400px; overflow-y: auto;">
+        @if (followModalList.length === 0) {
+          <p style="text-align: center; color: var(--text-muted); font-style: italic; padding: 20px;">
+            Lista vacía.
+          </p>
+        } @else {
+          @for (username of followModalList; track username) {
+            <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-color); cursor: pointer;" [routerLink]="['/profile', username]" (click)="closeFollowModal()">
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--text-secondary);">
+                {{ username.charAt(0).toUpperCase() }}
+              </div>
+              <strong style="color: var(--text-primary);">{{ username }}</strong>
+            </div>
+          }
+        }
+      </div>
+    </div>
+  </div>
+}
 
 @if (selectedPost) {
   <div class="image-modal" (click)="closeImageModal()">
@@ -222,18 +254,24 @@
   <div class="edit-post-modal"> 
     <div class="edit-post-content">
       <h3>Editar publicación</h3>
+      
       <div class="edit-post-form">
-        <div class="form-group">
-          <label>Texto (máx. 250):</label>
-          <textarea [(ngModel)]="editPostData.text" placeholder="Escribe tu publicación..." maxlength="250"></textarea>
-          <small>{{ editPostData.text.length }}/250</small>
+        <div class="edit-form-group">
+          <label>Texto de la publicación</label>
+          <textarea 
+            [(ngModel)]="editPostData.text" 
+            placeholder="Escribe tu publicación..." 
+            maxlength="500">
+          </textarea>
+          <div class="char-counter">{{ editPostData.text.length || 0 }}/500 caracteres</div>
         </div>
         
-        <div class="edit-buttons">
-          <button class="btn-rect primary" (click)="saveEditedPost()">Guardar cambios</button>
+        <div class="edit-buttons-row">
           <button class="btn-rect secondary" (click)="closeEditPostModal()">Cancelar</button>
+          <button class="btn-rect primary" (click)="saveEditedPost()">Guardar cambios</button>
         </div>
       </div>
+      
     </div>
   </div>
 }

@@ -1,7 +1,7 @@
 import { Component, Input, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router'; // <--- IMPORTANTE: Debe estar aquí
+import { RouterModule } from '@angular/router'; 
 import { PostOptionsComponent } from '../post-options/post-options';
 import { PostService, Post } from '../../services/post';
 import { AuthService } from '../../services/auth';
@@ -15,7 +15,7 @@ import { TimeAgoPipe } from '../../pipes/time-ago-pipe';
   imports: [
     CommonModule, 
     FormsModule, 
-    RouterModule, // <--- ASEGÚRATE DE QUE ESTÉ EN IMPORTS
+    RouterModule, 
     PostOptionsComponent, 
     TimeAgoPipe
   ],
@@ -33,16 +33,35 @@ export class PostCardComponent implements OnInit {
   showComments = false;
   newComment = '';
   isLiked = false;
+  isTextExpanded = false;
 
   ngOnInit() {
-    // Verificamos si el usuario actual le ha dado like al cargar
     this.isLiked = this.post.likedByMe || false;
+  }
+
+  // 👇 AQUÍ ESTÁ LA MAGIA QUE FALTABA 👇
+  // Comprobación a prueba de balas para saber si el post es tuyo
+  get isOwner(): boolean {
+    if (!this.post || !this.post.user) return false;
+    const currentUserName = localStorage.getItem('userName') || '';
+    
+    // Comparamos ignorando mayúsculas/minúsculas y espacios
+    return this.post.user.trim().toLowerCase() === currentUserName.trim().toLowerCase();
+  }
+
+  get shouldTruncate(): boolean {
+    return this.post.text.length > 100;
+  }
+
+  get displayText(): string {
+    if (this.shouldTruncate && !this.isTextExpanded) {
+      return this.post.text.substring(0, 100) + '...';
+    }
+    return this.post.text;
   }
 
   toggleLike() {
     this.postService.toggleLike(this.post.id);
-    
-    // Actualizamos el estado local para la UI inmediata
     this.isLiked = !this.isLiked;
     this.post.likes += this.isLiked ? 1 : -1;
     this.post.likedByMe = this.isLiked;
@@ -68,7 +87,6 @@ export class PostCardComponent implements OnInit {
         userProfile.avatar
       );
       
-      // Sincronizar el post local con los nuevos comentarios del servicio
       const updatedPost = this.postService.getPostById(this.post.id);
       if (updatedPost) {
         this.post.comments = updatedPost.comments;
@@ -79,8 +97,28 @@ export class PostCardComponent implements OnInit {
     }
   }
 
+  // Cuando le das al botón de "Eliminar" en los 3 puntitos, entra por aquí
   onOptionSelected(event: { action: string; postId: number }) {
-    console.log('Opción seleccionada:', event);
+    if (event.action === 'delete') {
+      this.deletePost();
+    }
+  }
+
+deletePost() {
+    // Usamos tu servicio de notificaciones en lugar del 'confirm' nativo
+    this.notificationService.showConfirmAction(
+      '¿Seguro que quieres eliminar esta publicación?',
+      'Sí, eliminar',
+      () => {
+        this.postService.deletePost(this.post.id);
+        this.notificationService.success('Publicación eliminada');
+        
+        // Si estamos en la página del perfil, forzamos la recarga para que desaparezca
+        if (window.location.pathname.includes('/profile')) {
+          setTimeout(() => window.location.reload(), 500);
+        }
+      }
+    );
   }
 
   getCurrentUserAvatar(): string {
@@ -88,6 +126,6 @@ export class PostCardComponent implements OnInit {
   }
 
   getCurrentUserName(): string {
-    return this.authService.user()?.name || 'Usuario';
+    return localStorage.getItem('userName') || 'Usuario';
   }
 }

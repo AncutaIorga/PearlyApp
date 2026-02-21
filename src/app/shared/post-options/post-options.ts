@@ -15,6 +15,7 @@ export class PostOptionsComponent {
 
   @Input() postId!: number;
   @Input() userId!: string;
+  @Input() isOwner: boolean = false; // <-- VARIABLE AÑADIDA PARA SABER SI ES TUYO
   @Output() optionSelected = new EventEmitter<{ action: string; postId: number }>();
 
   private notificationService = inject(NotificationService);
@@ -33,7 +34,8 @@ export class PostOptionsComponent {
     event.stopPropagation();
     this.isOpen = !this.isOpen;
 
-    if (this.isOpen) {
+    // Solo consultamos si está bloqueado si el post NO es tuyo
+    if (this.isOpen && !this.isOwner) {
       this.blocked = this.blockService.isBlocked(this.userId);
     }
   }
@@ -60,6 +62,11 @@ export class PostOptionsComponent {
 
       case 'report':
         this.report();
+        break;
+
+      case 'delete':
+        // La lógica de borrar se ejecuta en el componente padre (post-card)
+        // Aquí solo dejamos que el código siga para que emita el evento abajo.
         break;
     }
 
@@ -112,16 +119,13 @@ export class PostOptionsComponent {
   }
 
   private block() {
-
     if (this.blocked) {
-
       this.blockService.unblockUserByUsername(this.userId).subscribe(() => {
         this.blocked = false;
         this.notificationService.success(`${this.userId} desbloqueado`);
       });
 
     } else {
-
       this.notificationService.showConfirmAction(
         `¿Bloquear a ${this.userId}?`,
         'Sí, bloquear',
@@ -132,9 +136,7 @@ export class PostOptionsComponent {
           });
         }
       );
-
     }
-
   }
 
   private report() {

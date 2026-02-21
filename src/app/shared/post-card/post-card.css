@@ -23,6 +23,18 @@
 .card-body { padding: 16px; }
 .post-text { margin: 0; color: var(--text-primary); font-size: 15px; line-height: 1.5; }
 
+/* Botón Ver Más */
+.ver-mas-btn {
+  background: transparent;
+  border: none;
+  color: var(--text-muted);
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0 4px;
+  font-size: 14px;
+}
+.ver-mas-btn:hover { color: var(--text-primary); text-decoration: underline; }
+
 .card-footer { padding: 12px 16px; display: flex; align-items: center; gap: 16px; border-top: 1px solid var(--border-color); }
 .like-btn, .action-btn {
   background: none; border: none; color: var(--text-secondary); font-size: 14px;

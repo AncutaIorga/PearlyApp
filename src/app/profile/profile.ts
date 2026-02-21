@@ -31,6 +31,7 @@ export class ProfileComponent implements OnInit {
   
   user: any = {};
   isOwnProfile = true; 
+  isFollowing = false;
   
   editing = false;
   editableUser: any = {};
@@ -45,6 +46,11 @@ export class ProfileComponent implements OnInit {
   userStats = { posts: 0, followers: 0, following: 0 };
   posts: Post[] = [];
   pendingDailyChallenges: DailyChallenge[] = []; 
+
+  // --- VARIABLES PARA EL MODAL DE SEGUIDORES ---
+  showFollowModal = false;
+  followModalType: 'followers' | 'following' = 'followers';
+  followModalList: string[] = [];
 
   constructor(
     private userService: UserService,
@@ -78,18 +84,67 @@ export class ProfileComponent implements OnInit {
   loadOtherUserProfile(username: string) {
     const userPosts = this.postService.getPostsByUser(username);
     const avatar = userPosts.length > 0 ? userPosts[0].userAvatar : '';
+    const myEmail = localStorage.getItem('userEmail') || 'default';
+    const followedList = JSON.parse(localStorage.getItem(`following-${myEmail}`) || '[]');
+    
+    this.isFollowing = followedList.includes(username);
 
     this.user = {
       name: username,
-      bio: `Perfil público de ${username}. Usuario de PearlyApp.`,
+      bio: `Perfil público de ${username}.`,
       avatar: avatar,
       achievements: Math.floor(Math.random() * 10),
-      followers: 120, 
-      following: 45
+      // Inferimos un email ficticio para el perfil de otro (si no lo tenemos)
+      email: username.toLowerCase().replace(/\s+/g, '') + '@gmail.com' 
     };
     
     this.posts = userPosts;
     this.updateStats();
+  }
+
+  toggleFollow() {
+    const myEmail = localStorage.getItem('userEmail') || 'default';
+    let followedList: string[] = JSON.parse(localStorage.getItem(`following-${myEmail}`) || '[]');
+
+    this.isFollowing = !this.isFollowing;
+    
+    if (this.isFollowing) {
+      followedList.push(this.user.name);
+      this.notificationService.success(`Ahora sigues a ${this.user.name}`);
+    } else {
+      followedList = followedList.filter(u => u !== this.user.name);
+      this.notificationService.info(`Has dejado de seguir a ${this.user.name}`);
+    }
+    
+    localStorage.setItem(`following-${myEmail}`, JSON.stringify(followedList));
+    this.updateStats(); // Recalcular estadisticas al instante
+  }
+
+  // --- LÓGICA DE SEGUIDORES REALES ---
+  getRealFollowers(username: string): string[] {
+    const followers: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith('following-')) {
+        const followerEmail = key.replace('following-', '');
+        try {
+          const followsList = JSON.parse(localStorage.getItem(key) || '[]');
+          if (followsList.includes(username)) {
+            const cachedUser = localStorage.getItem(`user-cache-${followerEmail}`);
+            if (cachedUser) {
+              followers.push(JSON.parse(cachedUser).name);
+            } else {
+              followers.push(followerEmail.split('@')[0]); 
+            }
+          }
+        } catch(e) {}
+      }
+    }
+    return followers;
+  }
+
+  getRealFollowing(email: string): string[] {
+    return JSON.parse(localStorage.getItem(`following-${email}`) || '[]');
   }
 
   loadMyData() {
@@ -104,13 +159,33 @@ export class ProfileComponent implements OnInit {
 
   updateStats() {
     this.userStats.posts = this.posts.length;
-    if (this.isOwnProfile) {
-      this.userStats.followers = this.userService.getFollowersCount();
-      this.userStats.following = this.userService.getFollowingCount();
+    
+    // Obtenemos el email real si es nuestro, o el del usuario visitado
+    const targetEmail = this.isOwnProfile ? 
+      (localStorage.getItem('userEmail') || 'default') : 
+      (this.user.email);
+
+    this.userStats.following = this.getRealFollowing(targetEmail).length;
+    this.userStats.followers = this.getRealFollowers(this.user.name).length;
+  }
+
+  // --- MODAL FOLLOWERS ---
+  openFollowModal(type: 'followers' | 'following') {
+    this.followModalType = type;
+    const targetEmail = this.isOwnProfile ? 
+      (localStorage.getItem('userEmail') || 'default') : 
+      (this.user.email);
+
+    if (type === 'followers') {
+      this.followModalList = this.getRealFollowers(this.user.name);
     } else {
-      this.userStats.followers = this.user.followers;
-      this.userStats.following = this.user.following;
+      this.followModalList = this.getRealFollowing(targetEmail);
     }
+    this.showFollowModal = true;
+  }
+
+  closeFollowModal() {
+    this.showFollowModal = false;
   }
 
   private loadPendingDailyChallenges() {
@@ -184,7 +259,6 @@ export class ProfileComponent implements OnInit {
     return categories[id] || 'mental';
   }
 
-  // Comprimir imágenes mediante Canvas
   compressImage(file: File): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
@@ -220,7 +294,6 @@ export class ProfileComponent implements OnInit {
     });
   }
 
-  // Cambio de foto instantáneo
   async onAvatarSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
@@ -229,7 +302,7 @@ export class ProfileComponent implements OnInit {
         const optimizedImage = await this.compressImage(file);
         
         this.avatarPreview = optimizedImage;
-        this.user.avatar = optimizedImage; // UI Inmediata
+        this.user.avatar = optimizedImage; 
         
         this.notificationService.success('¡Foto procesada con éxito!');
       } catch (error) {
@@ -352,7 +425,6 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  // Esta función crea el input mágicamente por detrás
   openFileSelector() {
     const input = document.createElement('input');
     input.type = 'file';

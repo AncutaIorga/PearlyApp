@@ -2,7 +2,7 @@ import { Injectable, signal, inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { NotificationService } from './notification';
 
-export interface User { // 👈 Cambiado a export para que el Navbar pueda leerlo
+export interface User {
   name: string;
   email: string;
   password: string;
@@ -16,14 +16,10 @@ export class AuthService {
   user = signal<{ name: string; email: string } | null>(null);
   private notificationService = inject(NotificationService);
   
-  // 🚨 ARREGLO: Inicializamos vacío y luego cargamos de localStorage
   private registeredUsers: User[] = [];
 
   constructor(private router: Router) {
-    // 1. Cargamos los usuarios guardados del localStorage
     this.loadUsersFromStorage();
-
-    // 2. Comprobamos si hay alguien logueado
     this.isAuthenticated = localStorage.getItem('isLoggedIn') === 'true';
     
     if (this.isAuthenticated) {
@@ -33,14 +29,12 @@ export class AuthService {
     }
   }
 
-  // --- NUEVA FUNCIÓN: CARGAR USUARIOS ---
   private loadUsersFromStorage() {
     const savedUsers = localStorage.getItem('all_registered_users');
     if (savedUsers) {
       this.registeredUsers = JSON.parse(savedUsers);
     } 
     
-    // Si está vacío (primera vez que entra), añadimos a Neli por defecto
     if (this.registeredUsers.length === 0) {
       this.registeredUsers = [
         { name: 'Neli', email: 'neli@gmail.com', password: 'Neli404_' }
@@ -49,7 +43,6 @@ export class AuthService {
     }
   }
 
-  // --- NUEVA FUNCIÓN: GUARDAR USUARIOS ---
   private saveUsersToStorage() {
     localStorage.setItem('all_registered_users', JSON.stringify(this.registeredUsers));
   }
@@ -70,23 +63,11 @@ export class AuthService {
 
   private getPasswordError(password: string): string {
     const errors: string[] = [];
-    
-    if (password.length < 8) {
-      errors.push('mínimo 8 caracteres');
-    }
-    if (!/[A-Z]/.test(password)) {
-      errors.push('una mayúscula');
-    }
-    if (!/[a-z]/.test(password)) {
-      errors.push('una minúscula');
-    }
-    if (!/[0-9]/.test(password)) {
-      errors.push('un número');
-    }
-    if (!/[!@#$%^&*(),.?":{}|<>_\-+=[\]\\/]/.test(password)) {
-      errors.push('un símbolo (!@#$%^&*_-...)');
-    }
-    
+    if (password.length < 8) errors.push('mínimo 8 caracteres');
+    if (!/[A-Z]/.test(password)) errors.push('una mayúscula');
+    if (!/[a-z]/.test(password)) errors.push('una minúscula');
+    if (!/[0-9]/.test(password)) errors.push('un número');
+    if (!/[!@#$%^&*(),.?":{}|<>_\-+=[\]\\/]/.test(password)) errors.push('un símbolo (!@#$%^&*_-...)');
     return `La contraseña debe contener: ${errors.join(', ')}`;
   }
 
@@ -158,7 +139,6 @@ export class AuthService {
       password: password
     };
 
-    // 🚨 ARREGLO: Añadimos y GUARDAMOS permanentemente
     this.registeredUsers.push(newUser);
     this.saveUsersToStorage();
 
@@ -173,20 +153,19 @@ export class AuthService {
     return true;
   }
 
-  logout() {
+logout() {
     this.isAuthenticated = false;
     this.user.set(null);
     
-    // 🚨 ARREGLO MUY IMPORTANTE 🚨
-    // No podemos hacer localStorage.clear() porque borraría la base de datos de usuarios registrados (all_registered_users).
-    // En su lugar, borramos solo los datos de sesión activa:
     localStorage.removeItem('isLoggedIn');
     localStorage.removeItem('userName');
     localStorage.removeItem('userEmail');
-    // Si tenías progreso de retos, puedes hacer removeItem de esas keys también.
     
+    // Mostramos la notificación y forzamos recarga de la app para limpiar la memoria caché
     this.notificationService.showLogout();
-    this.router.navigate(['/login']);
+    setTimeout(() => {
+      window.location.href = '/login'; 
+    }, 500);
   }
 
   isLoggedIn(): boolean {
@@ -194,7 +173,6 @@ export class AuthService {
   }
 
   getRegisteredUsers(): User[] {
-    // Si por lo que sea el array en memoria está vacío, lo intenta cargar de localStorage
     if (this.registeredUsers.length === 0) {
        this.loadUsersFromStorage();
     }

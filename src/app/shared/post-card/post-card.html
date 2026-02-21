@@ -1,7 +1,7 @@
 <div class="post-card theme-transition">
   <div class="card-header">
     <div class="user-section">
-     <div class="avatar" [routerLink]="['/profile', post.user]" style="cursor: pointer">
+      <div class="avatar" [routerLink]="['/profile', post.user]" style="cursor: pointer">
         @if (post.userAvatar) {
           <img [src]="post.userAvatar" [alt]="post.user">
         } @else {
@@ -14,17 +14,27 @@
       </div>
     </div>
     
-    <app-post-options 
-      [postId]="post.id" 
-      [userId]="post.user"
-      (optionSelected)="onOptionSelected($event)">
-    </app-post-options>
+    <div style="display: flex; align-items: center; gap: 8px;">
+      <app-post-options 
+        [postId]="post.id" 
+        [userId]="post.user"
+        [isOwner]="isOwner"
+        (optionSelected)="onOptionSelected($event)">
+      </app-post-options>
+    </div>
   </div>
 
   <img [src]="post.image" [alt]="post.text" class="post-image" (click)="toggleComments()">
 
   <div class="card-body">
-    <p class="post-text">{{ post.text }}</p>
+    <p class="post-text">
+      {{ displayText }}
+      @if (shouldTruncate) {
+        <button class="ver-mas-btn" (click)="isTextExpanded = !isTextExpanded">
+          {{ isTextExpanded ? 'Ver menos' : 'Ver más' }}
+        </button>
+      }
+    </p>
     
     <div class="card-footer">
       <button class="like-btn" [class.liked]="isLiked" (click)="toggleLike()">

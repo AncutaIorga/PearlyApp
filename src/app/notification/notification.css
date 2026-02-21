@@ -1,21 +1,43 @@
-.notifications-container { position: fixed; bottom: 24px; right: 24px; z-index: 10000; display: flex; flex-direction: column; gap: 12px; }
-.notification {
-  background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px;
-  box-shadow: var(--shadow-lg); min-width: 300px; overflow: hidden; animation: slideUp 0.3s ease;
+.notifications-container { 
+  position: fixed; 
+  top: 80px; /* Debajo del navbar */
+  right: 24px; 
+  z-index: 10000; 
+  display: flex; 
+  flex-direction: column; 
+  gap: 12px; 
 }
-@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
 
-.notification-content { padding: 16px; display: flex; align-items: center; gap: 12px; }
-.notification-icon { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; color: white; }
+.notification {
+  background: var(--card-bg); 
+  border: 1px solid var(--border-color); 
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg); 
+  min-width: 300px; 
+  overflow: hidden; 
+  animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideDown { 
+  from { opacity: 0; transform: translateY(-20px); } 
+  to { opacity: 1; transform: translateY(0); } 
+}
+
+.notification-content { padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
+.notification-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: white; }
 .notification-text { flex: 1; }
-.notification-title { font-size: 14px; font-weight: 600; margin-bottom: 2px; color: var(--text-primary); }
+.notification-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; color: var(--text-primary); }
 .notification-message { font-size: 13px; color: var(--text-secondary); }
 
-/* Colores pastel para notificaciones */
+/* Colores pastel elegantes */
 .notification-success .notification-icon { background: #10B981; }
 .notification-error .notification-icon { background: #EF4444; }
 .notification-info .notification-icon { background: #3B82F6; }
+.notification-warning .notification-icon { background: #F59E0B; }
 
-.notification-progress { height: 3px; background: var(--bg-tertiary); }
-.progress-bar { height: 100%; background: var(--text-primary); animation: progress 3s linear forwards; }
+.notification-progress { height: 3px; background: var(--bg-tertiary); width: 100%; position: absolute; bottom: 0; left: 0;}
+.progress-bar { height: 100%; background: var(--text-primary); animation: progress linear forwards; }
 @keyframes progress { from { width: 100%; } to { width: 0%; } }
+
+.notification-close { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; border-radius: 50%; }
+.notification-close:hover { background: var(--bg-tertiary); color: var(--text-primary); }

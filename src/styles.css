@@ -159,7 +159,6 @@ p, h1, h2, h3, h4, span, div, .post-text, .comment-text {
   box-sizing: border-box !important;
 }
 
-/* Al último botón le quitamos el margen de abajo para que quede cuadrado */
 .profile-actions-center > *:last-child {
   margin-bottom: 0 !important;
 }

@@ -1,11 +1,15 @@
-import { Component } from '@angular/core';
+import { inject } from '@angular/core';
+import { CanActivateFn, Router } from '@angular/router';
+import { AuthService } from '../../services/auth'; // <-- ARREGLO: Añadido ../ extra
 
-@Component({
-  selector: 'app-guard',
-  imports: [],
-  templateUrl: './guard.html',
-  styleUrl: './guard.css',
-})
-export class Guard {
+export const authGuard: CanActivateFn = (route, state) => {
+  const authService = inject(AuthService);
+  const router = inject(Router);
 
-}
+  if (authService.isLoggedIn()) {
+    return true;
+  }
+  
+  router.navigate(['/login']);
+  return false;
+};

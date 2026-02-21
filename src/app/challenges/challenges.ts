@@ -77,7 +77,11 @@ export class ChallengesComponent implements OnInit {
   private currentUserId: string = 'anonymous';
   private originalChallenges: Challenge[] = []; 
   
-  get filteredChallenges(): Challenge[] {
+  // Custom Modal
+  showCustomConfirmModal = false;
+  challengeToConfirm: Challenge | null = null;
+  
+get filteredChallenges(): Challenge[] {
     let filtered = this.challenges;
     
     if (this.activeFilter !== 'all') {
@@ -87,12 +91,10 @@ export class ChallengesComponent implements OnInit {
     const completed = filtered.filter(c => c.completed === true);
     const notCompleted = filtered.filter(c => c.completed === false);
     
-    const shuffledNotCompleted = this.shuffleArray([...notCompleted]);
-    
     if (this.activeFilter === 'all') {
-      return [...shuffledNotCompleted, ...completed];
+      return [...notCompleted, ...completed];
     } else {
-      const sortedNotCompleted = shuffledNotCompleted.sort((a, b) => b.points - a.points);
+      const sortedNotCompleted = notCompleted.sort((a, b) => b.points - a.points);
       return [...sortedNotCompleted, ...completed];
     }
   }
@@ -334,13 +336,34 @@ export class ChallengesComponent implements OnInit {
     return names[category] || 'Bienestar';
   }
   
-  // ARREGLO #5: POPUP DE CONFIRMACIÓN ANTES DE EMPEZAR RETO
+  // LOGICA MODAL Y BOTONES
   handleChallengeAction(challenge: Challenge) {
     if (challenge.completed) return;
-    
-    if (confirm(`¿Estás seguro de que quieres empezar el reto: "${challenge.title}"?`)) {
-      this.completeChallenge(challenge.id);
+    this.challengeToConfirm = challenge;
+    this.showCustomConfirmModal = true;
+  }
+
+  confirmChallengeStart() {
+    if (this.challengeToConfirm) {
+      this.completeChallenge(this.challengeToConfirm.id);
+      
+      if (['physical', 'mindfulness'].includes(this.challengeToConfirm.category)) {
+        this.notificationService.success(`⏱️ Temporizador iniciado para: ${this.challengeToConfirm.title}`);
+      }
+      
+      this.closeConfirmModal();
     }
+  }
+
+  closeConfirmModal() {
+    this.showCustomConfirmModal = false;
+    this.challengeToConfirm = null;
+  }
+
+  getChallengeButtonText(challenge: Challenge): string {
+    if (challenge.completed) return '✅ COMPLETADO';
+    if (['physical', 'mindfulness'].includes(challenge.category)) return '⏱️ COMENZAR';
+    return '✨ COMPLETAR';
   }
   
   setFilter(filterId: string) {

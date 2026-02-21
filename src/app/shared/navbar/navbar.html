@@ -13,9 +13,6 @@
         (focus)="isSearchActive = true"
         (ngModelChange)="onSearchInput($event)" 
         #searchInput>
-        @if (searchQuery) {
-        <button class="clear-search" (click)="clearSearch()">✕</button>
-      }
     </div>
 
     @if (isSearchActive && searchQuery) {
@@ -47,7 +44,7 @@
 
   <div class="nav-links">
     <a routerLink="/feed" routerLinkActive="active" title="Feed">Feed</a>
-    <a routerLink="/challenges" routerLinkActive="active" title="Retos">Retos</a>
+    <a routerLink="/challenges" routerLinkActive="active" title="Retos" class="highlight-btn">Retos</a>
     <a routerLink="/post-create" routerLinkActive="active" title="Crear">Crear</a>
     <a routerLink="/profile" routerLinkActive="active" title="Perfil">Perfil</a>
 

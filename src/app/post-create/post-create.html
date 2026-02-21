@@ -19,7 +19,6 @@
           @if (selectedImage) {
             <div class="image-preview">
               <img [src]="selectedImage" alt="Preview">
-              <button type="button" class="remove-image" (click)="removeImage()">✕</button>
             </div>
           }
         </div>
@@ -32,8 +31,8 @@
           placeholder="Describe tu logro saludable del día... ¿Qué has conseguido hoy?"
           maxlength="250"
           rows="6"></textarea>
-          <small style="color: gray; display: block; text-align: right;">{{ text?.length || 0 }}/250 caracteres</small>
-      </div>
+          <small style="color: gray; display: block; text-align: right;">{{ text.length || 0 }}/250 caracteres</small>
+        </div>
 
       @if (selectedChallenge) {
         <div class="challenge-summary" [ngClass]="selectedChallenge.category">
