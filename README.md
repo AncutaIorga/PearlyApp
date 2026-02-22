@@ -1,68 +1,106 @@
 # 🫧 PearlyApp: Frontend Architecture & UI/UX
 
-**PearlyApp** es una plataforma social enfocada en el bienestar personal, la salud y la gamificación de hábitos. Este documento detalla la arquitectura de su **Frontend** (la interfaz de usuario), desarrollado con **Angular 17+**, destacando su estructura modular, eficiencia de rendimiento y enfoque en la experiencia del usuario (UX).
+**PearlyApp** es una red social enfocada en el bienestar personal, la salud y la creación de hábitos positivos. Este documento explica cómo está construida la aplicación, cómo instalarla y las decisiones de diseño que hemos tomado para ofrecer la mejor experiencia de usuario.
 
 ---
 
-## 🚀 Arquitectura Base: Single Page Application (SPA)
+## Tecnologías, Versiones y Entorno de Desarrollo
 
-PearlyApp está diseñada como una **SPA** (_Single Page Application_).
+El proyecto ha sido desarrollado utilizando herramientas modernas y preparadas para escritorio:
 
-A diferencia de las aplicaciones web tradicionales que requieren descargar y recargar la página completa en cada interacción, una SPA carga un único documento HTML inicial. A partir de ese momento, el motor interno de Angular actualiza dinámicamente solo las secciones de la pantalla que el usuario solicita.
+- **Framework Base:** Angular v21+
+- **Lenguaje:** TypeScript.
+- **Estilos:** CSS3 puro con variables globales para facilitar el cambio de temas.
+- **Gestión de Datos:** Angular Signals.
+- **Multiplataforma (Escritorio):** Electron y Electron-Builder.
+- **Entorno requerido:** Node.js y gestor de paquetes `npm`.
 
-**Beneficios de negocio y técnicos:**
+## Guía de Instalación y Despliegue Local
 
-- **Rendimiento superior (Native-like feel):** Las transiciones entre el _Feed_ y el _Perfil_ son instantáneas, ofreciendo una experiencia idéntica a la de una aplicación móvil instalada.
-- **Persistencia del estado:** El usuario no pierde su contexto (como un formulario a medio llenar o la posición de scroll) al navegar por la plataforma.
-- **Eficiencia de red:** Se reduce drásticamente la carga del servidor, ya que solo se intercambian datos puros (JSON) en lugar de interfaces gráficas completas.
+Sigue estos pasos para levantar el proyecto en tu propio ordenador:
+
+1. **Instalar Angular CLI:**
+
+   ```bash
+   npm install -g @angular/cli
+
+   ```
+
+2. **Clonar el repositorio:**
+
+   ```bash
+   git clone [https://github.com/AncutaIorga/PearlyApp.git](https://github.com/AncutaIorga/PearlyApp.git)
+
+   ```
+
+3. **Acceder al directorio del proyecto:**
+
+   ```bash
+   cd PearlyApp
+
+   ```
+
+4. **Instalar las dependencias del proyecto:**
+
+   ```bash
+      npm install
+
+
+   ```
+
+5. **Desplegar el servidor de desarrollo:**
+   ```bash
+      ng serve -o
+      Nota: El flag -o abrirá automáticamente la aplicación en tu navegador predeterminado en http://localhost:4200/.
+   ```
+
+## Diseño de la Aplicación y Criterios de Usabilidad (UX/UI)
+
+La aplicación está pensada para ser cómoda, intuitiva y fácil de usar, siguiendo estos principios:
+
+- **Accesibilidad:** Uso de etiquetas descriptivas para lectores de pantalla y soporte completo para Modo Claro/Oscuro, cuidando la vista del usuario en cualquier entorno.
+
+- **Prevención y Gestión de Errores:** Las alertas de la app (como "Cambios guardados") aparecen de una en una para no agobiar al usuario. Además, hemos eliminado las alertas poco atractivas visualmente por defecto del navegador y creado ventanas a medida que encajan con nuestro diseño.
+
+- **Diseño Minimalista y Consistente:** Usamos colores con sentido (Rojo para borrar, Azul para acciones importantes, Verde para éxito). Todos los botones comparten el mismo estilo (.btn-rect) para que la plataforma se vea uniforme y profesional.
+
+- **Adaptabilidad (Responsive):** Los textos muy largos se acortan automáticamente mostrando un botón de Ver más, y las fotos se ajustan solas para verse perfectas tanto en móviles como en ordenador.
 
 ---
 
-## 📂 Estructura de Módulos (`src/app`)
+## Documentación de Vistas, Routing y Componentes
 
-El código fuente está organizado siguiendo el principio de **Separación de Responsabilidades** (_Separation of Concerns_). Cada directorio tiene un propósito específico, facilitando el mantenimiento y la escalabilidad del proyecto.
+El código fuente (`src/app`) está bien organizado por secciones. La plataforma funciona como una **SPA (Single Page Application)**, lo que significa que la navegación es súper rápida porque no necesita recargar la página entera a cada clic.
 
-### 🔐 1. Seguridad y Acceso (Access & Security Layer)
+### Sistema de Routing (`app.routes.ts`) y Seguridad
 
-Módulos dedicados a la protección de la aplicación y la validación de identidad.
+Las páginas están protegidas para mantener la privacidad de los usuarios:
 
-- **`auth/`** _(Incluye `login/` y `register/`)_: Centraliza el flujo de autenticación de los usuarios. Valida los datos de entrada antes de enviarlos al servidor (Backend) para optimizar los recursos.
-- **`guards/`**: Actúan como filtros de protección en las rutas de navegación. Verifican que un usuario tenga una sesión activa antes de permitirle acceder a áreas restringidas (como el _Feed_), previniendo el acceso no autorizado.
-- **`interceptors/`**: Middleware que procesa las comunicaciones HTTP. Automáticamente adjunta los _Tokens_ de seguridad a cada petición que sale hacia la base de datos, garantizando que todas las transacciones estén autenticadas de forma transparente.
+- **Rutas públicas:** `/login` y `/register`.
+- **Rutas protegidas** _(Requieren sesión activa en LocalStorage)_: `/feed`, `/profile`, `/challenges`, `/ajustes`. Si un usuario no autenticado intenta acceder, el Guard lo redirige automáticamente al Login.
 
-### 📱 2. Módulos Core (Feature Modules)
+### Componentes y Vistas Principales (Feature Modules)
 
-Las funcionalidades principales que aportan valor directo al usuario.
+- **`feed/` (Vista Principal):** Muestra las publicaciones de los usuarios, filtrando y ocultando automáticamente el contenido de las personas a las que has bloqueado o silenciado.
 
-- **`feed/`**: El muro de actividad principal. Funciona como un componente inteligente que cruza las publicaciones entrantes con las preferencias de privacidad del usuario (descartando en tiempo real los posts de cuentas bloqueadas o silenciadas).
-- **`challenges/`**: El motor de gamificación. Gestiona la participación en retos de salud (Físico, Mente, Nutrición) y el sistema de recompensas, aislando esta lógica de la interacción puramente social.
-- **`post-create/`**: La interfaz dedicada a la creación de contenido, encargada de preprocesar imágenes y textos antes de su publicación.
-- **`profile/`** y **`account/`**:
-  - `profile`: Optimizado para la visualización de la actividad y estadísticas públicas del usuario.
-  - `account`: Entorno seguro para la gestión y actualización de datos personales e información sensible de la cuenta.
+- **`profile/` (Vista de Usuario):** Muestra los datos de cada persona (`/profile/:username`), sus publicaciones y estadísticas. Incluye ventanas para ver las listas reales de Seguidores y Seguidos.
 
-### ⚙️ 3. Gestión del Entorno (User Management)
+- **`challenges/` (Vista de Gamificación):** La sección de salud. Los botones cambian inteligentemente (por ejemplo, dicen "⏱️ Comenzar" si es un reto de tiempo o "✨ Completar" si es una acción rápida).
 
-Herramientas para que el usuario controle su experiencia y privacidad.
+- **`ajustes/` y `account/`:** Entorno seguro donde el usuario puede editar sus datos, cambiar al modo oscuro y gestionar a quién ha bloqueado.
 
-- **`ajustes/`**: Panel de configuración general. Incluye la gestión avanzada de moderación (bloqueos y silencios). Para mantener el rendimiento óptimo, implementa ventanas modales con _scroll_ dinámico, permitiendo manejar listas de cientos de usuarios sin afectar la velocidad de la interfaz.
-- **`privacy/`**: Controles de visibilidad que permiten al usuario alternar entre una cuenta pública y privada, actualizando el estado global de la plataforma al instante.
+### Componentes Reutilizables (`shared/`)
 
-### 🧰 4. Arquitectura Transversal y Soporte (Shared & Core Utilities)
+- **`navbar/`:** El menú superior que incluye un buscador en tiempo real, optimizado para no sobrecargar la aplicación mientras el usuario teclea.
 
-Librerías internas que aseguran la consistencia visual y técnica en todo el proyecto.
-
-- **`services/`**: El centro de gestión de datos (_State Management_). Gestiona la comunicación con la API y almacena la información temporal de la sesión actual, sincronizándose de forma segura con el almacenamiento local del navegador.
-- **`shared/`**: Componentes reutilizables que garantizan una identidad visual uniforme:
-  - `navbar/`: Menú de navegación global de la plataforma.
-  - `post-card/`: Componente estructurado que renderiza el contenido multimedia y las métricas (likes) de cada publicación.
-  - `post-options/`: Menú contextual independiente para ejecutar acciones rápidas de moderación (Silenciar/Bloquear).
-- **`notification/`**: Sistema de alertas emergentes no intrusivas (_Toasts_). Informa al usuario sobre el estado de sus acciones (ej. "Cambios guardados") sin interrumpir su navegación.
-- **`pipes/`**: Transformadores de datos en tiempo real. Se encargan de procesar información técnica (como fechas ISO del servidor) y convertirlas a formatos legibles para el usuario (ej. _"Publicado hace 10 minutos"_).
+- **`post-card/` & `post-options/`:** Las tarjetas de las publicaciones y su menú de opciones. El sistema es seguro y solo te muestra el botón de "Eliminar" si la publicación es realmente tuya.
 
 ---
 
-## ⚡ Aspectos Técnicos Destacados
+## Aspectos Técnicos y Rendimiento
 
-- **Reactividad de Alto Rendimiento (Angular Signals):** La plataforma utiliza _Signals_ para la actualización de la interfaz. Si un usuario silencia a otro, la aplicación no necesita recargar la vista entera; el sistema notifica directamente al componente afectado, eliminando el contenido no deseado en milisegundos.
-- **Diseño UI/UX Escalable:** Integración nativa de temas dinámicos (_Dark / Light Mode_) a través de variables CSS y uso de diseño responsivo adaptado tanto a dispositivos móviles como a escritorio.
+- **Cuentas Privadas e Independientes:** Para que dos personas puedan usar el mismo ordenador sin mezclar sus fotos o bloqueos, guardamos los datos asociados al email de cada uno. Al cerrar sesión, borramos la memoria temporal por total seguridad.
+
+- **Compresión de Imágenes en Cliente:** Si un usuario sube una foto enorme (ej. 4K), la aplicación la reduce de tamaño y peso de forma invisible antes de publicarla. Así evitamos que la plataforma vaya lenta o gaste muchos datos.
+
+- **Velocidad y Rendimiento:** Gracias a las nuevas tecnologías de Angular (Signals), cuando le das a Like a una foto o cambias de tema visual, la pantalla reacciona en milisegundos sin bloqueos.
