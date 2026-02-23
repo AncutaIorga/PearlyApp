@@ -86,4 +86,25 @@ export class ChallengeService {
   getRandomTip(): string {
     return this.WELLNESS_TIPS[Math.floor(Math.random() * this.WELLNESS_TIPS.length)];
   }
+
+  // --- Lógica centralizada para actualizar el gráfico en tiempo real ---
+  calculateWellnessScores(challenges: {id: string, completed: boolean}[]) {
+    const scores = { mental: 0, physical: 0, mindfulness: 0, nutrition: 0 };
+    
+    challenges.forEach(c => {
+      if (c.completed) {
+        const def = this.getChallengeById(c.id);
+        if (def) {
+          scores[def.category] += 20; // Cada reto suma un 20% en su categoría
+        }
+      }
+    });
+
+    return {
+      mental: Math.min(100, scores.mental),
+      physical: Math.min(100, scores.physical),
+      mindfulness: Math.min(100, scores.mindfulness),
+      nutrition: Math.min(100, scores.nutrition)
+    };
+  }
 }

@@ -1,15 +1,238 @@
-.create-post-container { background: var(--bg-primary); min-height: calc(100vh - 64px); padding: 40px 20px; }
-.create-post { max-width: 600px; margin: 0 auto; padding: 32px; background: var(--card-bg); border-radius: 16px; border: 1px solid var(--border-color); }
-.create-post h2 { font-size: 20px; font-weight: 600; margin-bottom: 24px; color: var(--text-primary); }
+.create-post-container {
+  background: var(--bg-primary);
+  min-height: calc(100vh - 64px);
+  padding: 40px 20px;
+  display: flex;
+  justify-content: center;
+}
 
-.form-group { margin-bottom: 20px; }
-.section-label { display: block; font-size: 14px; font-weight: 500; color: var(--text-secondary); margin-bottom: 8px; }
+.create-post {
+  width: 100%;
+  max-width: 600px;
+  background: var(--card-bg);
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  box-shadow: 0 4px 24px rgba(0,0,0,0.05);
+  padding: 32px;
+  height: fit-content;
+}
 
-#imageInput { width: 100%; padding: 12px; border: 1px dashed var(--border-color); border-radius: 8px; background: var(--bg-tertiary); font-size: 14px; }
-#imageInput::file-selector-button { background: var(--text-primary); color: var(--bg-primary); border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-right: 12px; font-weight: 500; }
+.create-post h2 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 28px;
+  color: var(--text-primary);
+  text-align: center;
+}
 
-.create-post textarea { width: 100%; min-height: 120px; padding: 16px; border: 1px solid var(--border-color); border-radius: 8px; font-size: 15px; resize: none; }
-.challenge-select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 8px; background: var(--input-bg); }
+.form-group {
+  margin-bottom: 24px;
+}
 
-.form-actions { display: flex; justify-content: flex-end; margin-top: 24px; }
-.btn-primary { padding: 12px 24px; background: var(--text-primary); color: var(--bg-primary); border-radius: 8px; font-weight: 500; font-size: 14px; }
+.section-label {
+  display: block;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-bottom: 10px;
+  letter-spacing: 0.5px;
+}
+
+/* Select y Textarea modernos */
+.challenge-select, 
+textarea {
+  width: 100%;
+  padding: 14px;
+  border: 2px solid var(--border-color); /* Borde un poco más grueso */
+  border-radius: 12px;
+  background: var(--input-bg);
+  font-size: 15px;
+  font-family: inherit;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  outline: none;
+}
+
+.challenge-select:focus,
+textarea:focus {
+  border-color: #6366f1; /* Color de acento */
+  background: white;
+}
+
+.challenge-select:disabled,
+textarea:disabled {
+    background: #f3f4f6;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+.char-counter {
+  display: block;
+  text-align: right;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+
+/* Área de imagen mejorada */
+.image-upload-area {
+  border: 2px dashed var(--border-color);
+  border-radius: 12px;
+  min-height: 180px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: var(--bg-tertiary);
+  transition: all 0.3s ease;
+  overflow: hidden;
+  position: relative;
+}
+
+.image-upload-area:hover:not(.has-image) {
+  border-color: #6366f1;
+  background: #f0f7ff;
+}
+
+.image-upload-area.has-image {
+  border-style: solid;
+  padding: 0;
+  background: black;
+}
+
+.upload-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: var(--text-secondary);
+}
+
+.upload-icon {
+  font-size: 32px;
+}
+
+.image-preview-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  background: #000;
+}
+
+.image-preview-wrapper img {
+  max-width: 100%;
+  max-height: 400px;
+  object-fit: contain;
+}
+
+.remove-btn {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  background: rgba(0,0,0,0.6);
+  color: white;
+  border: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+}
+
+.remove-btn:hover {
+  background: rgba(220, 38, 38, 0.9);
+}
+
+/* Tarjeta de Resumen del Reto */
+.challenge-summary-card {
+    display: flex;
+    align-items: center;
+    padding: 16px;
+    border-radius: 12px;
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    margin-bottom: 24px;
+    gap: 16px;
+}
+
+.challenge-summary-card.mental { background: #eff6ff; border-color: #bfdbfe; }
+.challenge-summary-card.physical { background: #fef2f2; border-color: #fecaca; }
+.challenge-summary-card.nutrition { background: #ecfdf5; border-color: #a7f3d0; }
+.challenge-summary-card.mindfulness { background: #f5f3ff; border-color: #ddd6fe; }
+
+.summary-icon-box {
+    font-size: 24px;
+    background: white;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.summary-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.summary-label {
+    font-size: 11px;
+    text-transform: uppercase;
+    font-weight: 700;
+    color: var(--text-secondary);
+    margin-bottom: 4px;
+}
+
+.summary-title {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 15px;
+}
+
+.summary-points {
+    font-weight: 800;
+    color: #f59e0b; /* Color dorado/naranja */
+    font-size: 16px;
+}
+
+/* Botón de acción */
+.form-actions {
+  margin-top: 32px;
+}
+
+.btn-submit {
+  width: 100%;
+  padding: 16px;
+  background: linear-gradient(135deg, #111827 0%, #374151 100%); /* Gradiente elegante oscuro */
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.btn-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+}
+
+.btn-submit:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.btn-submit.loading {
+    background: #9ca3af;
+}

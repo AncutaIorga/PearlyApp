@@ -6,12 +6,12 @@ export interface Post {
   userAvatar?: string;
   image: string;
   text: string;
-  likes: number; // Contador total acumulado (Tu corrección)
-  likedBy: string[]; // Lista de nombres para persistencia (Tu corrección)
+  likes: number; 
+  likedBy: string[]; 
   comments: Comment[];
   createdAt: Date;
-  likedByMe?: boolean; // Propiedad virtual para el frontend
-  challengeInfo?: { // Mantenido: Información del reto de tu compañera
+  likedByMe?: boolean; 
+  challengeInfo?: { 
     id: string;
     title: string;
     category: string;
@@ -41,7 +41,7 @@ export class PostService {
   }
 
   private loadPosts() {
-    const savedPosts = localStorage.getItem('posts');
+    const savedPosts = localStorage.getItem('posts'); // Usamos la misma clave siempre
 
     if (savedPosts) {
       try {
@@ -54,7 +54,6 @@ export class PostService {
             post.likedBy = [];
           }
           
-          // Lógica de retos mantenida
           if (post.challengeInfo && !post.challengeInfo.category) {
             post.challengeInfo.category = this.inferCategoryFromId(post.challengeInfo.id);
           }
@@ -81,7 +80,6 @@ export class PostService {
   }
 
   private initializeDefaults() {
-    // Mezcla de ambos: Datos profesionales de retos con tu sistema de likes
     const defaults: Post[] = [
       {
         id: 1,
@@ -89,7 +87,7 @@ export class PostService {
         userAvatar: '',
         image: 'https://picsum.photos/400/300',
         text: '🏃‍♀️ Corrí 10K hoy. ¡Me siento genial!',
-        likes: 12, // Mantenemos tus likes profesionales
+        likes: 12,
         likedBy: [], 
         comments: [],
         createdAt: new Date(),
@@ -99,32 +97,19 @@ export class PostService {
           category: 'physical',
           points: 75
         }
-      },
-      {
-        id: 2,
-        user: 'Luis',
-        userAvatar: '',
-        image: 'https://picsum.photos/400/301',
-        text: '💧 Meta de hidratación cumplida: 2L de agua.',
-        likes: 5,
-        likedBy: [],
-        comments: [],
-        createdAt: new Date(),
-        challengeInfo: { 
-          id: 'nutrition-2',
-          title: 'Hidratación consciente',
-          category: 'nutrition',
-          points: 70
-        }
       }
     ];
     this.posts.set(defaults);
     this.savePosts();
-    this.nextId = 3;
+    this.nextId = 2;
   }
 
   private savePosts() {
-    localStorage.setItem('posts', JSON.stringify(this.posts()));
+    try {
+      localStorage.setItem('posts', JSON.stringify(this.posts()));
+    } catch (e) {
+      console.warn('Memoria local llena: El post se guardó solo en sesión.');
+    }
   }
 
   getAllPosts(): Post[] {
@@ -136,6 +121,7 @@ export class PostService {
   }
 
   getPostsByUser(userName: string): Post[] {
+    // Filtramos por el nombre de usuario exacto
     return this.getAllPosts().filter(p => p.user === userName);
   }
 
@@ -165,12 +151,12 @@ export class PostService {
       challengeInfo: postData.challengeInfo 
     };
 
+    // Añadimos el nuevo post AL PRINCIPIO de la lista
     this.posts.update(p => [newPost, ...p]);
     this.savePosts();
     return newPost;
   }
 
-  // Tu lógica profesional de Likes mantenida intacta
   toggleLike(postId: number) {
     const currentUser = this.getCurrentUser();
 
@@ -179,20 +165,17 @@ export class PostService {
         if (p.id === postId) {
           const hasLiked = p.likedBy.includes(currentUser);
           let newLikedBy = [...p.likedBy];
-          let newLikesCount = p.likes;
-
+          
           if (hasLiked) {
             newLikedBy = newLikedBy.filter(u => u !== currentUser);
-            newLikesCount = Math.max(0, p.likes - 1);
           } else {
             newLikedBy.push(currentUser);
-            newLikesCount = p.likes + 1;
           }
-
+          
           return {
             ...p,
             likedBy: newLikedBy,
-            likes: newLikesCount
+            likes: newLikedBy.length // Recalculamos el total basado en el array real
           };
         }
         return p;
@@ -228,6 +211,25 @@ export class PostService {
 
   deletePost(postId: number) {
     this.posts.update(posts => posts.filter(p => p.id !== postId));
+    this.savePosts();
+  }
+
+  // 🔥 NUEVO MÉTODO: Actualiza el autor en todos los posts antiguos
+  updateUserPosts(oldName: string, newName: string, newAvatar?: string) {
+    this.posts.update(posts => 
+      posts.map(p => {
+        // Si el post era del nombre antiguo, lo actualizamos
+        if (p.user === oldName) {
+          return { 
+            ...p, 
+            user: newName,
+            // Solo actualizamos el avatar si nos pasan uno nuevo, si no mantenemos el que tenía
+            userAvatar: newAvatar !== undefined ? newAvatar : p.userAvatar 
+          };
+        }
+        return p;
+      })
+    );
     this.savePosts();
   }
 }

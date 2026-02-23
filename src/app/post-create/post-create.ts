@@ -6,10 +6,15 @@ import { PostService } from '../services/post';
 import { UserService } from '../services/user';
 import { NavbarComponent } from '../shared/navbar/navbar';
 import { NotificationService } from '../services/notification';
-import { ChallengeService, Challenge } from '../services/challenge'; // <-- Importación correcta
+import { ChallengeService } from '../services/challenge';
 
-interface CompletedChallenge extends Challenge {
-  completed: boolean;
+// Definimos la interfaz localmente para evitar errores de importación si no existe en el servicio
+interface CompletedChallenge {
+  id: string;
+  title: string;
+  category: string;
+  points: number;
+  completed?: boolean;
 }
 
 @Component({
@@ -30,6 +35,9 @@ export class PostCreateComponent implements OnInit {
   selectedChallengeId: string = '';
   selectedChallenge: CompletedChallenge | null = null;
   availableChallenges: CompletedChallenge[] = [];
+  
+  // ✅ Variable para bloquear el botón durante el envío
+  isSubmitting = false;
 
   ngOnInit() {
     this.loadAvailableChallenges();
@@ -44,16 +52,18 @@ export class PostCreateComponent implements OnInit {
       try {
         const progress = JSON.parse(savedProgress);
         if (progress.challenges && Array.isArray(progress.challenges)) {
+          // Filtramos solo los completados para que pueda presumir de ellos
           const completedIds = progress.challenges
             .filter((c: any) => c.completed === true)
             .map((c: any) => c.id);
           
+          // Recuperamos la info completa del servicio de retos
           this.availableChallenges = completedIds
             .map((id: string) => {
               const masterDef = this.challengeService.getChallengeById(id);
               return masterDef ? { ...masterDef, completed: true } : null;
             })
-            .filter((c: any) => c !== null);
+            .filter((c: any) => c !== null); // Eliminamos nulos
         }
       } catch (error) {
         console.error('Error cargando retos:', error);
@@ -61,12 +71,17 @@ export class PostCreateComponent implements OnInit {
     }
   }
 
+  // Se ejecuta cuando el usuario elige un reto del desplegable
   onChallengeSelected() {
-    const found = this.availableChallenges.find(c => c.id === this.selectedChallengeId);
+    // Busque el reto seleccionado en la lista
+    // IMPORTANTE: Convertimos selectedChallengeId a string para comparar, por si viene como número
+    const found = this.availableChallenges.find(c => String(c.id) === String(this.selectedChallengeId));
+    
     if (found) {
       this.selectedChallenge = found;
+      // Si el textarea está vacío, le ponemos un texto por defecto
       if (!this.text.trim()) {
-        this.text = `¡Acabo de completar el reto "${this.selectedChallenge.title}"! 💪`;
+        this.text = `¡He conseguido completar el reto "${this.selectedChallenge.title}"! 💪`;
       }
     }
   }
@@ -84,6 +99,12 @@ export class PostCreateComponent implements OnInit {
   onImageSelected(event: any) {
     const file = event.target.files[0];
     if (file) {
+      // Validación de tamaño (opcional, ej: 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        this.notificationService.warning('La imagen es demasiado grande (Máx 5MB)');
+        return;
+      }
+      
       const reader = new FileReader();
       reader.onload = (e: any) => this.selectedImage = e.target.result;
       reader.readAsDataURL(file);
@@ -92,31 +113,59 @@ export class PostCreateComponent implements OnInit {
 
   removeImage() { this.selectedImage = null; }
 
-  submit() {
+  async submit() {
+    // 1. Validaciones
+    // NOTA: Si quieres permitir posts sin reto, quita esta validación. 
+    // Pero tu lógica original obligaba a seleccionar uno.
     if (!this.selectedChallengeId) {
       this.notificationService.warning('Por favor selecciona el reto que has completado');
       return;
     }
+
     if (!this.text.trim()) {
       this.notificationService.warning('Por favor escribe algo sobre tu logro');
       return;
     }
 
-    const currentUser = this.userService.getUser();
-    this.postService.addPost({
-      user: currentUser.name,
-      userAvatar: currentUser.avatar,
-      image: this.selectedImage || `https://picsum.photos/400/30${Math.floor(Math.random() * 10)}`,
-      text: this.text,
-      challengeInfo: this.selectedChallenge ? {
-        id: this.selectedChallenge.id,
-        title: this.selectedChallenge.title,
-        category: this.selectedChallenge.category,
-        points: this.selectedChallenge.points
-      } : undefined
-    });
+    if (!this.selectedImage) {
+        this.notificationService.warning('Añade una foto para inspirar a otros 📸');
+        return;
+    }
 
-    this.notificationService.showPostCreated();
-    this.router.navigate(['/feed']);
+    // 2. Bloqueo del botón
+    this.isSubmitting = true;
+
+    try {
+        // Simulamos espera de red (UX)
+        await new Promise(resolve => setTimeout(resolve, 800));
+        
+        // (Opcional) Descomenta para probar errores
+        // if (Math.random() > 0.8) throw new Error('Error de conexión simulado');
+
+        const currentUser = this.userService.getUser();
+        
+        // 3. Crear el post
+        this.postService.addPost({
+          user: currentUser.name,
+          userAvatar: currentUser.avatar,
+          image: this.selectedImage, 
+          text: this.text,
+          challengeInfo: this.selectedChallenge ? {
+            id: this.selectedChallenge.id,
+            title: this.selectedChallenge.title,
+            category: this.selectedChallenge.category,
+            points: this.selectedChallenge.points
+          } : undefined
+        });
+
+        // 4. Éxito y Redirección
+        this.notificationService.success('¡Publicado con éxito! 🎉');
+        this.router.navigate(['/feed']);
+
+    } catch (error: any) {
+        console.error(error);
+        this.notificationService.error(error.message || 'Error al publicar. Inténtalo de nuevo.');
+        this.isSubmitting = false; // Desbloqueamos para reintentar
+    }
   }
 }

@@ -15,11 +15,8 @@
             } @else {
               <span>{{ user.name?.charAt(0)?.toUpperCase() }}</span>
             }
-            
             @if (editing) {
-              <div class="avatar-edit-overlay">
-                <span class="edit-icon">[◉°]</span>
-              </div>
+              <div class="avatar-edit-overlay"><span class="edit-icon">[◉°]</span></div>
             }
           </div>
           
@@ -28,15 +25,9 @@
             <p class="bio">{{ user.bio || 'Sin biografía aún' }}</p>
             
             <div class="stats">
-              <div class="stat-item">
-                <strong>{{ userStats.posts }}</strong> <span>Posts</span>
-              </div>
-              <div class="stat-item" style="cursor: pointer;" (click)="openFollowModal('followers')">
-                <strong>{{ userStats.followers }}</strong> <span>Seguidores</span>
-              </div>
-              <div class="stat-item" style="cursor: pointer;" (click)="openFollowModal('following')">
-                <strong>{{ userStats.following }}</strong> <span>Siguiendo</span>
-              </div>
+              <div class="stat-item"><strong>{{ userStats.posts }}</strong> <span>Posts</span></div>
+              <div class="stat-item" style="cursor: pointer;" (click)="openFollowModal('followers')"><strong>{{ userStats.followers }}</strong> <span>Seguidores</span></div>
+              <div class="stat-item" style="cursor: pointer;" (click)="openFollowModal('following')"><strong>{{ userStats.following }}</strong> <span>Siguiendo</span></div>
             </div>
 
             <div class="profile-actions-center">
@@ -53,18 +44,15 @@
           
           @if (editing && isOwnProfile) {
             <p class="avatar-hint">Haz clic en la foto para cambiarla</p>
-            
             <div class="edit-mode-form">
               <div class="form-group">
                 <label>Nombre de usuario</label>
                 <input class="edit-input" [(ngModel)]="editableUser.name" placeholder="Tu nombre" maxlength="10" />
               </div>
-              
               <div class="form-group">
                 <label>Biografía</label>
                 <textarea class="edit-textarea" [(ngModel)]="editableUser.bio" placeholder="Cuenta algo sobre ti" maxlength="30" rows="2"></textarea>
               </div>
-              
               <div class="edit-buttons">
                 <button class="btn-rect primary" (click)="toggleEdit()">Guardar</button>
                 <button class="btn-rect secondary" (click)="cancelEdit()">Cancelar</button>
@@ -72,9 +60,9 @@
             </div>
           }
         </div>
-
-        <section class="profile-stats-visual" style="margin-top: 20px; padding: 15px; background: var(--card-bg); border-radius: 12px;">
-          <h3 style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase;">📊 Equilibrio Wellness</h3>
+        
+        <section class="challenges-section">
+          <h3>📊 Equilibrio Wellness</h3>
           <app-stats-chart 
             [mental]="mentalHealth" 
             [physical]="physicalHealth"
@@ -85,44 +73,45 @@
         
         @if (isOwnProfile) {
           <div class="challenges-section">
-            <h3>⏳ RETOS DIARIOS PENDIENTES</h3>
+            <h3>⏳ Retos en Curso</h3>
             <div class="challenges-list">
-              @if (pendingDailyChallenges.length === 0) {
+              
+              @if (inProgressChallenges.length === 0) {
                 <div class="no-challenges-message">
-                  <div class="challenge-icon">🎉</div>
+                  <div class="challenge-icon">🧘‍♀️</div>
                   <div class="challenge-info">
-                    <div class="challenge-title">¡Todos los retos completados hoy!</div>
-                    <div class="challenge-progress">Vuelve mañana para más retos</div>
+                    <div class="challenge-title">No hay retos en progreso</div>
+                    <div class="challenge-progress">Ve a la pestaña Retos para comenzar uno</div>
                   </div>
                 </div>
               } @else {
-                @for (challenge of pendingDailyChallenges; track challenge.id) {
-                  <div class="challenge-item" (click)="goToDailyChallenge(challenge.id)">
-                    <div class="challenge-icon">{{ getCategoryIcon(challenge.category || 'mental') }}</div>
-                    <div class="challenge-info">
-                      <div class="challenge-title">{{ challenge.title }}</div>
-                      <div class="challenge-progress">
-                        <span class="points">+{{ challenge.points }} ✨ Brillos</span>
-                        <span class="tags">{{ challenge.tags.join(' • ') }}</span>
+                @for (challenge of inProgressChallenges; track challenge.id) {
+                  <div class="challenge-item" style="justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 12px;">
+                      <div class="challenge-icon">{{ getCategoryIcon(challenge.category) }}</div>
+                      <div class="challenge-info">
+                        <div class="challenge-title">{{ challenge.title }}</div>
+                        <div class="challenge-progress">
+                          <span class="points">+{{ challenge.points }} ✨ Brillos</span>
+                        </div>
                       </div>
                     </div>
+                    <button class="btn-rect primary" style="padding: 8px 16px; width: auto; font-size: 12px; background: #10B981; color: white;" (click)="completeInProgressChallenge(challenge.id, $event)">
+                      Finalizar
+                    </button>
                   </div>
                 }
               }
               
-              <div class="challenge-item view-all" (click)="goToDailyChallenge('all')">
-                <div class="challenge-icon">🌟</div>
+              <div class="challenge-item view-all" routerLink="/challenges" style="justify-content: center; background: transparent; border: 1px dashed var(--border-color);">
                 <div class="challenge-info">
-                  <div class="challenge-title">Ver todos los retos</div>
-                  <div class="challenge-progress">Explora más retos de bienestar</div>
+                  <div class="challenge-title" style="color: var(--text-primary);">Ver todos los retos ➔</div>
                 </div>
               </div>
             </div>
           </div>
         }
-      </div>
-      
-      <div class="profile-right">
+      </div> <div class="profile-right">
         @if (posts.length === 0) {
           <div class="no-posts">
             <p style="font-size: 3rem;">📸</p>
@@ -265,11 +254,7 @@
       <div class="edit-post-form">
         <div class="edit-form-group">
           <label>Texto de la publicación</label>
-          <textarea 
-            [(ngModel)]="editPostData.text" 
-            placeholder="Escribe tu publicación..." 
-            maxlength="500">
-          </textarea>
+          <textarea [(ngModel)]="editPostData.text" placeholder="Escribe tu publicación..." maxlength="500"></textarea>
           <div class="char-counter">{{ editPostData.text.length || 0 }}/500 caracteres</div>
         </div>
         

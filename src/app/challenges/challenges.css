@@ -271,6 +271,7 @@
   gap: 8px;
 }
 
+/* Estado activo (Comenzar, Completar, Finalizar) */
 .action-btn {
   background: var(--btn-primary-bg);
   color: var(--btn-primary-text);
@@ -281,12 +282,24 @@
   opacity: 0.9;
   transform: scale(1.02);
 }
+/* ESTADO NUEVO: EN CURSO (Color distintivo para "Finalizar") */
+.action-btn.in-progress {
+  background: #10B981; /* Verde esmeralda que encaja con la temática wellness */
+  color: white;
+  border: 1px solid #059669;
+}
 
+.action-btn.in-progress:hover {
+  background: #059669; /* Un verde un poco más oscuro al pasar el ratón */
+  transform: scale(1.02);
+}
+/* Estado Completado */
 .action-btn:disabled, .action-btn.claimed {
-  background: var(--accent-light);
-  color: var(--accent-color);
-  cursor: not-allowed;
-  border: 1px solid var(--accent-color);
+  background: var(--bg-tertiary);
+  color: var(--text-muted);
+  cursor: default;
+  border: 1px solid var(--border-color);
+  transform: none; /* Evita el hover scale cuando está desactivado */
 }
 
 .daily-section-box {

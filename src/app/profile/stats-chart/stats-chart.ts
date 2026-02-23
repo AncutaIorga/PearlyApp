@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, effect } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
@@ -28,8 +28,7 @@ import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
     }
   `]
 })
-export class StatsChartComponent implements OnInit {
-  // Recibimos los datos del perfil del usuario
+export class StatsChartComponent implements OnInit, OnChanges {
   @Input() mental = 0;
   @Input() physical = 0;
   @Input() mindfulness = 0;
@@ -71,11 +70,11 @@ export class StatsChartComponent implements OnInit {
   public radarChartType: ChartType = 'radar';
 
   ngOnInit() {
-    // Cargamos los datos iniciales
     this.updateChart();
   }
 
-  ngOnChanges() {
+  // Esto es vital: actualiza el gráfico cuando Angular detecta cambios desde el componente padre
+  ngOnChanges(changes: SimpleChanges) {
     this.updateChart();
   }
 
@@ -86,5 +85,7 @@ export class StatsChartComponent implements OnInit {
       this.mindfulness, 
       this.nutrition
     ];
+    // Forzamos a Angular y a Chart.js a re-renderizar reasignando el objeto
+    this.radarChartData = { ...this.radarChartData };
   }
 }

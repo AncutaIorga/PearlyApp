@@ -19,10 +19,13 @@ El proyecto ha sido desarrollado utilizando herramientas modernas y preparadas p
 
 Sigue estos pasos para levantar el proyecto en tu propio ordenador:
 
-1. **Instalar Angular CLI:**
+1. **Instalar Angular, dependencias y chart:**
 
    ```bash
    npm install -g @angular/cli
+   npm install
+   npm install chart.js ng2-charts
+
 
    ```
 
@@ -40,19 +43,12 @@ Sigue estos pasos para levantar el proyecto en tu propio ordenador:
 
    ```
 
-4. **Instalar las dependencias del proyecto:**
-
-   ```bash
-      npm install
-
-
-   ```
-
-5. **Desplegar el servidor de desarrollo:**
+4. **Desplegar el servidor de desarrollo:**
    ```bash
       ng serve -o
       Nota: El flag -o abrirá automáticamente la aplicación en tu navegador predeterminado en http://localhost:4200/.
    ```
+
 
 ## Diseño de la Aplicación y Criterios de Usabilidad (UX/UI)
 

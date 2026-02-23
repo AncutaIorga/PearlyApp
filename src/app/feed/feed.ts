@@ -6,6 +6,7 @@ import { PostCardComponent } from '../shared/post-card/post-card';
 import { NavbarComponent } from '../shared/navbar/navbar';
 
 @Component({
+  selector: 'app-feed', // He añadido el selector por si acaso
   standalone: true,
   imports: [CommonModule, PostCardComponent, NavbarComponent],
   templateUrl: './feed.html',
@@ -31,19 +32,20 @@ export class FeedComponent implements OnInit {
   });
 
   ngOnInit() {
-    // ARREGLO ONBOARDING: Comprueba en LocalStorage si el usuario ya vio el tutorial
-    const tutorialDone = localStorage.getItem('tutorialPearlyDone');
+    // CAMBIO CLAVE: Ahora comprobamos si venimos de un REGISTRO reciente
+    const isNew = localStorage.getItem('isNewUser');
     
-    // Si no lo ha hecho, se activa la variable que muestra el HTML del tutorial
-    if (!tutorialDone) {
+    if (isNew === 'true') {
       this.showTutorial = true;
+      // IMPORTANTE: Borramos la marca inmediatamente.
+      // Así, si el usuario recarga la página (F5), el tutorial no le vuelve a saltar.
+      localStorage.removeItem('isNewUser');
     }
   }
 
-  // Método que se ejecuta cuando el usuario pulsa "¡Empezar ahora!" en el tutorial
   closeTutorial() {
     this.showTutorial = false;
-    // Guardamos en LocalStorage que ya lo ha visto para que no le vuelva a salir mañana
-    localStorage.setItem('tutorialPearlyDone', 'true');
+    // Ya no necesitamos guardar nada en localStorage aquí, 
+    // porque la lógica depende solo del momento del registro.
   }
 }

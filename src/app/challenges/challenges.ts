@@ -46,6 +46,8 @@ export class ChallengesComponent implements OnInit {
   wellnessScore = 0;
   mentalHealth = 0;
   physicalHealth = 0;
+  mindfulnessScore = 0;
+  nutritionScore = 0;
   
   completedChallenges = 0;
   totalChallenges = 0;
@@ -96,7 +98,6 @@ export class ChallengesComponent implements OnInit {
     }));
   }
 
-  // --- LAS FUNCIONES QUE FALTABAN ---
   getFilterIcon(filterId: string): string {
     const icons: Record<string, string> = {
       'all': '🌟', 'mental': '🧠', 'physical': '💪', 'mindfulness': '🌿', 'nutrition': '🍎'
@@ -108,15 +109,14 @@ export class ChallengesComponent implements OnInit {
     this.activeFilter = 'all';
     this.notificationService.info('🌿 Mostrando todos los retos de bienestar');
   }
-  // ----------------------------------
 
   getCategoryIcon(category: string): string {
-    const icons: any = { mental: '🧠', physical: '💪', mindfulness: '🌿', nutrition: '🍎' };
+    const icons: Record<string, string> = { mental: '🧠', physical: '💪', mindfulness: '🌿', nutrition: '🍎' };
     return icons[category] || '🌟';
   }
   
   getCategoryName(category: string): string {
-    const names: any = { mental: 'Mental', physical: 'Físico', mindfulness: 'Mindfulness', nutrition: 'Nutrición' };
+    const names: Record<string, string> = { mental: 'Mental', physical: 'Físico', mindfulness: 'Mindfulness', nutrition: 'Nutrición' };
     return names[category] || 'Bienestar';
   }
 
@@ -126,18 +126,26 @@ export class ChallengesComponent implements OnInit {
       const p = JSON.parse(saved);
       this.energyPoints = p.energyPoints || 0;
       this.currentStreak = p.currentStreak || 0;
-      this.mentalHealth = p.mentalHealth || 0;
-      this.physicalHealth = p.physicalHealth || 0;
-      this.completedChallenges = p.completedChallenges || 0;
       this.dailyTip = p.dailyTip || this.dailyTip;
+      
       if (p.challenges) {
         this.challenges = this.challenges.map(c => {
           const s = p.challenges.find((sc: any) => sc.id === c.id);
           return s ? { ...c, completed: s.completed, inProgress: s.inProgress } : c;
         });
       }
+      this.updateScoresFromService();
     }
-    this.updateWellnessScore();
+  }
+
+  private updateScoresFromService() {
+    const scores = this.challengeService.calculateWellnessScores(this.challenges);
+    this.mentalHealth = scores.mental;
+    this.physicalHealth = scores.physical;
+    this.mindfulnessScore = scores.mindfulness;
+    this.nutritionScore = scores.nutrition;
+    this.wellnessScore = Math.round((this.mentalHealth + this.physicalHealth + this.mindfulnessScore + this.nutritionScore) / 4);
+    this.completedChallenges = this.challenges.filter(c => c.completed).length;
   }
 
   private saveProgress() {
@@ -146,15 +154,16 @@ export class ChallengesComponent implements OnInit {
       currentStreak: this.currentStreak,
       mentalHealth: this.mentalHealth,
       physicalHealth: this.physicalHealth,
+      mindfulness: this.mindfulnessScore,
+      nutrition: this.nutritionScore,
       completedChallenges: this.completedChallenges,
-      challenges: this.challenges.map(c => ({ id: c.id, completed: c.completed })),
+      challenges: this.challenges.map(c => ({ id: c.id, completed: c.completed, inProgress: c.inProgress })),
       dailyTip: this.dailyTip
     };
     localStorage.setItem(`pearly-wellness-progress-${this.currentUserId}`, JSON.stringify(data));
   }
 
   setFilter(id: string) { this.activeFilter = id; }
-  private updateWellnessScore() { this.wellnessScore = Math.round((this.mentalHealth + this.physicalHealth) / 2); }
   private calculateTotalChallenges() { this.totalChallenges = this.challenges.length; }
 
   handleChallengeAction(challenge: ChallengeState) {
@@ -164,23 +173,39 @@ export class ChallengesComponent implements OnInit {
   }
 
   confirmChallengeStart() {
-    if (this.challengeToConfirm) {
-      this.completeChallenge(this.challengeToConfirm.id);
-      this.closeConfirmModal();
+    if (!this.challengeToConfirm) return;
+    const c = this.challenges.find(x => x.id === this.challengeToConfirm!.id);
+    
+    if (c) {
+      // AQUÍ ESTÁ LA MAGIA: Si no ha empezado, lo pasamos a "En curso" primero
+      if (['physical', 'mindfulness'].includes(c.category) && !c.inProgress) {
+        c.inProgress = true;
+        this.notificationService.info(`⏱️ Reto en curso: ${c.title}. ¡Tú puedes!`);
+        this.saveProgress();
+      } else {
+        // Si ya estaba en curso o es un reto instantáneo, se completa
+        this.completeChallenge(c.id);
+      }
     }
+    this.closeConfirmModal();
   }
 
   closeConfirmModal() { this.showCustomConfirmModal = false; this.challengeToConfirm = null; }
 
   getChallengeButtonText(c: ChallengeState): string {
-    return c.completed ? '✅ COMPLETADO' : (['physical', 'mindfulness'].includes(c.category) ? '⏱️ COMENZAR' : '✨ COMPLETAR');
+    if (c.completed) return '✅ COMPLETADO';
+    if (c.inProgress) return '✨ FINALIZAR RETO';
+    return (['physical', 'mindfulness'].includes(c.category) ? '⏱️ COMENZAR' : '✨ COMPLETAR');
   }
 
   completeChallenge(id: string) {
     const c = this.challenges.find(x => x.id === id);
     if (c && !c.completed) {
       c.completed = true;
+      c.inProgress = false;
       this.energyPoints += c.points;
+      
+      this.updateScoresFromService(); // Actualiza los stats reales
       this.notificationService.showChallengeCompleted(c.title, c.points);
       this.saveProgress();
     }
@@ -197,12 +222,9 @@ export class ChallengesComponent implements OnInit {
 
   refreshTip() {
     this.dailyTip = this.challengeService.getRandomTip();
-  
-    this.notificationService.info('💡 Nuevo consejo de bienestar cargado', {
-      duration: 2000
-  });
-  this.saveProgress();
-}
+    this.notificationService.info('💡 Nuevo consejo de bienestar cargado', { duration: 2000 });
+    this.saveProgress();
+  }
 
   private checkForFocusedChallenge() { /* lógica de scroll */ }
 }

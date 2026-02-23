@@ -25,7 +25,6 @@ export const routes: Routes = [
     loadComponent: () => import('./auth/register/registerBACK').then(m => m.RegisterComponent) 
   },
 */
-
   // App Core
   { 
     path: 'feed', 
