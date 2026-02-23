@@ -1,0 +1,75 @@
+<div class="auth-container">
+  <div class="auth-form">
+    <h2>Crear cuenta</h2>
+    
+    <div class="input-group">
+      <label for="name">Nombre completo *</label>
+      <input 
+        id="name"
+        [(ngModel)]="name" 
+        placeholder="Tu nombre" 
+        type="text"
+        autocomplete="name">
+    </div>
+
+    <div class="input-group">
+      <label for="email">Email *</label>
+      <input 
+        id="email"
+        [(ngModel)]="email" 
+        placeholder="usuario@gmail.com" 
+        type="email"
+        autocomplete="email"
+        (blur)="validateEmail()"
+        [class.input-error]="emailError">
+      @if (emailError) {
+        <span class="error-message">{{ emailError }}</span>
+      }
+    </div>
+
+    <div class="input-group">
+      <label for="password">Contraseña * (máx. 10 caracteres)</label>
+      <div class="password-wrapper">
+        <input 
+          id="password"
+          [(ngModel)]="password" 
+          [type]="showPassword ? 'text' : 'password'"
+          placeholder="••••••••"
+          autocomplete="new-password"
+          (input)="validatePassword()"
+          maxlength="10"
+          [class.input-error]="passwordError">
+        <span 
+          class="eye-icon" 
+          (click)="togglePasswordVisibility()">
+          {{ showPassword ? '👁️' : '👁️‍🗨️' }}
+        </span>
+      </div>
+      
+      <div class="password-requirements">
+        <p class="requirements-title">La contraseña debe contener:</p>
+        <ul class="requirements-list">
+          <li [class.valid]="hasMinLength">✓ Mínimo 8 caracteres</li>
+          <li [class.valid]="hasUpperCase">✓ Una mayúscula</li>
+          <li [class.valid]="hasLowerCase">✓ Una minúscula</li>
+          <li [class.valid]="hasNumber">✓ Un número</li>
+          <li [class.valid]="hasSymbol">✓ Un símbolo (!@#$%...)</li>
+        </ul>
+      </div>
+    </div>
+
+    @if (serverError) {
+      <div class="server-error" style="color: #e74c3c; margin-bottom: 16px; text-align: center; font-size: 14px; font-weight: 500;">
+        {{ serverError }}
+      </div>
+    }
+
+    <button (click)="register()" class="btn-primary" [disabled]="isLoading" [style.opacity]="isLoading ? '0.7' : '1'">
+      {{ isLoading ? 'Creando cuenta...' : 'Crear cuenta' }}
+    </button>
+    
+    <p class="auth-footer">
+      ¿Ya tienes cuenta? <a routerLink="/login">Inicia sesión aquí</a>
+    </p>
+  </div>
+</div>

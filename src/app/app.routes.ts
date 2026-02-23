@@ -14,6 +14,18 @@ export const routes: Routes = [
     loadComponent: () => import('./auth/register/register').then(m => m.RegisterComponent) 
   },
 
+  // AuthBACK
+  /*
+  { 
+    path: 'login', 
+    loadComponent: () => import('./auth/login/loginBACK').then(m => m.LoginComponent) 
+  },
+  { 
+    path: 'register', 
+    loadComponent: () => import('./auth/register/registerBACK').then(m => m.RegisterComponent) 
+  },
+*/
+
   // App Core
   { 
     path: 'feed', 

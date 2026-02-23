@@ -1,7 +1,8 @@
+/*
 import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { AuthService } from '../../services/auth';
+import { AuthService } from '../../services/authBACK'; 
 
 @Component({
   standalone: true,
@@ -15,8 +16,11 @@ export class RegisterComponent {
   password = '';
   emailError = '';
   passwordError = '';
+  
+  // 👇 ¡ESTAS SON LAS DOS VARIABLES QUE FALTABAN! 👇
   serverError = ''; 
-  isLoading = false;
+  isLoading = false; 
+  
   showPassword = false;
 
   // Validaciones en tiempo real
@@ -49,9 +53,10 @@ export class RegisterComponent {
     this.showPassword = !this.showPassword;
   }
 
-  register() {
+  async register() {
     this.validateEmail();
     this.validatePassword();
+    this.serverError = ''; // Limpiamos errores previos
     
     if (!this.emailError && 
         this.hasMinLength && 
@@ -59,7 +64,20 @@ export class RegisterComponent {
         this.hasLowerCase && 
         this.hasNumber && 
         this.hasSymbol) {
-      this.auth.register(this.name, this.email, this.password);
+          
+      this.isLoading = true; // Empezamos a cargar
+      
+      // Esperamos la respuesta del servidor
+      const success = await this.auth.register(this.name, this.email, this.password);
+      
+      if (!success) {
+        // Si falla (email duplicado, servidor apagado...), marcamos el error
+        this.serverError = 'No se ha podido completar el registro.';
+      }
+
+      setTimeout(() => this.isLoading = false, 0); 
     }
   }
 }
+
+*/
