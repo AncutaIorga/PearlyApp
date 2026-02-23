@@ -111,7 +111,9 @@
             </div>
           </div>
         }
-      </div> <div class="profile-right">
+      </div> 
+
+      <div class="profile-right">
         @if (posts.length === 0) {
           <div class="no-posts">
             <p style="font-size: 3rem;">📸</p>
@@ -140,21 +142,32 @@
 @if (showFollowModal) {
   <div class="image-modal" (click)="closeFollowModal()" style="z-index: 2500;">
     <div class="modal-content" (click)="$event.stopPropagation()" style="max-width: 400px; background: var(--card-bg); padding: 24px; border-radius: 16px;">
+      
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
         <h3 style="margin: 0; color: var(--text-primary);">{{ followModalType === 'followers' ? 'Seguidores' : 'Siguiendo' }}</h3>
-        <button class="modal-close" style="position: static; transform: none; background: transparent; color: var(--text-secondary); border: none; font-size: 20px; padding: 0;" (click)="closeFollowModal()">✕</button>
+        <button (click)="closeFollowModal()" style="background: transparent; border: none; font-size: 20px; cursor: pointer; color: var(--text-secondary);">✕</button>
       </div>
       
       <div style="max-height: 400px; overflow-y: auto;">
         @if (followModalList.length === 0) {
           <p style="text-align: center; color: var(--text-muted); font-style: italic; padding: 20px;">Lista vacía.</p>
         } @else {
-          @for (username of followModalList; track username) {
-            <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-color); cursor: pointer;" [routerLink]="['/profile', username]" (click)="closeFollowModal()">
-              <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--text-secondary);">
-                {{ username.charAt(0).toUpperCase() }}
+          @for (userItem of followModalList; track userItem.name) {
+            <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-color); cursor: pointer;" 
+                 [routerLink]="['/profile', userItem.name]" 
+                 (click)="closeFollowModal()">
+              
+              <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                @if (userItem.avatar) {
+                  <img [src]="userItem.avatar" style="width: 100%; height: 100%; object-fit: cover;">
+                } @else {
+                  <span style="font-weight: 600; color: var(--text-secondary);">
+                    {{ userItem.name.charAt(0).toUpperCase() }}
+                  </span>
+                }
               </div>
-              <strong style="color: var(--text-primary);">{{ username }}</strong>
+
+              <strong style="color: var(--text-primary);">{{ userItem.name }}</strong>
             </div>
           }
         }
@@ -206,8 +219,8 @@
           </div>
           
           <div class="modal-comments">
-            <h4>Comentarios ({{ selectedPost.comments.length }})</h4>
-            @if (selectedPost.comments.length === 0) {
+            <h4>Comentarios ({{ selectedPost.comments?.length || 0 }})</h4>
+            @if (!selectedPost.comments || selectedPost.comments.length === 0) {
               <p class="no-comments">No hay comentarios aún. ¡Sé el primero!</p>
             } @else {
               @for (c of selectedPost.comments; track c.id) {
@@ -255,7 +268,7 @@
         <div class="edit-form-group">
           <label>Texto de la publicación</label>
           <textarea [(ngModel)]="editPostData.text" placeholder="Escribe tu publicación..." maxlength="500"></textarea>
-          <div class="char-counter">{{ editPostData.text.length || 0 }}/500 caracteres</div>
+          <div class="char-counter">{{ editPostData.text?.length || 0 }}/500 caracteres</div>
         </div>
         
         <div class="edit-buttons-row">

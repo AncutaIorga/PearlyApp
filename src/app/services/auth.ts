@@ -5,10 +5,10 @@ import { NotificationService } from './notification';
 export interface User {
   name: string;
   email: string;
-  password: string;
+  password?: string;
   avatar?: string;
   bio?: string;
-  isPrivate?: boolean; // ✅ Añadido para evitar errores en Ajustes
+  isPrivate?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -32,8 +32,7 @@ export class AuthService {
         email: localStorage.getItem('userEmail') || '',
         avatar: localStorage.getItem('userAvatar') || '',
         bio: localStorage.getItem('userBio') || '',
-        isPrivate: localStorage.getItem('userPrivate') === 'true',
-        password: ''
+        isPrivate: localStorage.getItem('userPrivate') === 'true'
       });
     }
   }
@@ -41,7 +40,7 @@ export class AuthService {
   private loadUsersFromStorage() {
     const saved = localStorage.getItem('all_registered_users');
     this.registeredUsers = saved ? JSON.parse(saved) : [
-      { name: 'Neli', email: 'neli@gmail.com', password: 'Neli404_', avatar: '', bio: 'Creadora de PearlyApp 🫧' }
+      { name: 'Neli', email: 'neli@gmail.com', password: 'Neli404_', avatar: '', bio: 'Creadora de PearlyApp 🫧', isPrivate: false }
     ];
   }
 
@@ -90,27 +89,24 @@ export class AuthService {
   }
 
   register(name: string, email: string, password: string): boolean {
-    localStorage.removeItem('userAvatar');
-    localStorage.removeItem('userBio');
-    
+    if (!name || !email || !password) return false;
     if (this.isUserTaken(name)) {
-      this.notificationService.warning('Nombre ya en uso');
+      this.notificationService.warning('¡Ese nombre ya existe! Elige otro.');
       return false;
     }
+    
+    localStorage.removeItem('userAvatar');
+    localStorage.removeItem('userBio');
+    this.user.set(null);
 
     const newUser: User = { 
-      name: name.trim(), 
-      email: email.toLowerCase().trim(), 
-      password, 
-      avatar: '', 
-      bio: `¡Hola! Soy ${name} y me acabo de unir a Pearly.`,
-      isPrivate: false 
+      name: name.trim(), email: email.toLowerCase().trim(), password, avatar: '', 
+      bio: `¡Hola! Soy ${name} y me acabo de unir.`, isPrivate: false 
     };
-
     this.registeredUsers.push(newUser);
     this.saveUsersToStorage();
     localStorage.setItem('isNewUser', 'true');
-    return this.login(newUser.email, newUser.password);
+    return this.login(email, password);
   }
 
   logout() {
@@ -123,9 +119,15 @@ export class AuthService {
     if(posts) localStorage.setItem('posts', posts);
 
     this.notificationService.showLogout();
-    setTimeout(() => window.location.href = '/login', 500);
+    setTimeout(() => {
+      this.router.navigate(['/login']).then(() => {
+        window.location.reload();
+      });
+    }, 500);
   }
 
-  getRegisteredUsers(): User[] { return this.registeredUsers; }
   isLoggedIn(): boolean { return this.isAuthenticated; }
+  getRegisteredUsers(): User[] { return this.registeredUsers; }
+  getCurrentUserName(): string { return localStorage.getItem('userName') || ''; }
+  getCurrentUserEmail(): string { return localStorage.getItem('userEmail') || ''; }
 }

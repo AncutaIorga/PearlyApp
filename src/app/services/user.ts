@@ -1,17 +1,15 @@
 import { Injectable, signal, inject } from '@angular/core';
 import { AuthService, User } from './auth';
-import { of, Observable } from 'rxjs'; // ✅ Necesario para el .subscribe()
+import { of, Observable } from 'rxjs';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
   private authService = inject(AuthService);
-  private userSignal = signal<User>({ name: '', email: '', avatar: '', password: '', bio: '', isPrivate: false });
+  private userSignal = signal<User>({ name: '', email: '', password: '' });
 
   syncWithAuthData() {
     const current = this.authService.user();
-    if (current) {
-      this.userSignal.set(current);
-    }
+    if (current) { this.userSignal.set(current); }
   }
 
   getUser() {
@@ -25,7 +23,6 @@ export class UserService {
     this.syncWithAuthData();
   }
 
-  // ✅ Corregido para que Ajustes.ts pueda suscribirse
   updatePrivacy(isPrivate: boolean): Observable<any> {
     this.updateUser({ isPrivate });
     return of({ success: true });

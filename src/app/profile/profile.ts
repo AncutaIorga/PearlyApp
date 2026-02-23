@@ -12,6 +12,7 @@ import { StatsChartComponent } from './stats-chart/stats-chart';
 import { ChallengeService } from '../services/challenge';
 
 @Component({
+  selector: 'app-profile',
   standalone: true,
   imports: [NavbarComponent, CommonModule, FormsModule, TimeAgoPipe, RouterModule, StatsChartComponent],
   templateUrl: './profile.html',
@@ -25,27 +26,25 @@ export class ProfileComponent implements OnInit {
   private authService = inject(AuthService);
   private challengeService = inject(ChallengeService);
   private router = inject(Router);
-  
+
   user: any = {};
-  isOwnProfile = true; 
+  isOwnProfile = true;
   editing = false;
-  isFollowing = false; // ✅ Añadido
+  isFollowing = false;
   editableUser: any = {};
   avatarPreview: string | null = null;
   posts: Post[] = [];
   userStats = { posts: 0, followers: 0, following: 0, achievements: 0 };
 
-  // Modales y Estados
-  selectedPost: Post | null = null;
-  editingPost: Post | null = null;
+  selectedPost: any = null;
+  editingPost: any = null;
   editPostData: any = {};
   newComment = '';
   showFollowModal = false;
   followModalType: 'followers' | 'following' = 'followers';
-  followModalList: string[] = [];
+  followModalList: any[] = [];
   inProgressChallenges: any[] = [];
 
-  // Salud
   mentalHealth = 0; physicalHealth = 0; mindfulnessScore = 0; nutritionScore = 0;
 
   ngOnInit() {
@@ -56,7 +55,7 @@ export class ProfileComponent implements OnInit {
     this.route.paramMap.subscribe(params => {
       this.resetState();
       const usernameParam = params.get('username');
-      const currentUserName = localStorage.getItem('userName');
+      const currentUserName = this.authService.getCurrentUserName();
 
       if (usernameParam && usernameParam !== currentUserName) {
         this.isOwnProfile = false;
@@ -72,16 +71,21 @@ export class ProfileComponent implements OnInit {
   private resetState() {
     this.editing = false;
     this.avatarPreview = null;
-    this.showFollowModal = false;
     this.selectedPost = null;
-    this.editingPost = null;
+    this.showFollowModal = false;
   }
 
   loadOtherUserProfile(username: string) {
     const allUsers = this.authService.getRegisteredUsers();
     const found = allUsers.find(u => u.name.toLowerCase() === username.toLowerCase());
     this.user = found ? { ...found } : { name: username, bio: 'Usuario Pearly', avatar: '' };
+
+    const myEmail = this.authService.getCurrentUserEmail();
+    const myFollowing = JSON.parse(localStorage.getItem(`following-${myEmail}`) || '[]');
+    this.isFollowing = myFollowing.includes(this.user.name);
+
     this.loadUserPosts();
+    this.loadWellnessData();
   }
 
   loadMyData() {
@@ -90,30 +94,48 @@ export class ProfileComponent implements OnInit {
   }
 
   loadUserPosts() {
-    this.posts = this.postService.getPostsByUser(this.user.name);
+    this.posts = this.postService.getPostsByUser(this.user.name).map(p => ({
+      ...p,
+      createdAt: (p as any).createdAt || (p as any).date || new Date().toISOString()
+    }));
+    this.updateStats();
+  }
+
+  updateStats() {
     this.userStats.posts = this.posts.length;
+    const targetEmail = this.isOwnProfile ? this.authService.getCurrentUserEmail() : (this.user.email || `${this.user.name}@gmail.com`);
+    
+    this.userStats.followers = this.getRealFollowersList().length;
+    this.userStats.following = this.getRealFollowingList(targetEmail || '').length;
   }
 
-  // ✅ FUNCIONES DE SEGUIMIENTO
   toggleFollow() {
+    const myEmail = this.authService.getCurrentUserEmail();
+    let myFollowing = JSON.parse(localStorage.getItem(`following-${myEmail}`) || '[]');
+    if (this.isFollowing) {
+      myFollowing = myFollowing.filter((n: string) => n !== this.user.name);
+    } else {
+      myFollowing.push(this.user.name);
+    }
+    localStorage.setItem(`following-${myEmail}`, JSON.stringify(myFollowing));
     this.isFollowing = !this.isFollowing;
-    this.isFollowing ? this.notificationService.success('Siguiendo') : this.notificationService.info('Dejado de seguir');
+    this.updateStats();
   }
 
-  openFollowModal(type: 'followers' | 'following') {
-    this.followModalType = type;
-    this.showFollowModal = true;
-    this.followModalList = []; 
-  }
-
-  closeFollowModal() { this.showFollowModal = false; }
-
-  // ✅ FUNCIONES DE PERFIL Y AVATAR
   toggleEdit() {
     if (this.editing) {
+      const newName = this.editableUser.name.trim();
+      const oldName = this.user.name;
+
+      if (newName.toLowerCase() !== oldName.toLowerCase() && this.authService.isUserTaken(newName)) {
+        this.notificationService.error('⛔ Ese nombre ya existe. Elige otro.');
+        return;
+      }
+
       if (this.avatarPreview) this.editableUser.avatar = this.avatarPreview;
       this.userService.updateUser(this.editableUser);
       this.user = { ...this.editableUser };
+      this.postService.updateUserPosts(oldName, this.user.name, this.user.avatar);
       this.notificationService.showProfileUpdated();
     } else {
       this.editableUser = { ...this.user };
@@ -123,57 +145,79 @@ export class ProfileComponent implements OnInit {
 
   cancelEdit() { this.editing = false; this.avatarPreview = null; }
 
+  openFollowModal(type: 'followers' | 'following') {
+    this.followModalType = type;
+    const targetEmail = this.isOwnProfile ? this.authService.getCurrentUserEmail() : (this.user.email || `${this.user.name}@gmail.com`);
+    const namesList = (type === 'followers') ? this.getRealFollowersList() : this.getRealFollowingList(targetEmail || '');
+
+    const allUsers = this.authService.getRegisteredUsers();
+    this.followModalList = namesList.map(name => {
+      const found = allUsers.find(u => u.name.toLowerCase() === name.toLowerCase());
+      return { name: name, avatar: found ? found.avatar : '' };
+    });
+    this.showFollowModal = true;
+  }
+
+  private getRealFollowersList(): string[] {
+    const followers = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key?.startsWith('following-')) {
+        const list = JSON.parse(localStorage.getItem(key) || '[]');
+        if (list.includes(this.user.name)) followers.push(key.replace('following-', '').split('@')[0]);
+      }
+    }
+    return followers;
+  }
+
+  private getRealFollowingList(email: string): string[] {
+    return JSON.parse(localStorage.getItem(`following-${email}`) || '[]');
+  }
+
+  closeFollowModal() { this.showFollowModal = false; }
+  openImageModal(post: Post) { this.selectedPost = post; }
+  closeImageModal() { this.selectedPost = null; this.newComment = ''; }
+
+  addComment() {
+    if (this.selectedPost && this.newComment.trim()) {
+      const myUser = this.userService.getUser();
+      this.postService.addComment(this.selectedPost.id, this.newComment.trim(), myUser.name, myUser.avatar);
+      if (!this.selectedPost.comments) this.selectedPost.comments = [];
+      this.selectedPost.comments.push({ id: Date.now(), user: myUser.name, userAvatar: myUser.avatar, text: this.newComment, createdAt: new Date().toISOString() });
+      this.newComment = '';
+    }
+  }
+
+  openEditPostModal(post: Post) { this.editingPost = post; this.editPostData = { ...post }; }
+  closeEditPostModal() { this.editingPost = null; }
+  saveEditedPost() { if (this.editingPost) { this.postService.updatePost(this.editingPost.id, this.editPostData); this.closeEditPostModal(); this.loadUserPosts(); } }
+  deletePost(id: number) { if (confirm('¿Borrar publicación?')) { this.postService.deletePost(id); this.loadUserPosts(); this.closeImageModal(); } }
+
   openFileSelector() {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
+    const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*';
     input.onchange = (e: any) => {
-      const file = e.target.files[0];
       const reader = new FileReader();
       reader.onload = (ev: any) => this.avatarPreview = ev.target.result;
-      reader.readAsDataURL(file);
+      reader.readAsDataURL(e.target.files[0]);
     };
     input.click();
   }
 
-  // ✅ FUNCIONES DE POSTS
-  isPostOwner(post: Post | null): boolean {
-    return post?.user === localStorage.getItem('userName');
-  }
+  isPostOwner(post: any) { return post?.user === this.authService.getCurrentUserName(); }
+  toggleLike() { if (this.selectedPost) this.postService.toggleLike(this.selectedPost.id); }
+  getCategoryIcon(cat: string) { const icons: any = { physical: '💪', mental: '🧠', nutrition: '🍎', mindfulness: '🌿' }; return icons[cat] || '🌟'; }
+  completeInProgressChallenge(id: any, e: Event) { e.stopPropagation(); this.notificationService.success("¡Reto finalizado!"); }
 
-  openImageModal(post: Post) { this.selectedPost = post; }
-  closeImageModal() { this.selectedPost = null; }
-  
-  openEditPostModal(post: Post) { this.editingPost = post; this.editPostData = { ...post }; }
-  closeEditPostModal() { this.editingPost = null; }
-  
-  saveEditedPost() {
-    if(this.editingPost) this.postService.updatePost(this.editingPost.id, this.editPostData);
-    this.closeEditPostModal();
-    this.loadMyData();
-  }
-
-  deletePost(id: any) {
-    if(confirm('¿Borrar publicación?')) {
-      this.postService.deletePost(id);
-      this.loadMyData();
-      this.closeImageModal();
+  loadWellnessData() {
+    const targetEmail = this.isOwnProfile ? this.authService.getCurrentUserEmail() : this.user.email;
+    const userId = targetEmail?.replace(/[.#$[\]]/g, '_') || 'anonymous';
+    const saved = localStorage.getItem(`pearly-wellness-progress-${userId}`);
+    if (saved) {
+      const data = JSON.parse(saved);
+      const scores = this.challengeService.calculateWellnessScores(data.challenges || []);
+      this.mentalHealth = scores.mental; this.physicalHealth = scores.physical;
+      this.mindfulnessScore = scores.mindfulness; this.nutritionScore = scores.nutrition;
+      this.inProgressChallenges = (data.challenges || []).filter((c: any) => c.inProgress && !c.completed);
     }
   }
-
-  toggleLike() { if (this.selectedPost) this.postService.toggleLike(this.selectedPost.id); }
-  addComment() { this.newComment = ''; this.notificationService.success('Comentario añadido'); }
-
-  // ✅ OTROS
-  completeInProgressChallenge(id: string, event: Event) {
-    event.stopPropagation();
-    this.notificationService.success("¡Reto completado!");
-  }
-
-  getCategoryIcon(cat: string) {
-    const icons: any = { physical: '💪', mental: '🧠', nutrition: '🍎', mindfulness: '🌿' };
-    return icons[cat] || '🌟';
-  }
-
-  loadWellnessData() { /* Lógica de puntos y salud */ }
 }
