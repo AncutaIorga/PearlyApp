@@ -14,7 +14,7 @@
       <div class="quick-stats">
         <div class="stat-bubble energy">
           <span class="stat-number">{{ energyPoints }} ⚡</span>
-          <span class="stat-label">Energía</span>
+          <span class="stat-label">Brilllos</span>
         </div>
         <div class="stat-bubble streak">
           <span class="stat-number">{{ currentStreak }} {{ currentStreak > 0 ? '🔥' : '📅' }}</span>
@@ -55,52 +55,67 @@
   </section>
 
   <div class="simple-filters">
-    <button 
-      *ngFor="let filter of filters"
-      [class.active]="activeFilter === filter.id"
-      (click)="setFilter(filter.id)"
-      class="simple-filter-btn"
-      [attr.data-filter]="filter.id">
-      <span class="filter-icon">{{ getFilterIcon(filter.id) }}</span>
-      {{ filter.label }}
-    </button>
+    @for (filter of filters; track filter.id) {
+      <button 
+        [class.active]="activeFilter === filter.id"
+        (click)="setFilter(filter.id)"
+        class="simple-filter-btn"
+        [attr.data-filter]="filter.id">
+        <span class="filter-icon">{{ getFilterIcon(filter.id) }}</span>
+        {{ filter.label }}
+      </button>
+    }
   </div>
 
-  <div *ngIf="filteredChallenges.length > 0" class="challenges-cards">
-    <div 
-      *ngFor="let challenge of filteredChallenges"
-      class="challenge-card-simple {{challenge.category}}"
-      [class.completed]="challenge.completed === true">
-      
-      <div class="challenge-status">
-        <div class="status-left">
-          <div class="challenge-category-icon {{challenge.category}}">
-            <span class="category-icon {{challenge.category}}">{{ getCategoryIcon(challenge.category) }}</span>
-            <span class="category-name {{challenge.category}}">{{ getCategoryName(challenge.category) }}</span>
-          </div>
-        </div>
+  <div class="challenges-cards">
+    @for (challenge of filteredChallenges; track challenge.id) {
+      <div 
+        class="challenge-card-simple {{challenge.category}}"
+        [class.completed]="challenge.completed">
         
-        <span class="challenge-points">+{{ challenge.points }} ⚡</span>
-      </div>
-
-      <h3 class="challenge-title-simple">{{ challenge.title }}</h3>
-      <p class="challenge-desc-simple">{{ challenge.description }}</p>
-
-      <div class="benefits-list {{challenge.category}}" *ngIf="challenge.benefits && challenge.benefits.length > 0">
-        <div *ngFor="let benefit of challenge.benefits" class="benefit-item">
-          <span class="benefit-icon {{challenge.category}}">✨</span>
-          <span class="benefit-text">{{ benefit }}</span>
+        <div class="challenge-status">
+          <div class="status-left">
+            <div class="challenge-category-icon {{challenge.category}}">
+              <span class="category-icon {{challenge.category}}">{{ getCategoryIcon(challenge.category) }}</span>
+              <span class="category-name {{challenge.category}}">{{ getCategoryName(challenge.category) }}</span>
+            </div>
+          </div>
+          
+          <span class="challenge-points">+{{ challenge.points }} ⚡</span>
         </div>
-      </div>
 
-      <button 
-        (click)="handleChallengeAction(challenge)"
-        [disabled]="challenge.completed === true"
-        class="action-btn"
-        [class.completed-btn]="challenge.completed === true">
-          <span class="btn-text">{{ getChallengeButtonText(challenge) }}</span>
-      </button>
-    </div>
+        <h3 class="challenge-title-simple">{{ challenge.title }}</h3>
+        <p class="challenge-desc-simple">{{ challenge.description }}</p>
+
+        @if (challenge.benefits && challenge.benefits.length > 0) {
+          <div class="benefits-list {{challenge.category}}">
+            @for (benefit of challenge.benefits; track benefit) {
+              <div class="benefit-item">
+                <span class="benefit-icon {{challenge.category}}">✨</span>
+                <span class="benefit-text">{{ benefit }}</span>
+              </div>
+            }
+          </div>
+        }
+
+        <button 
+          (click)="handleChallengeAction(challenge)"
+          [disabled]="challenge.completed"
+          class="action-btn"
+          [class.completed-btn]="challenge.completed">
+            <span class="btn-text">{{ getChallengeButtonText(challenge) }}</span>
+        </button>
+      </div>
+    } @empty {
+      @if (activeFilter !== 'all') {
+        <div class="empty-state wellness-empty">
+          <div class="empty-icon">🔍</div>
+          <h3>No hay retos en esta categoría</h3>
+          <p>Prueba con otra categoría o completa los retos disponibles.</p>
+          <button (click)="resetFilters()" class="reset-btn wellness-reset">🌿 Ver todos los retos</button>
+        </div>
+      }
+    }
   </div>
 
   <section class="daily-section-box">
@@ -110,28 +125,32 @@
     </div>
 
     <div class="daily-cards-container">
-      <div class="daily-challenge-card" *ngFor="let daily of dailyChallenges" [attr.data-daily-id]="daily.id">
-        <div class="daily-card-header">
-          <span class="points-badge">+{{ daily.points }} ⚡</span>
-        </div>
-        
-        <div class="daily-card-content">
-          <h3 class="daily-title">{{ daily.title }}</h3>
-          <p class="daily-description">{{ daily.description }}</p>
-          
-          <div class="daily-tags">
-            <span class="daily-tag" *ngFor="let tag of daily.tags">{{ tag }}</span>
+      @for (daily of dailyChallenges; track daily.id) {
+        <div class="daily-challenge-card" [attr.data-daily-id]="daily.id">
+          <div class="daily-card-header">
+            <span class="points-badge">+{{ daily.points }} ⚡</span>
           </div>
+          
+          <div class="daily-card-content">
+            <h3 class="daily-title">{{ daily.title }}</h3>
+            <p class="daily-description">{{ daily.description }}</p>
+            
+            <div class="daily-tags">
+              @for (tag of daily.tags; track tag) {
+                <span class="daily-tag">{{ tag }}</span>
+              }
+            </div>
+          </div>
+          
+          <button 
+            (click)="completeDailyChallenge(daily.id)"
+            [disabled]="daily.completed"
+            class="daily-action-btn"
+            [class.claimed]="daily.completed">
+            {{ daily.completed ? '✅ COMPLETADO' : '✨ COMENZAR' }}
+          </button>
         </div>
-        
-        <button 
-          (click)="completeDailyChallenge(daily.id)"
-          [disabled]="daily.completed === true"
-          class="daily-action-btn"
-          [class.claimed]="daily.completed === true">
-          {{ daily.completed === true ? '✅ COMPLETADO' : '✨ COMENZAR' }}
-        </button>
-      </div>
+      }
     </div>
   </section>
 
@@ -142,13 +161,6 @@
       <p>{{ dailyTip }}</p>
       <button (click)="refreshTip()" class="tip-refresh">🔄 Nuevo consejo</button>
     </div>
-  </div>
-
-  <div *ngIf="filteredChallenges.length === 0 && activeFilter !== 'all'" class="empty-state wellness-empty">
-    <div class="empty-icon">🔍</div>
-    <h3>No hay retos en esta categoría</h3>
-    <p>Prueba con otra categoría o completa los retos disponibles.</p>
-    <button (click)="resetFilters()" class="reset-btn wellness-reset">🌿 Ver todos los retos</button>
   </div>
 </div>
 
@@ -164,7 +176,7 @@
         <p>¿Confirmas que has completado esta acción saludable hoy?</p>
       }
       
-      <div class="modal-points-badge">+{{ challengeToConfirm.points }} ⚡ Energía</div>
+      <div class="modal-points-badge">+{{ challengeToConfirm.points }} ⚡ Brillo</div>
       
       <div class="modal-buttons">
         <button class="btn-rect primary" (click)="confirmChallengeStart()">

@@ -161,7 +161,6 @@ logout() {
     localStorage.removeItem('userName');
     localStorage.removeItem('userEmail');
     
-    // Mostramos la notificación y forzamos recarga de la app para limpiar la memoria caché
     this.notificationService.showLogout();
     setTimeout(() => {
       window.location.href = '/login'; 

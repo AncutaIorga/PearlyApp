@@ -44,7 +44,7 @@
                 <button class="btn-rect secondary" (click)="toggleEdit()">Editar Perfil</button>
                 <button routerLink="/post-create" class="btn-rect primary">➕ Crear Publicación</button>
               } @else {
-                <button class="btn-rect" [ngClass]="isFollowing ? 'secondary' : 'primary'" style="width: 100%" (click)="toggleFollow()">
+                <button class="btn-rect" [class.secondary]="isFollowing" [class.primary]="!isFollowing" style="width: 100%" (click)="toggleFollow()">
                   {{ isFollowing ? 'Siguiendo' : 'Seguir' }}
                 </button>
               }
@@ -72,6 +72,16 @@
             </div>
           }
         </div>
+
+        <section class="profile-stats-visual" style="margin-top: 20px; padding: 15px; background: var(--card-bg); border-radius: 12px;">
+          <h3 style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 10px; text-transform: uppercase;">📊 Equilibrio Wellness</h3>
+          <app-stats-chart 
+            [mental]="mentalHealth" 
+            [physical]="physicalHealth"
+            [mindfulness]="mindfulnessScore"
+            [nutrition]="nutritionScore">
+          </app-stats-chart>
+        </section>
         
         @if (isOwnProfile) {
           <div class="challenges-section">
@@ -115,7 +125,7 @@
       <div class="profile-right">
         @if (posts.length === 0) {
           <div class="no-posts">
-            <p>📸</p>
+            <p style="font-size: 3rem;">📸</p>
             <p> No hay publicaciones aún</p>
             @if (isOwnProfile) {
               <p class="no-posts-hint">¡Comparte tu primer logro saludable!</p>
@@ -138,7 +148,6 @@
   </div>
 </div>
 
-
 @if (showFollowModal) {
   <div class="image-modal" (click)="closeFollowModal()" style="z-index: 2500;">
     <div class="modal-content" (click)="$event.stopPropagation()" style="max-width: 400px; background: var(--card-bg); padding: 24px; border-radius: 16px;">
@@ -149,9 +158,7 @@
       
       <div style="max-height: 400px; overflow-y: auto;">
         @if (followModalList.length === 0) {
-          <p style="text-align: center; color: var(--text-muted); font-style: italic; padding: 20px;">
-            Lista vacía.
-          </p>
+          <p style="text-align: center; color: var(--text-muted); font-style: italic; padding: 20px;">Lista vacía.</p>
         } @else {
           @for (username of followModalList; track username) {
             <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-color); cursor: pointer;" [routerLink]="['/profile', username]" (click)="closeFollowModal()">
@@ -201,7 +208,7 @@
           <div class="modal-description">
             <p class="post-text-wrap">{{ selectedPost.text }}</p>
             @if (selectedPost.challengeInfo) {
-              <div class="post-challenge-badge" [ngClass]="selectedPost.challengeInfo.category">
+              <div class="post-challenge-badge" [class]="selectedPost.challengeInfo.category">
                 <span>{{ getCategoryIcon(selectedPost.challengeInfo.category) }}</span>
                 <span>{{ selectedPost.challengeInfo.title }}</span>
                 <span class="points">+{{ selectedPost.challengeInfo.points }} ✨ Brillos</span>
@@ -271,7 +278,6 @@
           <button class="btn-rect primary" (click)="saveEditedPost()">Guardar cambios</button>
         </div>
       </div>
-      
     </div>
   </div>
 }

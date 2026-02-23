@@ -1,23 +1,30 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ChallengesComponent } from './challenges';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
 
-import { Challenges } from './challenges';
-
-describe('Challenges', () => {
-  let component: Challenges;
-  let fixture: ComponentFixture<Challenges>;
+describe('ChallengesComponent', () => {
+  let component: ChallengesComponent;
+  let fixture: ComponentFixture<ChallengesComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Challenges]
+      imports: [ChallengesComponent],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([])
+      ]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(Challenges);
+    fixture = TestBed.createComponent(ChallengesComponent);
     component = fixture.componentInstance;
-    await fixture.whenStable();
+    fixture.detectChanges(); 
   });
 
-  it('should create', () => {
+  it('should create the component', () => {
     expect(component).toBeTruthy();
   });
 });

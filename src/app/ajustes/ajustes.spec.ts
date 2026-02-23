@@ -1,18 +1,24 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { AjustesComponent } from './ajustes';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
 
-import { Ajustes } from './ajustes';
-
-describe('Ajustes', () => {
-  let component: Ajustes;
-  let fixture: ComponentFixture<Ajustes>;
+describe('AjustesComponent', () => {
+  let component: AjustesComponent;
+  let fixture: ComponentFixture<AjustesComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Ajustes]
-    })
-    .compileComponents();
+      imports: [AjustesComponent],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([])
+      ]
+    }).compileComponents();
 
-    fixture = TestBed.createComponent(Ajustes);
+    fixture = TestBed.createComponent(AjustesComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

@@ -1,23 +1,16 @@
-import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { TestBed } from '@angular/core/testing';
+import { CanActivateFn, ActivatedRouteSnapshot, RouterStateSnapshot } from '@angular/router';
+import { authGuard } from './guard';
 
-import { Guard } from './guard';
+describe('authGuard', () => {
+  const executeGuard: CanActivateFn = (...guardParameters) => 
+      TestBed.runInInjectionContext(() => authGuard(...guardParameters));
 
-describe('Guard', () => {
-  let component: Guard;
-  let fixture: ComponentFixture<Guard>;
-
-  beforeEach(async () => {
-    await TestBed.configureTestingModule({
-      imports: [Guard]
-    })
-    .compileComponents();
-
-    fixture = TestBed.createComponent(Guard);
-    component = fixture.componentInstance;
-    await fixture.whenStable();
+  beforeEach(() => {
+    TestBed.configureTestingModule({});
   });
 
-  it('should create', () => {
-    expect(component).toBeTruthy();
+  it('should be created', () => {
+    expect(executeGuard).toBeTruthy();
   });
 });

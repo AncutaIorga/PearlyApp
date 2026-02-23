@@ -1,20 +1,26 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { FeedComponent } from './feed';
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
 
-import { Feed } from './feed';
-
-describe('Feed', () => {
-  let component: Feed;
-  let fixture: ComponentFixture<Feed>;
+describe('FeedComponent', () => {
+  let component: FeedComponent;
+  let fixture: ComponentFixture<FeedComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [Feed]
-    })
-    .compileComponents();
+      imports: [FeedComponent],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([])
+      ]
+    }).compileComponents();
 
-    fixture = TestBed.createComponent(Feed);
+    fixture = TestBed.createComponent(FeedComponent);
     component = fixture.componentInstance;
-    await fixture.whenStable();
+    fixture.detectChanges();
   });
 
   it('should create', () => {

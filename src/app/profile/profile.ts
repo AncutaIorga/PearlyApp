@@ -8,6 +8,7 @@ import { AuthService } from '../services/auth';
 import { NavbarComponent } from '../shared/navbar/navbar';
 import { NotificationService } from '../services/notification';
 import { TimeAgoPipe } from '../pipes/time-ago-pipe';
+import { StatsChartComponent } from './stats-chart/stats-chart';
 
 interface DailyChallenge {
   id: string;
@@ -21,13 +22,24 @@ interface DailyChallenge {
 
 @Component({
   standalone: true,
-  imports: [NavbarComponent, CommonModule, FormsModule, TimeAgoPipe, RouterModule],
+  imports: [
+    NavbarComponent, 
+    CommonModule, 
+    FormsModule, 
+    TimeAgoPipe, 
+    RouterModule,
+    StatsChartComponent
+  ],
   templateUrl: './profile.html',
   styleUrl: './profile.css'
 })
 export class ProfileComponent implements OnInit {
   private notificationService = inject(NotificationService);
   private route = inject(ActivatedRoute);
+  private userService = inject(UserService);
+  private postService = inject(PostService);
+  private authService = inject(AuthService);
+  private router = inject(Router);
   
   user: any = {};
   isOwnProfile = true; 
@@ -47,17 +59,16 @@ export class ProfileComponent implements OnInit {
   posts: Post[] = [];
   pendingDailyChallenges: DailyChallenge[] = []; 
 
+  // --- VARIABLES PARA EL GRÁFICO ---
+  mentalHealth = 0;
+  physicalHealth = 0;
+  mindfulnessScore = 0;
+  nutritionScore = 0;
+
   // --- VARIABLES PARA EL MODAL DE SEGUIDORES ---
   showFollowModal = false;
   followModalType: 'followers' | 'following' = 'followers';
   followModalList: string[] = [];
-
-  constructor(
-    private userService: UserService,
-    private postService: PostService,
-    private authService: AuthService,
-    private router: Router
-  ) {}
 
   ngOnInit() {
     if (!this.authService.isLoggedIn()) {
@@ -94,12 +105,12 @@ export class ProfileComponent implements OnInit {
       bio: `Perfil público de ${username}.`,
       avatar: avatar,
       achievements: Math.floor(Math.random() * 10),
-      // Inferimos un email ficticio para el perfil de otro (si no lo tenemos)
       email: username.toLowerCase().replace(/\s+/g, '') + '@gmail.com' 
     };
     
     this.posts = userPosts;
     this.updateStats();
+    this.loadWellnessData();
   }
 
   toggleFollow() {
@@ -117,10 +128,9 @@ export class ProfileComponent implements OnInit {
     }
     
     localStorage.setItem(`following-${myEmail}`, JSON.stringify(followedList));
-    this.updateStats(); // Recalcular estadisticas al instante
+    this.updateStats();
   }
 
-  // --- LÓGICA DE SEGUIDORES REALES ---
   getRealFollowers(username: string): string[] {
     const followers: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
@@ -151,6 +161,30 @@ export class ProfileComponent implements OnInit {
     this.loadUserPosts();
     this.updateStats();
     this.loadPendingDailyChallenges(); 
+    this.loadWellnessData();
+  }
+
+  private loadWellnessData() {
+    // Definimos el email del cual cargar los datos (el propio o el visitado)
+    const targetEmail = this.isOwnProfile ? 
+      this.user.email : 
+      this.user.email;
+    
+    const userId = targetEmail ? targetEmail.replace(/[.#$[\]]/g, '_') : 'anonymous';
+    const saved = localStorage.getItem(`pearly-wellness-progress-${userId}`);
+    
+    if (saved) {
+      const data = JSON.parse(saved);
+      this.mentalHealth = data.mentalHealth || 0;
+      this.physicalHealth = data.physicalHealth || 0;
+      
+      // Lógica para Nutrición y Mindfulness si no están explícitos
+      if (data.challenges) {
+        const completed = data.challenges.filter((c: any) => c.completed);
+        this.nutritionScore = Math.min(100, completed.filter((c: any) => c.id.includes('nutrition')).length * 20);
+        this.mindfulnessScore = Math.min(100, completed.filter((c: any) => c.id.includes('mindfulness')).length * 20);
+      }
+    }
   }
 
   loadUserPosts() {
@@ -159,8 +193,6 @@ export class ProfileComponent implements OnInit {
 
   updateStats() {
     this.userStats.posts = this.posts.length;
-    
-    // Obtenemos el email real si es nuestro, o el del usuario visitado
     const targetEmail = this.isOwnProfile ? 
       (localStorage.getItem('userEmail') || 'default') : 
       (this.user.email);
@@ -169,7 +201,6 @@ export class ProfileComponent implements OnInit {
     this.userStats.followers = this.getRealFollowers(this.user.name).length;
   }
 
-  // --- MODAL FOLLOWERS ---
   openFollowModal(type: 'followers' | 'following') {
     this.followModalType = type;
     const targetEmail = this.isOwnProfile ? 
@@ -211,10 +242,7 @@ export class ProfileComponent implements OnInit {
         }
       } catch (error) {
         console.error('Error cargando retos pendientes:', error);
-        this.pendingDailyChallenges = [];
       }
-    } else {
-      this.pendingDailyChallenges = [];
     }
   }
 
@@ -300,10 +328,8 @@ export class ProfileComponent implements OnInit {
       try {
         this.selectedAvatarFile = file;
         const optimizedImage = await this.compressImage(file);
-        
         this.avatarPreview = optimizedImage;
         this.user.avatar = optimizedImage; 
-        
         this.notificationService.success('¡Foto procesada con éxito!');
       } catch (error) {
         this.notificationService.error('Error al procesar la imagen.');
@@ -327,15 +353,11 @@ export class ProfileComponent implements OnInit {
       this.user = { ...this.editableUser };
       this.userService.updateUser(this.user);
       localStorage.setItem('userName', this.user.name);
-      
       this.selectedAvatarFile = null;
       this.avatarPreview = null;
-      
       this.notificationService.showProfileUpdated();
     } else {
       this.editableUser = { ...this.user };
-      this.avatarPreview = null;
-      this.selectedAvatarFile = null;
     }
     this.editing = !this.editing;
   }

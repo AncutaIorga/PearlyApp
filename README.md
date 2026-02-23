@@ -104,3 +104,28 @@ Las páginas están protegidas para mantener la privacidad de los usuarios:
 - **Compresión de Imágenes en Cliente:** Si un usuario sube una foto enorme (ej. 4K), la aplicación la reduce de tamaño y peso de forma invisible antes de publicarla. Así evitamos que la plataforma vaya lenta o gaste muchos datos.
 
 - **Velocidad y Rendimiento:** Gracias a las nuevas tecnologías de Angular (Signals), cuando le das a Like a una foto o cambias de tema visual, la pantalla reacciona en milisegundos sin bloqueos.
+
+## Arquitectura de Datos y Control de Estado Centralizado
+
+La aplicación implementa un patrón de diseño basado en servicios de instancia única (Singletons), lo que garantiza la integridad de la información en toda la plataforma:
+
+- **Gestión de Retos (ChallengeService):** Centraliza la lógica y la base de datos estática de los desafíos. Al separar los datos de la lógica visual, se evita la duplicación de código y se facilita el mantenimiento, cumpliendo con el principio DRY (Don't Repeat Yourself).
+
+- **Sincronización de Usuario (AuthService & UserService):** El estado del usuario autenticado se gestiona de forma centralizada. Esto permite que componentes independientes, como la barra de navegación y el perfil, muestren información coherente en tiempo real.
+
+- **Modelado Estricto:** Se han definido interfaces de TypeScript para todas las entidades del sistema (Usuarios, Retos, Publicaciones, Notificaciones). Esto asegura un desarrollo robusto y previene errores de tipado durante la comunicación entre componentes.
+
+## Calidad de Software y Estrategia de Pruebas
+
+La fiabilidad de la aplicación está respaldada por un entorno de pruebas automatizado:
+
+- **Pruebas Unitarias (Unit Testing):** El proyecto incluye archivos de especificación (.spec.ts) para los componentes críticos. Estas pruebas verifican la correcta inyección de dependencias, la creación de instancias y la integridad de las plantillas HTML.
+
+- **Validación de Lógica de Negocio:** Se han implementado tests que aseguran el correcto funcionamiento de los cálculos de puntos de energía, el sistema de filtros de retos y la validación de formularios de acceso.
+
+- **Ejecución de Tests:** La suite de pruebas puede ejecutarse en cualquier momento mediante el comando:
+
+```bash
+ng test
+
+```

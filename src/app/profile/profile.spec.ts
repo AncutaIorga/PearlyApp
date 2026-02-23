@@ -1,20 +1,26 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ProfileComponent } from './profile'; // <-- CAMBIA AQUÍ
+import { provideHttpClient } from '@angular/common/http';
+import { provideHttpClientTesting } from '@angular/common/http/testing';
+import { provideRouter } from '@angular/router';
 
-import { ProfileComponent } from './profile';
-
-describe('Profile', () => {
-  let component: ProfileComponent;
-  let fixture: ComponentFixture<ProfileComponent>;
+describe('ProfileComponent', () => { // <-- CAMBIA AQUÍ
+  let component: ProfileComponent; // <-- CAMBIA AQUÍ
+  let fixture: ComponentFixture<ProfileComponent>; // <-- CAMBIA AQUÍ
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [ProfileComponent]
-    })
-    .compileComponents();
+      imports: [ProfileComponent], // <-- CAMBIA AQUÍ
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        provideRouter([]) // Esto soluciona el error de ActivatedRoute
+      ]
+    }).compileComponents();
 
-    fixture = TestBed.createComponent(ProfileComponent);
+    fixture = TestBed.createComponent(ProfileComponent); // <-- CAMBIA AQUÍ
     component = fixture.componentInstance;
-    await fixture.whenStable();
+    fixture.detectChanges();
   });
 
   it('should create', () => {
