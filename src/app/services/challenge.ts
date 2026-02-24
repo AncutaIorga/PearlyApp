@@ -71,6 +71,8 @@ export class ChallengeService {
     "Tu bienestar es una inversión, no un gasto. ¡Invierte en ti!"
   ];
 
+  constructor() {}
+
   getAllChallenges(): Challenge[] {
     return [...this.MASTER_CHALLENGES];
   }
@@ -106,5 +108,57 @@ export class ChallengeService {
       mindfulness: Math.min(100, scores.mindfulness),
       nutrition: Math.min(100, scores.nutrition)
     };
+  }
+
+  // ✅ AQUÍ ESTÁ LA LÓGICA DE NIVELES QUE FALTABA
+  getLevelInfo(totalPoints: number) {
+    let level = 1;
+    let xpRequired = 500; // Nivel 1 cuesta 500 puntos
+    let currentXP = totalPoints;
+    
+    // Bucle para subir de nivel mientras tengamos puntos suficientes
+    while (currentXP >= xpRequired) {
+      currentXP -= xpRequired;
+      level++;
+      xpRequired = Math.floor(xpRequired * 1.2); // Cada nivel cuesta un 20% más
+    }
+
+    return {
+      level: level,
+      currentXP: currentXP,
+      nextLevelXP: xpRequired,
+      progressPercent: (currentXP / xpRequired) * 100
+    };
+  }
+
+  // ✅ AQUÍ ESTÁN LOS COLORES DE LA RANKED (HIERRO, BRONCE, ETC.)
+  getRankColor(level: number): string {
+    if (level < 5) return '#58595b'; // Hierro (Gris oscuro)
+    if (level < 10) return '#cd7f32'; // Bronce (Marrón)
+    if (level < 15) return '#c0c0c0'; // Plata (Gris claro)
+    if (level < 20) return '#ffd700'; // Oro (Amarillo)
+    if (level < 25) return '#20b2aa'; // Platino (Verde agua)
+    return '#b9f2ff'; // Diamante (Azul claro)
+  }
+
+  // Devuelve TRUE si el reto debe resetearse (desbloquearse)
+  shouldResetDaily(lastCompletedDate: string | undefined): boolean {
+    if (!lastCompletedDate) return true; // Si nunca se hizo, está disponible
+
+    const last = new Date(lastCompletedDate);
+    const now = new Date();
+
+    // Calculamos la "Hora de Corte" de hoy (Hoy a las 03:00 AM)
+    const cutoffToday = new Date();
+    cutoffToday.setHours(3, 0, 0, 0);
+
+    // Si ahora es antes de las 3 AM (ej: 01:00 AM), la hora de corte relevante fue AYER a las 3 AM
+    if (now < cutoffToday) {
+      cutoffToday.setDate(cutoffToday.getDate() - 1);
+    }
+
+    // Si la fecha en que se completó es ANTERIOR a la hora de corte actual, 
+    // significa que ya ha pasado una "noche" (las 3 AM) y se puede repetir.
+    return last < cutoffToday;
   }
 }

@@ -16,7 +16,7 @@
               <span>{{ user.name?.charAt(0)?.toUpperCase() }}</span>
             }
             @if (editing) {
-              <div class="avatar-edit-overlay"><span class="edit-icon">[◉°]</span></div>
+              <div class="avatar-edit-overlay"><span class="edit-icon">📸</span></div>
             }
           </div>
           
@@ -24,6 +24,34 @@
             <h2>{{ user.name }}</h2>
             <p class="bio">{{ user.bio || 'Sin biografía aún' }}</p>
             
+            <div class="level-section">
+              @if (isOwnProfile) {
+                <div class="level-info">
+                  <span class="level-badge" [style.background-color]="rankColor">
+                     Nivel {{ levelInfo.level }}
+                  </span>
+                  <span class="xp-text">{{ levelInfo.currentXP }} / {{ levelInfo.nextLevelXP }} XP</span>
+                </div>
+                
+                <div class="xp-track">
+                  <div class="xp-fill" 
+                       [style.width.%]="levelInfo.progressPercent" 
+                       [style.background-color]="rankColor">
+                  </div>
+                </div>
+                
+                <p class="next-level-hint">
+                  Faltan {{ levelInfo.nextLevelXP - levelInfo.currentXP }} XP para subir
+                </p>
+              } @else {
+                <div class="level-info" style="justify-content: center;">
+                  <span class="level-badge" [style.background-color]="rankColor">
+                    Nivel {{ levelInfo.level }}
+                  </span>
+                </div>
+              }
+            </div>
+
             <div class="stats">
               <div class="stat-item"><strong>{{ userStats.posts }}</strong> <span>Posts</span></div>
               <div class="stat-item" style="cursor: pointer;" (click)="openFollowModal('followers')"><strong>{{ userStats.followers }}</strong> <span>Seguidores</span></div>
@@ -33,7 +61,7 @@
             <div class="profile-actions-center">
               @if (isOwnProfile) {
                 <button class="btn-rect secondary" (click)="toggleEdit()">Editar Perfil</button>
-                <button routerLink="/post-create" class="btn-rect primary">➕ Crear Publicación</button>
+                <button routerLink="/post-create" class="btn-rect primary">Crear Publicación</button>
               } @else {
                 <button class="btn-rect" [class.secondary]="isFollowing" [class.primary]="!isFollowing" style="width: 100%" (click)="toggleFollow()">
                   {{ isFollowing ? 'Siguiendo' : 'Seguir' }}
@@ -61,17 +89,19 @@
           }
         </div>
         
-        <section class="challenges-section">
-          <h3>📊 Equilibrio Wellness</h3>
-          <app-stats-chart 
-            [mental]="mentalHealth" 
-            [physical]="physicalHealth"
-            [mindfulness]="mindfulnessScore"
-            [nutrition]="nutritionScore">
-          </app-stats-chart>
-        </section>
-        
         @if (isOwnProfile) {
+          <section class="challenges-section" style="overflow: visible;">
+            <h3>📊 Equilibrio Wellness</h3>
+            <div style="padding: 10px; border-radius: 12px; background: var(--card-bg);">
+              <app-stats-chart 
+                [mental]="mentalHealth" 
+                [physical]="physicalHealth"
+                [mindfulness]="mindfulnessScore"
+                [nutrition]="nutritionScore">
+              </app-stats-chart>
+            </div>
+          </section>
+        
           <div class="challenges-section">
             <h3>⏳ Retos en Curso</h3>
             <div class="challenges-list">
@@ -92,7 +122,7 @@
                       <div class="challenge-info">
                         <div class="challenge-title">{{ challenge.title }}</div>
                         <div class="challenge-progress">
-                          <span class="points">+{{ challenge.points }} ✨ Brillos</span>
+                          <span class="points">+{{ challenge.points }} ⚡︎ Brillos</span>
                         </div>
                       </div>
                     </div>
@@ -103,7 +133,7 @@
                 }
               }
               
-              <div class="challenge-item view-all" routerLink="/challenges" style="justify-content: center; background: transparent; border: 1px dashed var(--border-color);">
+              <div class="challenge-item view-all" routerLink="/challenges" style="justify-content: center; background: transparent; border: 1px dashed var(--border-color); cursor: pointer;">
                 <div class="challenge-info">
                   <div class="challenge-title" style="color: var(--text-primary);">Ver todos los retos ➔</div>
                 </div>
@@ -142,12 +172,10 @@
 @if (showFollowModal) {
   <div class="image-modal" (click)="closeFollowModal()" style="z-index: 2500;">
     <div class="modal-content" (click)="$event.stopPropagation()" style="max-width: 400px; background: var(--card-bg); padding: 24px; border-radius: 16px;">
-      
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px;">
         <h3 style="margin: 0; color: var(--text-primary);">{{ followModalType === 'followers' ? 'Seguidores' : 'Siguiendo' }}</h3>
         <button (click)="closeFollowModal()" style="background: transparent; border: none; font-size: 20px; cursor: pointer; color: var(--text-secondary);">✕</button>
       </div>
-      
       <div style="max-height: 400px; overflow-y: auto;">
         @if (followModalList.length === 0) {
           <p style="text-align: center; color: var(--text-muted); font-style: italic; padding: 20px;">Lista vacía.</p>
@@ -156,7 +184,6 @@
             <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-color); cursor: pointer;" 
                  [routerLink]="['/profile', userItem.name]" 
                  (click)="closeFollowModal()">
-              
               <div style="width: 40px; height: 40px; border-radius: 50%; background: var(--bg-tertiary); display: flex; align-items: center; justify-content: center; overflow: hidden;">
                 @if (userItem.avatar) {
                   <img [src]="userItem.avatar" style="width: 100%; height: 100%; object-fit: cover;">
@@ -166,7 +193,6 @@
                   </span>
                 }
               </div>
-
               <strong style="color: var(--text-primary);">{{ userItem.name }}</strong>
             </div>
           }
@@ -180,12 +206,10 @@
   <div class="image-modal" (click)="closeImageModal()">
     <div class="modal-content" (click)="$event.stopPropagation()">
       <button class="modal-close" (click)="closeImageModal()">✕</button>
-      
       <div class="modal-layout">
         <div class="modal-image-section">
           <img [src]="selectedPost.image" [alt]="selectedPost.text">
         </div>
-        
         <div class="modal-sidebar">
           <div class="modal-header">
             <div class="modal-user-info">
@@ -206,18 +230,16 @@
               </div>
             }
           </div>
-          
           <div class="modal-description">
             <p class="post-text-wrap">{{ selectedPost.text }}</p>
             @if (selectedPost.challengeInfo) {
               <div class="post-challenge-badge" [class]="selectedPost.challengeInfo.category">
                 <span>{{ getCategoryIcon(selectedPost.challengeInfo.category) }}</span>
                 <span>{{ selectedPost.challengeInfo.title }}</span>
-                <span class="points">+{{ selectedPost.challengeInfo.points }} ✨ Brillos</span>
+                <span class="points">+{{ selectedPost.challengeInfo.points }} ⚡︎ Brillos</span>
               </div>
             }
           </div>
-          
           <div class="modal-comments">
             <h4>Comentarios ({{ selectedPost.comments?.length || 0 }})</h4>
             @if (!selectedPost.comments || selectedPost.comments.length === 0) {
@@ -241,14 +263,12 @@
               }
             }
           </div>
-          
           <div class="modal-actions">
             <button class="like-btn" [class.liked]="selectedPost.likedByMe" (click)="toggleLike()">
               {{ selectedPost.likedByMe ? '❤️' : '🤍' }}
             </button>
             <span class="likes-count">{{ selectedPost.likes }} {{ selectedPost.likes === 1 ? 'like' : 'likes' }}</span>
           </div>
-          
           <div class="modal-comment-input">
             <input [(ngModel)]="newComment" placeholder="Añade un comentario..." (keyup.enter)="addComment()" maxlength="200">
             <button class="post-comment-btn" (click)="addComment()" [disabled]="!newComment.trim()">Publicar</button>
@@ -263,14 +283,12 @@
   <div class="edit-post-modal"> 
     <div class="edit-post-content">
       <h3>Editar publicación</h3>
-      
       <div class="edit-post-form">
         <div class="edit-form-group">
           <label>Texto de la publicación</label>
           <textarea [(ngModel)]="editPostData.text" placeholder="Escribe tu publicación..." maxlength="500"></textarea>
           <div class="char-counter">{{ editPostData.text?.length || 0 }}/500 caracteres</div>
         </div>
-        
         <div class="edit-buttons-row">
           <button class="btn-rect secondary" (click)="closeEditPostModal()">Cancelar</button>
           <button class="btn-rect primary" (click)="saveEditedPost()">Guardar cambios</button>

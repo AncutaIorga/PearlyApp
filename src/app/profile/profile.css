@@ -825,3 +825,197 @@
   .modal-comment-input { flex-direction: column; gap: 10px; }
   .post-comment-btn { width: 100%; }
 }
+
+
+/* =========================================
+   ARREGLO FINAL RETOS: BOTÓN VERDE Y PEQUEÑO
+   ========================================= */
+
+.challenge-item {
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  gap: 12px; 
+  padding: 12px; 
+  border-radius: 12px; 
+  border: 1px solid var(--border-color); 
+  background: var(--bg-tertiary); 
+  margin-bottom: 8px;
+}
+
+/* Parte izquierda (Icono + Textos) */
+.challenge-item > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1; /* Ocupa el espacio sobrante */
+  min-width: 0; 
+}
+
+.challenge-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.challenge-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: 14px; 
+  font-weight: 600; 
+  color: var(--text-primary); 
+  margin-bottom: 4px;
+}
+
+/* BOTÓN FINALIZAR: PEQUEÑO Y VERDE SIEMPRE */
+.challenge-item .btn-rect {
+  /* TAMAÑO */
+  width: auto !important;         /* Que ocupe solo lo necesario */
+  flex-shrink: 0 !important;      /* Que no se aplaste */
+  padding: 6px 12px !important;   /* Relleno pequeño */
+  font-size: 12px !important;     /* Letra compacta */
+  min-width: unset !important;    /* Quitar anchos mínimos forzados */
+  margin: 0 !important;
+  
+  /* COLOR (INDESTRUCTIBLE) */
+  background-color: #10B981 !important; /* Verde Esmeralda */
+  color: white !important;
+  border: 1px solid #10B981 !important;
+  font-weight: 600 !important;
+  border-radius: 6px !important; /* Un poco menos redondo para que se vea botón */
+}
+
+.challenge-item .btn-rect:hover {
+  background-color: #059669 !important; /* Verde oscuro al pasar ratón */
+  transform: translateY(-1px);
+}
+
+/* BARRA DE NIVEL */
+.level-section {
+  margin: 10px 20px 24px;
+  text-align: left;
+}
+
+.level-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.level-badge {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.xp-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.xp-track {
+  width: 100%;
+  height: 10px;
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366F1, #8B5CF6); /* Degradado violeta/azul */
+  border-radius: 10px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.next-level-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  text-align: center;
+}
+
+.level-badge {
+  color: white;
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.xp-track {
+  width: 100%;
+  height: 10px;
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  margin: 10px 0;
+}
+
+.xp-fill {
+  height: 100%;
+  transition: width 0.5s ease;
+}
+
+/* ... resto de tu css ... */
+
+.level-section {
+  margin: 10px 20px 24px;
+  text-align: left;
+}
+
+.level-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.level-badge {
+  color: white; /* Texto blanco siempre */
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* El resto de estilos de xp-track y demás que ya tenías */
+.xp-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.xp-track {
+  width: 100%;
+  height: 10px;
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+.xp-fill {
+  height: 100%;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.next-level-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  text-align: center;
+}

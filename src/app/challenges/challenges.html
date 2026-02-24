@@ -4,7 +4,7 @@
   <header class="page-header">
     <div class="header-main">
       <div class="header-content">
-        <div class="header-emoji">🍃</div>
+        <div class="header-emoji">ꕤ</div>
         <div class="header-text">
           <h1>Retos de Bienestar</h1>
           <p class="header-subtitle">Cuida tu cuerpo y mente con desafíos diarios</p>
@@ -13,11 +13,11 @@
       
       <div class="quick-stats">
         <div class="stat-bubble energy">
-          <span class="stat-number">{{ energyPoints }} ⚡</span>
-          <span class="stat-label">Brilllos</span>
+          <span class="stat-number">{{ energyPoints }} ✧</span>
+          <span class="stat-label">Brillos</span>
         </div>
         <div class="stat-bubble streak">
-          <span class="stat-number">{{ currentStreak }} {{ currentStreak > 0 ? '🔥' : '📅' }}</span>
+          <span class="stat-number">{{ currentStreak }} {{ currentStreak > 0 ? '❤️‍🔥' : '◴' }}</span>
           <span class="stat-label">Racha</span>
         </div>
       </div>
@@ -34,7 +34,7 @@
     <div class="balance-bars">
       <div class="balance-bar mental">
         <div class="bar-label">
-          <span>🧠 Salud Mental</span>
+          <span>⚛︎ Salud Mental</span>
           <span>{{ mentalHealth }}%</span>
         </div>
         <div class="bar-track">
@@ -44,7 +44,7 @@
       
       <div class="balance-bar physical">
         <div class="bar-label">
-          <span>💪 Salud Física</span>
+          <span>⚡︎ Salud Física</span>
           <span>{{ physicalHealth }}%</span>
         </div>
         <div class="bar-track">
@@ -80,8 +80,7 @@
               <span class="category-name {{challenge.category}}">{{ getCategoryName(challenge.category) }}</span>
             </div>
           </div>
-          
-          <span class="challenge-points">+{{ challenge.points }} ⚡</span>
+          <span class="challenge-points">+{{ challenge.points }} ✧</span>
         </div>
 
         <h3 class="challenge-title-simple">{{ challenge.title }}</h3>
@@ -91,7 +90,7 @@
           <div class="benefits-list {{challenge.category}}">
             @for (benefit of challenge.benefits; track benefit) {
               <div class="benefit-item">
-                <span class="benefit-icon {{challenge.category}}">✨</span>
+                <span class="benefit-icon {{challenge.category}}">⟡</span>
                 <span class="benefit-text">{{ benefit }}</span>
               </div>
             }
@@ -102,17 +101,32 @@
           (click)="handleChallengeAction(challenge)"
           [disabled]="challenge.completed"
           class="action-btn"
+          [class.in-progress]="challenge.inProgress && !challenge.completed" 
           [class.completed-btn]="challenge.completed">
-            <span class="btn-text">{{ getChallengeButtonText(challenge) }}</span>
+          
+          <span class="btn-text">
+            @if (challenge.completed) {
+              ✓ Completado
+            } @else if (challenge.inProgress) {
+              ⊹ Finalizar Reto
+            } @else {
+              @if (['physical', 'mindfulness'].includes(challenge.category)) {
+                ◴ Comenzar
+              } @else {
+                ✧ Completar
+              }
+            }
+          </span>
         </button>
+
       </div>
     } @empty {
       @if (activeFilter !== 'all') {
         <div class="empty-state wellness-empty">
-          <div class="empty-icon">🔍</div>
+          <div class="empty-icon">⌕</div>
           <h3>No hay retos en esta categoría</h3>
           <p>Prueba con otra categoría o completa los retos disponibles.</p>
-          <button (click)="resetFilters()" class="reset-btn wellness-reset">🌿 Ver todos los retos</button>
+          <button (click)="resetFilters()" class="reset-btn wellness-reset">☘︎ Ver todos los retos</button>
         </div>
       }
     }
@@ -120,7 +134,7 @@
 
   <section class="daily-section-box">
     <div class="daily-section-header">
-      <h2>🌟 Retos Diarios</h2>
+      <h2>⟡ Retos Diarios</h2>
       <p class="daily-section-subtitle">Hábitos diarios para mantener tu bienestar constante</p>
     </div>
 
@@ -128,7 +142,7 @@
       @for (daily of dailyChallenges; track daily.id) {
         <div class="daily-challenge-card" [attr.data-daily-id]="daily.id">
           <div class="daily-card-header">
-            <span class="points-badge">+{{ daily.points }} ⚡</span>
+            <span class="points-badge">+{{ daily.points }} ✧</span>
           </div>
           
           <div class="daily-card-content">
@@ -147,7 +161,7 @@
             [disabled]="daily.completed"
             class="daily-action-btn"
             [class.claimed]="daily.completed">
-            {{ daily.completed ? '✅ COMPLETADO' : '✨ COMENZAR' }}
+            {{ daily.completed ? '✓ COMPLETADO' : '✧ COMPLETAR' }}
           </button>
         </div>
       }
@@ -155,11 +169,11 @@
   </section>
 
   <div class="daily-tip">
-    <div class="tip-icon">💡</div>
+    <div class="tip-icon">☼</div>
     <div class="tip-content">
       <h3>Consejo del día</h3>
       <p>{{ dailyTip }}</p>
-      <button (click)="refreshTip()" class="tip-refresh">🔄 Nuevo consejo</button>
+      <button (click)="refreshTip()" class="tip-refresh">↻ Nuevo consejo</button>
     </div>
   </div>
 </div>
@@ -176,11 +190,11 @@
         <p>¿Confirmas que has completado esta acción saludable hoy?</p>
       }
       
-      <div class="modal-points-badge">+{{ challengeToConfirm.points }} ⚡ Brillo</div>
+      <div class="modal-points-badge">+{{ challengeToConfirm.points }} ✧ Brillo</div>
       
       <div class="modal-buttons">
-        <button class="btn-rect primary" (click)="confirmChallengeStart()">
-          {{ ['physical', 'mindfulness'].includes(challengeToConfirm.category) ? 'Sí, empezar ahora' : 'Sí, lo completé' }}
+        <button class="btn-rect success" (click)="confirmChallengeStart()">
+           {{ ['physical', 'mindfulness'].includes(challengeToConfirm.category) ? 'Sí, empezar ahora' : 'Sí, lo completé' }}
         </button>
         <button class="btn-rect secondary" (click)="closeConfirmModal()">Cancelar</button>
       </div>

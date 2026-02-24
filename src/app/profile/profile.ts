@@ -46,6 +46,11 @@ export class ProfileComponent implements OnInit {
   inProgressChallenges: any[] = [];
 
   mentalHealth = 0; physicalHealth = 0; mindfulnessScore = 0; nutritionScore = 0;
+  
+  // Variables de Nivel
+  levelInfo = { level: 1, currentXP: 0, nextLevelXP: 500, progressPercent: 0 };
+  rankColor = '#58595b';
+  totalPoints = 0;
 
   ngOnInit() {
     if (!this.authService.isLoggedIn()) {
@@ -205,19 +210,88 @@ export class ProfileComponent implements OnInit {
 
   isPostOwner(post: any) { return post?.user === this.authService.getCurrentUserName(); }
   toggleLike() { if (this.selectedPost) this.postService.toggleLike(this.selectedPost.id); }
-  getCategoryIcon(cat: string) { const icons: any = { physical: '💪', mental: '🧠', nutrition: '🍎', mindfulness: '🌿' }; return icons[cat] || '🌟'; }
-  completeInProgressChallenge(id: any, e: Event) { e.stopPropagation(); this.notificationService.success("¡Reto finalizado!"); }
+  
+  getCategoryIcon(cat: string) { 
+    const icons: any = { physical: '💪', mental: '🧠', nutrition: '🍎', mindfulness: '🌿' }; 
+    return icons[cat] || '🌟'; 
+  }
 
-  loadWellnessData() {
-    const targetEmail = this.isOwnProfile ? this.authService.getCurrentUserEmail() : this.user.email;
-    const userId = targetEmail?.replace(/[.#$[\]]/g, '_') || 'anonymous';
+  completeInProgressChallenge(id: any, e: Event) { 
+    e.stopPropagation(); 
+    this.notificationService.success("¡Reto finalizado!");
+    
+    this.inProgressChallenges = this.inProgressChallenges.filter(c => c.id !== id);
+    
+    const userData = this.userService.getUser();
+    const userId = userData?.email?.replace(/[.#$[\]]/g, '_') || 'anonymous';
     const saved = localStorage.getItem(`pearly-wellness-progress-${userId}`);
     if (saved) {
+       const data = JSON.parse(saved);
+       const target = data.challenges.find((c:any) => c.id === id);
+       const masterDef = this.challengeService.getChallengeById(id);
+       const pointsEarned = masterDef ? masterDef.points : 0;
+
+       if(target) { 
+           target.completed = true; 
+           target.inProgress = false;
+           target.completedAt = new Date().toISOString(); 
+       }
+       
+       data.totalPoints = (data.totalPoints || 0) + pointsEarned;
+
+       localStorage.setItem(`pearly-wellness-progress-${userId}`, JSON.stringify(data));
+       this.loadWellnessData();
+    }
+  }
+
+  loadWellnessData() {
+    const targetEmail = this.isOwnProfile ? this.authService.getCurrentUserEmail() : (this.user.email || `${this.user.name}@gmail.com`);
+    const userId = targetEmail?.replace(/[.#$[\]]/g, '_') || 'anonymous';
+    const saved = localStorage.getItem(`pearly-wellness-progress-${userId}`);
+    
+    if (saved) {
       const data = JSON.parse(saved);
+      let challengesChanged = false;
+
+      // Reseteo de 3 AM (Solo si es mi perfil, para no tocar datos de otros)
+      if (this.isOwnProfile && data.challenges) {
+        data.challenges.forEach((c: any) => {
+          if (c.completed && this.challengeService.shouldResetDaily(c.completedAt)) {
+            c.completed = false;
+            c.inProgress = false;
+            c.completedAt = null;
+            challengesChanged = true;
+          }
+        });
+        if (challengesChanged) {
+          localStorage.setItem(`pearly-wellness-progress-${userId}`, JSON.stringify(data));
+          this.inProgressChallenges = [];
+        }
+      }
+
+      this.totalPoints = data.totalPoints || 0;
+      this.levelInfo = this.challengeService.getLevelInfo(this.totalPoints);
+      this.rankColor = this.challengeService.getRankColor(this.levelInfo.level);
+
       const scores = this.challengeService.calculateWellnessScores(data.challenges || []);
-      this.mentalHealth = scores.mental; this.physicalHealth = scores.physical;
-      this.mindfulnessScore = scores.mindfulness; this.nutritionScore = scores.nutrition;
-      this.inProgressChallenges = (data.challenges || []).filter((c: any) => c.inProgress && !c.completed);
+      this.mentalHealth = scores.mental; 
+      this.physicalHealth = scores.physical;
+      this.mindfulnessScore = scores.mindfulness; 
+      this.nutritionScore = scores.nutrition;
+      
+      this.inProgressChallenges = (data.challenges || [])
+        .filter((c: any) => c.inProgress && !c.completed)
+        .map((c: any) => {
+          const masterData = this.challengeService.getChallengeById(c.id);
+          if (masterData) {
+            return { ...c, ...masterData }; 
+          }
+          return c;
+        });
+    } else {
+        // Datos por defecto
+        this.levelInfo = { level: 1, currentXP: 0, nextLevelXP: 500, progressPercent: 0 };
+        this.rankColor = '#58595b'; // Hierro
     }
   }
 }

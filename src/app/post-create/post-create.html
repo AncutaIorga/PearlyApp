@@ -2,12 +2,12 @@
 
 <div class="create-post-container">
   <div class="create-post">
-    <h2>Comparte tu logro 🌟</h2>
+    <h2>Comparte tu logro ᯓ★</h2>
     
     <div class="form-content">
       
       <div class="form-group">
-        <label class="section-label">🎯 ¿Qué reto has completado?</label>
+        <label class="section-label">¿Qué reto has completado?</label>
         <select 
             [(ngModel)]="selectedChallengeId" 
             name="challengeId" 
@@ -24,7 +24,7 @@
       </div>
 
       <div class="form-group">
-        <label class="section-label">✍️ Tu experiencia</label>
+        <label class="section-label">Tu experiencia</label>
         <textarea 
           [(ngModel)]="text" 
           name="text" 
@@ -36,7 +36,7 @@
       </div>
 
       <div class="form-group">
-        <label class="section-label">📸 Foto del logro</label>
+        <label class="section-label">Foto del logro</label>
         
         <div class="image-upload-area" 
              [class.has-image]="selectedImage" 
@@ -57,7 +57,6 @@
             </div>
           } @else {
             <div class="upload-placeholder">
-              <span class="upload-icon">🖼️</span>
               <span>Haz clic para subir una foto</span>
             </div>
           }
@@ -87,9 +86,9 @@
             [class.loading]="isSubmitting">
             
             @if (isSubmitting) {
-                <span>⏳ Publicando...</span>
+                <span> Publicando...</span>
             } @else {
-                <span>🚀 Publicar Logro</span>
+                <span> Publicar Logro</span>
             }
         </button>
       </div>

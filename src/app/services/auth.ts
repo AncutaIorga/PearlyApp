@@ -95,8 +95,8 @@ export class AuthService {
       return false;
     }
     
-    localStorage.removeItem('userAvatar');
-    localStorage.removeItem('userBio');
+    // Limpiamos datos de sesión anteriores por si acaso
+    this.clearSessionData();
     this.user.set(null);
 
     const newUser: User = { 
@@ -109,19 +109,32 @@ export class AuthService {
     return this.login(email, password);
   }
 
+  // ✅ NUEVO MÉTODO: Limpia SOLO la sesión, NO los datos de progreso
+  private clearSessionData() {
+    localStorage.removeItem('isLoggedIn');
+    localStorage.removeItem('userName');
+    localStorage.removeItem('userEmail');
+    localStorage.removeItem('userAvatar');
+    localStorage.removeItem('userBio');
+    localStorage.removeItem('userPrivate');
+    localStorage.removeItem('isNewUser');
+  }
+
   logout() {
     this.isAuthenticated = false;
     this.user.set(null);
-    const users = localStorage.getItem('all_registered_users');
-    const posts = localStorage.getItem('posts');
-    localStorage.clear(); 
-    if(users) localStorage.setItem('all_registered_users', users);
-    if(posts) localStorage.setItem('posts', posts);
+    
+    // ✅ CORRECCIÓN CRÍTICA:
+    // En lugar de borrar todo (clear), solo borramos las llaves de la sesión actual.
+    // Así mantenemos 'all_registered_users', 'posts' Y 'pearly-wellness-progress-...' intactos.
+    this.clearSessionData();
 
     this.notificationService.showLogout();
     setTimeout(() => {
       this.router.navigate(['/login']).then(() => {
-        window.location.reload();
+        // Recargar es opcional ahora que no borramos todo a lo bestia, 
+        // pero podemos dejarlo si limpia estados de memoria.
+        window.location.reload(); 
       });
     }, 500);
   }

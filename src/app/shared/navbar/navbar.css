@@ -1,28 +1,32 @@
 /* NAVBAR GENERAL */
 .navbar {
-  background: rgba(255, 255, 255, 0.98);
+  /* Cambio clave: Usar la variable de fondo en lugar de blanco fijo */
+  background: var(--bg-primary); 
   backdrop-filter: blur(10px);
   padding: 0 32px;
   height: 64px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid #e5e7eb;
+  /* Cambio clave: Borde dinámico */
+  border-bottom: 1px solid var(--border-color); 
   position: sticky;
   top: 0;
   z-index: 1000;
+  transition: background 0.3s ease, border-color 0.3s ease;
 }
 
-/* LOGO ORIGINAL (Negro sólido) */
+/* LOGO ADAPTATIVO */
 .logo {
   font-size: 22px;
   font-weight: 700;
-  color: #000; /* Negro puro */
+  /* Cambio clave: Texto primario (negro en claro, blanco en oscuro) */
+  color: var(--text-primary); 
   text-decoration: none;
   letter-spacing: -0.5px;
 }
 
-/* BUSCADOR NEUTRO */
+/* BUSCADOR */
 .search-container {
   position: relative;
   width: 100%;
@@ -33,20 +37,22 @@
 .search-box {
   display: flex;
   align-items: center;
-  background: #f3f4f6; /* Gris muy claro */
-  border-radius: 8px; /* Bordes menos redondos, más serios */
+  /* Cambio clave: Fondo terciario (gris claro en light, gris oscuro en dark) */
+  background: var(--bg-tertiary); 
+  border-radius: 8px;
   padding: 8px 16px;
   border: 1px solid transparent;
   transition: all 0.2s ease;
 }
 
 .search-box.active {
-  background: white;
-  border-color: #000; /* Borde negro al activar */
+  /* Cambio clave: Fondo tarjeta al activar */
+  background: var(--card-bg); 
+  border-color: var(--text-primary);
 }
 
 .search-icon {
-  color: #666;
+  color: var(--text-secondary); /* Icono gris adaptable */
   margin-right: 8px;
   font-size: 14px;
 }
@@ -57,26 +63,32 @@
   width: 100%;
   outline: none;
   font-size: 14px;
-  color: #000;
+  color: var(--text-primary); /* Texto que escribe el usuario */
+}
+
+/* Placeholder color (opcional, para asegurar visibilidad) */
+.search-box input::placeholder {
+  color: var(--text-muted);
 }
 
 .clear-btn {
   background: none;
   border: none;
-  color: #999;
+  color: var(--text-secondary);
   cursor: pointer;
 }
 
-/* RESULTADOS */
+/* RESULTADOS DROPDOWN */
 .search-results-dropdown {
   position: absolute;
   top: 110%;
   left: 0;
   width: 100%;
-  background: white;
+  background: var(--card-bg); /* Fondo del desplegable */
   border-radius: 8px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-  border: 1px solid #eee;
+  box-shadow: var(--shadow-md); /* Sombra definida en variables si existe, sino usa una genérica */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2); /* Fallback manual */
+  border: 1px solid var(--border-color);
   overflow: hidden;
   z-index: 1001;
   padding: 5px 0;
@@ -88,19 +100,21 @@
   padding: 10px 15px;
   cursor: pointer;
   transition: background 0.1s;
+  color: var(--text-primary);
 }
 
 .search-result-item:hover {
-  background: #f5f5f5;
+  background: var(--bg-tertiary); /* Hover adaptable */
 }
 
-/* AVATAR NEUTRO */
+/* AVATAR MINIATURA */
 .mini-avatar {
   width: 32px;
   height: 32px;
   border-radius: 50%;
-  background: #000; /* Fondo negro */
-  color: #fff;      /* Letra blanca */
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -122,17 +136,17 @@
 .result-name {
   font-weight: 500;
   font-size: 14px;
-  color: #000;
+  color: var(--text-primary);
 }
 
 .no-results {
   padding: 15px;
   text-align: center;
-  color: #666;
+  color: var(--text-muted);
   font-size: 13px;
 }
 
-/* ENLACES (Estilo original) */
+/* ENLACES DE NAVEGACIÓN */
 .nav-links {
   display: flex;
   align-items: center;
@@ -140,7 +154,7 @@
 }
 
 .nav-links a {
-  color: #666;
+  color: var(--text-secondary); /* Enlaces inactivos */
   text-decoration: none;
   font-weight: 500;
   font-size: 15px;
@@ -150,19 +164,19 @@
 }
 
 .nav-links a:hover, .nav-links a.active {
-  color: #000;
-  background: #f0f0f0;
+  color: var(--text-primary);
+  background: var(--bg-tertiary);
 }
 
-/* Botón Retos destacado (Negro) */
+/* Botón Retos destacado (Invertido: Blanco/Negro según tema) */
 .nav-links a.highlight-btn {
-  background: #000;
-  color: #fff;
+  background: var(--text-primary); /* Fondo: color del texto principal (Negro en claro, Blanco en oscuro) */
+  color: var(--bg-primary); /* Texto: color del fondo principal */
 }
 
 .nav-links a.highlight-btn:hover {
-  background: #333;
-  color: #fff;
+  opacity: 0.9;
+  transform: translateY(-1px);
 }
 
 .settings-btn {
@@ -171,11 +185,14 @@
   font-size: 18px;
   cursor: pointer;
   padding: 5px;
+  color: var(--text-secondary);
   opacity: 0.7;
+  transition: color 0.2s, opacity 0.2s;
 }
 
 .settings-btn:hover {
   opacity: 1;
+  color: var(--text-primary);
 }
 
 /* Overlay */
@@ -185,6 +202,7 @@
   left: 0;
   width: 100vw;
   height: calc(100vh - 64px);
-  background: rgba(0,0,0,0.1);
+  background: rgba(0,0,0,0.5); /* Oscurecer un poco más el fondo */
+  backdrop-filter: blur(2px);
   z-index: 900;
 }
