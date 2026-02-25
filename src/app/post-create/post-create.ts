@@ -146,7 +146,7 @@ export class PostCreateComponent implements OnInit {
         
         // 3. Crear el post
         this.postService.addPost({
-          user: currentUser.name,
+          user: currentUser.nombre,
           userAvatar: currentUser.avatar,
           image: this.selectedImage, 
           text: this.text,

@@ -1,4 +1,4 @@
-/* import { Component } from '@angular/core';
+import { Component } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { AuthService } from '../../services/authBACK'; 
@@ -6,7 +6,7 @@ import { AuthService } from '../../services/authBACK';
 @Component({
   standalone: true,
   imports: [FormsModule, RouterModule],
-  templateUrl: './register.html',
+  templateUrl: './registerBACK.html',
   styleUrl: './register.css' 
 })
 export class RegisterComponent {
@@ -16,7 +16,7 @@ export class RegisterComponent {
   emailError = '';
   passwordError = '';
   
-  // 👇 ¡ESTAS SON LAS DOS VARIABLES QUE FALTABAN! 👇
+  // Variables para feedback del servidor
   serverError = ''; 
   isLoading = false; 
   
@@ -66,16 +66,19 @@ export class RegisterComponent {
           
       this.isLoading = true; // Empezamos a cargar
       
-      // Esperamos la respuesta del servidor
-      const success = await this.auth.register(this.name, this.email, this.password);
-      
-      if (!success) {
-        // Si falla (email duplicado, servidor apagado...), marcamos el error
-        this.serverError = 'No se ha podido completar el registro.';
+      try {
+        // Esperamos la respuesta del servidor
+        const success = await this.auth.register(this.name, this.email, this.password);
+        
+        if (!success) {
+          // Si falla, el servicio ya habrá notificado, pero aseguramos mensaje aquí
+          this.serverError = 'No se pudo completar el registro. Verifica si el correo ya existe.';
+        }
+      } catch (error) {
+        this.serverError = 'Error de conexión con el servidor.';
+      } finally {
+        this.isLoading = false;
       }
-
-      setTimeout(() => this.isLoading = false, 0); 
     }
   }
 }
-*/

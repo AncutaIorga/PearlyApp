@@ -1,11 +1,10 @@
-import { Component, OnInit, inject, Signal, computed } from '@angular/core';
+import { Component, OnInit, inject, Signal, computed, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { NavbarComponent } from '../shared/navbar/navbar';
-import { AuthService } from '../services/auth';
+import { AuthService } from '../services/authBACK';
 import { UserService } from '../services/user';
-import { SupportService, CreateTicketDto, SupportTicket } from '../services/support';
+import { SupportService, CreateTicketDto } from '../services/support';
 import { BlockService } from '../services/block';
 import { ThemeService } from '../services/theme';
 import { NotificationService } from '../services/notification';
@@ -24,18 +23,16 @@ export class AjustesComponent implements OnInit {
   public themeService = inject(ThemeService);
   public authService = inject(AuthService);
   public userService = inject(UserService);
-
-  // Signals para reactividad
-  public blockedUsers = computed(() => this.blockService.blockedUsers());
-  public mutedUsers = computed(() => this.blockService.mutedUsers());
-  public tickets: Signal<SupportTicket[]> = this.supportService.getTicketsSignal();
   
-  // Variables para el Modal
+  private cdr = inject(ChangeDetectorRef);
+
+  public blockedUsers = computed(() => this.blockService.blockedUsers ? this.blockService.blockedUsers() : []);
+  public tickets = this.supportService.getTicketsSignal(); 
+  
   showBlockedModal = false;
 
-  loading = { privacy: false, notifications: false, tickets: false };
+  loading = { privacy: false, tickets: false };
   privacySettings = { isPrivate: false };
-  notificationSettings = { followers: true, comments: true, likes: true };
   newTicket: CreateTicketDto = { subject: '', description: '' };
 
   ngOnInit() {
@@ -45,11 +42,9 @@ export class AjustesComponent implements OnInit {
     }
   }
 
-  // --- Lógica de Modal ---
   openBlockedModal() { this.showBlockedModal = true; }
   closeBlockedModal() { this.showBlockedModal = false; }
 
-  // --- Otros Métodos ---
   isDarkMode() { return this.themeService.isDarkMode(); }
   
   toggleTheme() {
@@ -58,37 +53,63 @@ export class AjustesComponent implements OnInit {
   }
 
   updatePrivacy() {
-    this.userService.updatePrivacy(this.privacySettings.isPrivate).subscribe(() => {
-      this.notificationService.showPrivacyUpdated(this.privacySettings.isPrivate);
+    this.loading.privacy = true;
+    this.userService.updatePrivacy(this.privacySettings.isPrivate).subscribe({
+      next: () => {
+        this.loading.privacy = false;
+        this.notificationService.showPrivacyUpdated(this.privacySettings.isPrivate);
+      },
+      error: (err) => {
+        this.loading.privacy = false;
+        this.privacySettings.isPrivate = !this.privacySettings.isPrivate;
+        this.notificationService.error('Error de conexión al cambiar privacidad.');
+      }
     });
   }
 
-  updateNotifications() { this.notificationService.success('Preferencias guardadas'); }
-
   unblockUser(id: number) {
-    this.blockService.unblockUser(id).subscribe(() => {
-      this.notificationService.success('Usuario desbloqueado');
-      // Si la lista queda vacía, cerramos el modal automáticamente
-      if (this.blockedUsers().length === 0) this.closeBlockedModal();
+    this.blockService.unblockUser(id).subscribe({
+      next: () => {
+        this.notificationService.success('Usuario desbloqueado');
+        if (this.blockedUsers().length === 0) this.closeBlockedModal();
+      },
+      error: () => this.notificationService.error('Error al desbloquear usuario.')
     });
   }
 
   submitTicket() {
-    if (!this.newTicket.subject.trim() || !this.newTicket.description.trim()) return;
+    if (!this.newTicket.subject.trim() || !this.newTicket.description.trim()) {
+       this.notificationService.warning('Completa todos los campos.');
+       return;
+    }
+    
     this.loading.tickets = true;
+    this.cdr.detectChanges(); 
+    
     this.supportService.createTicket(this.newTicket).subscribe({
       next: (ticket) => {
         this.loading.tickets = false;
         this.newTicket = { subject: '', description: '' };
-        this.notificationService.showTicketCreated(ticket.id);
+        
+        this.notificationService.showTicketCreated(ticket.id || 0);
+        
+        this.cdr.detectChanges();
       },
-      error: () => this.loading.tickets = false
+      error: (error) => {
+        this.loading.tickets = false;
+        console.error('Error ticket:', error);
+        
+        if (error.message === 'Usuario no identificado') {
+           this.notificationService.error('Error de sesión. Por favor, recarga la página.');
+        } else if (error.status === 400) {
+           this.notificationService.error('Error 400: El servidor rechazó los datos.');
+        } else {
+           this.notificationService.error('Error de conexión con el servidor.');
+        }
+        this.cdr.detectChanges();
+      }
     });
   }
 
   logout() { this.authService.logout(); }
-
-  formatDate(date: Date): string {
-    return new Date(date).toLocaleDateString();
-  }
 }

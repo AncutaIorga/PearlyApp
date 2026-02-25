@@ -4,7 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router'; 
 import { PostOptionsComponent } from '../post-options/post-options';
 import { PostService, Post, Comment } from '../../services/post';
-import { AuthService } from '../../services/auth';
+import { AuthService } from '../../services/authBACK';
 import { UserService } from '../../services/user';
 import { NotificationService } from '../../services/notification';
 import { TimeAgoPipe } from '../../pipes/time-ago-pipe';
@@ -100,7 +100,7 @@ export class PostCardComponent implements OnInit {
       
       const currentUser = this.authService.user();
       const userProfile = this.userService.getUser();
-      const userName = currentUser?.name || this.getCurrentUserName();
+      const userName = currentUser?.nombre || this.getCurrentUserName();
       
       this.postService.addComment(
         this.post.id,

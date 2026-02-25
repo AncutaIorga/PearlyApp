@@ -4,7 +4,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../services/user';
 import { PostService, Post, Comment } from '../services/post';
-import { AuthService } from '../services/auth';
+import { AuthService, Usuario } from '../services/authBACK'; 
 import { NavbarComponent } from '../shared/navbar/navbar';
 import { NotificationService } from '../services/notification';
 import { TimeAgoPipe } from '../pipes/time-ago-pipe';
@@ -47,7 +47,6 @@ export class ProfileComponent implements OnInit {
 
   mentalHealth = 0; physicalHealth = 0; mindfulnessScore = 0; nutritionScore = 0;
   
-  // Variables de Nivel
   levelInfo = { level: 1, currentXP: 0, nextLevelXP: 500, progressPercent: 0 };
   rankColor = '#58595b';
   totalPoints = 0;
@@ -82,12 +81,13 @@ export class ProfileComponent implements OnInit {
 
   loadOtherUserProfile(username: string) {
     const allUsers = this.authService.getRegisteredUsers();
-    const found = allUsers.find(u => u.name.toLowerCase() === username.toLowerCase());
-    this.user = found ? { ...found } : { name: username, bio: 'Usuario Pearly', avatar: '' };
+    const found = allUsers.find((u: any) => (u.nombre || u.name).toLowerCase() === username.toLowerCase());
+    
+    this.user = found ? { ...found } : { name: username, nombre: username, bio: 'Usuario Pearly', avatar: '' };
 
     const myEmail = this.authService.getCurrentUserEmail();
     const myFollowing = JSON.parse(localStorage.getItem(`following-${myEmail}`) || '[]');
-    this.isFollowing = myFollowing.includes(this.user.name);
+    this.isFollowing = myFollowing.includes(this.user.nombre || this.user.name);
 
     this.loadUserPosts();
     this.loadWellnessData();
@@ -99,7 +99,8 @@ export class ProfileComponent implements OnInit {
   }
 
   loadUserPosts() {
-    this.posts = this.postService.getPostsByUser(this.user.name).map(p => ({
+    const userName = this.user.nombre || this.user.name;
+    this.posts = this.postService.getPostsByUser(userName).map(p => ({
       ...p,
       createdAt: (p as any).createdAt || (p as any).date || new Date().toISOString()
     }));
@@ -108,7 +109,8 @@ export class ProfileComponent implements OnInit {
 
   updateStats() {
     this.userStats.posts = this.posts.length;
-    const targetEmail = this.isOwnProfile ? this.authService.getCurrentUserEmail() : (this.user.email || `${this.user.name}@gmail.com`);
+    const userName = this.user.nombre || this.user.name;
+    const targetEmail = this.isOwnProfile ? this.authService.getCurrentUserEmail() : (this.user.email || `${userName}@gmail.com`);
     
     this.userStats.followers = this.getRealFollowersList().length;
     this.userStats.following = this.getRealFollowingList(targetEmail || '').length;
@@ -117,10 +119,12 @@ export class ProfileComponent implements OnInit {
   toggleFollow() {
     const myEmail = this.authService.getCurrentUserEmail();
     let myFollowing = JSON.parse(localStorage.getItem(`following-${myEmail}`) || '[]');
+    const targetName = this.user.nombre || this.user.name;
+    
     if (this.isFollowing) {
-      myFollowing = myFollowing.filter((n: string) => n !== this.user.name);
+      myFollowing = myFollowing.filter((n: string) => n !== targetName);
     } else {
-      myFollowing.push(this.user.name);
+      myFollowing.push(targetName);
     }
     localStorage.setItem(`following-${myEmail}`, JSON.stringify(myFollowing));
     this.isFollowing = !this.isFollowing;
@@ -129,18 +133,16 @@ export class ProfileComponent implements OnInit {
 
   toggleEdit() {
     if (this.editing) {
-      const newName = this.editableUser.name.trim();
-      const oldName = this.user.name;
-
-      if (newName.toLowerCase() !== oldName.toLowerCase() && this.authService.isUserTaken(newName)) {
-        this.notificationService.error('⛔ Ese nombre ya existe. Elige otro.');
-        return;
-      }
-
+      const newName = (this.editableUser.nombre || this.editableUser.name).trim();
+      
       if (this.avatarPreview) this.editableUser.avatar = this.avatarPreview;
+      
+      if (this.editableUser.name && !this.editableUser.nombre) this.editableUser.nombre = this.editableUser.name;
+
       this.userService.updateUser(this.editableUser);
       this.user = { ...this.editableUser };
-      this.postService.updateUserPosts(oldName, this.user.name, this.user.avatar);
+      
+      
       this.notificationService.showProfileUpdated();
     } else {
       this.editableUser = { ...this.user };
@@ -152,24 +154,27 @@ export class ProfileComponent implements OnInit {
 
   openFollowModal(type: 'followers' | 'following') {
     this.followModalType = type;
-    const targetEmail = this.isOwnProfile ? this.authService.getCurrentUserEmail() : (this.user.email || `${this.user.name}@gmail.com`);
+    const userName = this.user.nombre || this.user.name;
+    const targetEmail = this.isOwnProfile ? this.authService.getCurrentUserEmail() : (this.user.email || `${userName}@gmail.com`);
     const namesList = (type === 'followers') ? this.getRealFollowersList() : this.getRealFollowingList(targetEmail || '');
 
-    const allUsers = this.authService.getRegisteredUsers();
+    const allUsers = this.authService.getRegisteredUsers(); 
+    
     this.followModalList = namesList.map(name => {
-      const found = allUsers.find(u => u.name.toLowerCase() === name.toLowerCase());
-      return { name: name, avatar: found ? found.avatar : '' };
+      const found = allUsers.find((u: any) => (u.nombre || u.name).toLowerCase() === name.toLowerCase());
+      return { name: name, nombre: name, avatar: found ? found.avatar : '' };
     });
     this.showFollowModal = true;
   }
 
   private getRealFollowersList(): string[] {
     const followers = [];
+    const targetName = this.user.nombre || this.user.name;
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key?.startsWith('following-')) {
         const list = JSON.parse(localStorage.getItem(key) || '[]');
-        if (list.includes(this.user.name)) followers.push(key.replace('following-', '').split('@')[0]);
+        if (list.includes(targetName)) followers.push(key.replace('following-', '').split('@')[0]);
       }
     }
     return followers;
@@ -186,9 +191,8 @@ export class ProfileComponent implements OnInit {
   addComment() {
     if (this.selectedPost && this.newComment.trim()) {
       const myUser = this.userService.getUser();
-      this.postService.addComment(this.selectedPost.id, this.newComment.trim(), myUser.name, myUser.avatar);
+      this.postService.addComment(this.selectedPost.id, this.newComment.trim(), myUser.nombre, myUser.avatar);
       
-      // Actualizar el post seleccionado
       const updatedPost = this.postService.getPostById(this.selectedPost.id);
       if (updatedPost) {
         this.selectedPost.comments = updatedPost.comments;
@@ -199,30 +203,20 @@ export class ProfileComponent implements OnInit {
     }
   }
 
-  // ===== NUEVO: Verificar si puede eliminar un comentario =====
   canDeleteComment(comment: Comment): boolean {
     const currentUserName = this.authService.getCurrentUserName();
-    // Puede eliminar si: es dueño del comentario O es dueño del post
     return comment.user === currentUserName || this.isPostOwner(this.selectedPost);
   }
 
-  // ===== NUEVO: Eliminar comentario =====
   deleteComment(postId: number, commentId: number, event: Event) {
-    event.stopPropagation(); // Evitar que cierre el modal
-    
+    event.stopPropagation();
     this.notificationService.showConfirmAction(
       '¿Eliminar este comentario?',
       'Sí, eliminar',
       () => {
-        // Llamar al servicio para eliminar el comentario
         this.postService.deleteComment(postId, commentId);
-        
-        // Actualizar el post seleccionado
         const updatedPost = this.postService.getPostById(postId);
-        if (updatedPost) {
-          this.selectedPost.comments = updatedPost.comments;
-        }
-        
+        if (updatedPost) this.selectedPost.comments = updatedPost.comments;
         this.notificationService.success('Comentario eliminado');
       }
     );
@@ -232,7 +226,6 @@ export class ProfileComponent implements OnInit {
     this.editingPost = post; 
     this.editPostData = { ...post }; 
   }
-  
   closeEditPostModal() { this.editingPost = null; }
   
   saveEditedPost() { 
@@ -267,8 +260,6 @@ export class ProfileComponent implements OnInit {
   toggleLike() { 
     if (this.selectedPost) {
       this.postService.toggleLike(this.selectedPost.id);
-      
-      // Actualizar el estado local
       const updatedPost = this.postService.getPostById(this.selectedPost.id);
       if (updatedPost) {
         this.selectedPost.likes = updatedPost.likes;
@@ -289,7 +280,9 @@ export class ProfileComponent implements OnInit {
     this.inProgressChallenges = this.inProgressChallenges.filter(c => c.id !== id);
     
     const userData = this.userService.getUser();
-    const userId = userData?.email?.replace(/[.#$[\]]/g, '_') || 'anonymous';
+    const email = this.authService.getCurrentUserEmail();
+    const userId = email ? email.replace(/[.#$[\]]/g, '_') : 'anonymous';
+    
     const saved = localStorage.getItem(`pearly-wellness-progress-${userId}`);
     if (saved) {
        const data = JSON.parse(saved);
@@ -304,14 +297,15 @@ export class ProfileComponent implements OnInit {
        }
        
        data.totalPoints = (data.totalPoints || 0) + pointsEarned;
-
        localStorage.setItem(`pearly-wellness-progress-${userId}`, JSON.stringify(data));
        this.loadWellnessData();
     }
   }
 
   loadWellnessData() {
-    const targetEmail = this.isOwnProfile ? this.authService.getCurrentUserEmail() : (this.user.email || `${this.user.name}@gmail.com`);
+    const userName = this.user.nombre || this.user.name;
+    const targetEmail = this.isOwnProfile ? this.authService.getCurrentUserEmail() : (this.user.email || `${userName}@gmail.com`);
+    
     const userId = targetEmail?.replace(/[.#$[\]]/g, '_') || 'anonymous';
     const saved = localStorage.getItem(`pearly-wellness-progress-${userId}`);
     
@@ -319,7 +313,6 @@ export class ProfileComponent implements OnInit {
       const data = JSON.parse(saved);
       let challengesChanged = false;
 
-      // Reseteo de 3 AM (Solo si es mi perfil, para no tocar datos de otros)
       if (this.isOwnProfile && data.challenges) {
         data.challenges.forEach((c: any) => {
           if (c.completed && this.challengeService.shouldResetDaily(c.completedAt)) {
@@ -355,9 +348,8 @@ export class ProfileComponent implements OnInit {
           return c;
         });
     } else {
-        // Datos por defecto
         this.levelInfo = { level: 1, currentXP: 0, nextLevelXP: 500, progressPercent: 0 };
-        this.rankColor = '#58595b'; // Hierro
+        this.rankColor = '#58595b'; 
     }
   }
 }

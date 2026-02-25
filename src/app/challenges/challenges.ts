@@ -1,7 +1,7 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { AuthService } from '../services/auth';
+import { AuthService } from '../services/authBACK';
 import { UserService } from '../services/user';
 import { NavbarComponent } from '../shared/navbar/navbar';
 import { NotificationService } from '../services/notification';
@@ -10,7 +10,7 @@ import { ChallengeService, Challenge, DailyChallengeDef } from '../services/chal
 interface ChallengeState extends Challenge {
   completed: boolean;
   inProgress: boolean;
-  progress?: number; // Para llevar el progreso
+  progress?: number; 
 }
 
 interface DailyChallengeState extends DailyChallengeDef {
@@ -72,14 +72,11 @@ export class ChallengesComponent implements OnInit {
   showCustomConfirmModal = false;
   challengeToConfirm: ChallengeState | null = null;
   
-  // ===== NUEVO: Getter para retos en curso =====
   get inProgressChallenges(): ChallengeState[] {
     return this.challenges.filter(c => c.inProgress && !c.completed);
   }
   
   get filteredChallenges(): ChallengeState[] {
-    // Excluimos los que están en progreso de la lista principal
-    // para que aparezcan solo en la sección "Retos en curso"
     let filtered = this.challenges.filter(c => !c.inProgress || c.completed);
     
     if (this.activeFilter !== 'all') {
@@ -106,7 +103,7 @@ export class ChallengesComponent implements OnInit {
       ...c, 
       completed: false, 
       inProgress: false,
-      progress: 0 // Inicializamos progreso
+      progress: 0 
     }));
     this.dailyChallenges = this.challengeService.getAllDailyChallenges().map(d => ({
       ...d, completed: false
@@ -203,12 +200,9 @@ export class ChallengesComponent implements OnInit {
     }
   }
 
-  // NUEVO: Calcular progreso según categoría
   private calculateProgress(category: string, inProgress: boolean): number {
     if (!inProgress) return 0;
     
-    // Simulamos progreso para retos en curso
-    // En una implementación real, esto vendría del localStorage
     switch(category) {
       case 'physical': return 30;
       case 'mindfulness': return 45;
@@ -261,7 +255,6 @@ export class ChallengesComponent implements OnInit {
   handleChallengeAction(challenge: ChallengeState) {
     if (challenge.completed) return;
     
-    // Si está en progreso, lo completamos directamente
     if (challenge.inProgress) {
       this.completeChallenge(challenge.id);
       return;
@@ -278,7 +271,7 @@ export class ChallengesComponent implements OnInit {
     if (c) {
       if (['physical', 'mindfulness'].includes(c.category) && !c.inProgress) {
         c.inProgress = true;
-        c.progress = 10; // Empezamos con 10% de progreso
+        c.progress = 10; 
         this.notificationService.info(`⏱️ Reto en curso: ${c.title}. ¡Tú puedes!`);
         this.saveProgress();
       } else {

@@ -1,15 +1,28 @@
 import { Injectable, signal, inject } from '@angular/core';
-import { AuthService, User } from './auth';
-import { of, Observable } from 'rxjs';
+import { HttpClient } from '@angular/common/http';
+import { AuthService, Usuario } from './authBACK';
+import { Observable, throwError } from 'rxjs';
+import { tap, catchError } from 'rxjs/operators';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class UserService {
   private authService = inject(AuthService);
-  private userSignal = signal<User>({ name: '', email: '', password: '' });
+  private http = inject(HttpClient);
+  private apiUrl = `${environment.apiUrl}/usuarios`; 
+
+  private userSignal = signal<Usuario>({ nombre: '', email: '' });
+
+  constructor() {
+    this.syncWithAuthData();
+  }
 
   syncWithAuthData() {
     const current = this.authService.user();
-    if (current) { this.userSignal.set(current); }
+    if (current) { 
+        if (!current.nombre && current.name) current.nombre = current.name;
+        this.userSignal.set(current); 
+    }
   }
 
   getUser() {
@@ -17,14 +30,30 @@ export class UserService {
     return this.userSignal();
   }
 
-  updateUser(data: Partial<User>) {
-    const oldName = localStorage.getItem('userName') || '';
-    this.authService.updateRegisteredUser(oldName, data);
-    this.syncWithAuthData();
+  updateUser(data: Partial<Usuario>): Observable<Usuario> {
+    const currentUser = this.getUser();
+    
+    // ✅ Usamos idUsuario o id según lo que tengamos
+    const userId = currentUser.idUsuario || currentUser.idUsuario;
+
+    if (!userId) {
+      return throwError(() => new Error('Falta ID de usuario'));
+    }
+
+    if (data.name && !data.nombre) data.nombre = data.name;
+
+    // ✅ URL correcta con idUsuario
+    return this.http.put<Usuario>(`${this.apiUrl}/${userId}`, data).pipe(
+      tap(updatedUser => {
+        const merged = { ...currentUser, ...updatedUser };
+        this.authService.updateRegisteredUser(currentUser.nombre, merged);
+        this.syncWithAuthData();
+      }),
+      catchError(err => throwError(() => err))
+    );
   }
 
   updatePrivacy(isPrivate: boolean): Observable<any> {
-    this.updateUser({ isPrivate });
-    return of({ success: true });
+    return this.updateUser({ isPrivate });
   }
 }

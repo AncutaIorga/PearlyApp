@@ -1,24 +1,23 @@
-/*import { Component } from '@angular/core';
+import { Component, ChangeDetectorRef, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
-import { AuthService } from '../../services/authBACK';
+import { AuthService } from '../../services/authBACK'; 
 
 @Component({
   standalone: true,
   imports: [FormsModule, RouterModule],
-  templateUrl: './login.html',
+  templateUrl: './loginBACK.html',
   styleUrl: './login.css' 
 })
 export class LoginComponent {
+  private auth = inject(AuthService);
+  private cdr = inject(ChangeDetectorRef);
+
   email = '';
   password = '';
   emailError = '';
-  
-  // 👇 AQUÍ ESTÁN LAS DOS VARIABLES QUE TE PEDÍA EL COMPILADOR 👇
   serverError = ''; 
   isLoading = false; 
-
-  constructor(private auth: AuthService) {}
 
   validateEmail() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -31,21 +30,26 @@ export class LoginComponent {
 
   async login() {
     this.validateEmail();
-    this.serverError = ''; // Limpiamos errores previos
+    this.serverError = ''; 
 
     if (!this.emailError) {
-      this.isLoading = true; // Activamos el estado de carga
+      // ✅ Parche para evitar Error NG0100
+      setTimeout(() => {
+        this.isLoading = true;
+        this.cdr.detectChanges();
+      });
       
-      // Esperamos a que el servicio intente conectar con la base de datos
-      const success = await this.auth.login(this.email, this.password);
-      
-      if (!success) {
-        // Si el servicio devuelve false, mostramos este error
-        this.serverError = 'Error al iniciar sesión. Revisa tus datos o la conexión.';
+      try {
+        const success = await this.auth.login(this.email, this.password);
+        if (!success) {
+          this.serverError = 'Credenciales incorrectas o error en el servidor.';
+        }
+      } catch (error) {
+        this.serverError = 'Error de conexión. Intenta más tarde.';
+      } finally {
+        this.isLoading = false;
+        this.cdr.detectChanges();
       }
-      
-      setTimeout(() => this.isLoading = false, 0); 
     }
   }
 }
-*/

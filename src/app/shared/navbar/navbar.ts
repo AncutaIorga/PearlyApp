@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { AuthService } from '../../services/auth';
+import { AuthService } from '../../services/authBACK';
 import { Subject, filter } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
@@ -22,18 +22,14 @@ export class NavbarComponent implements OnInit {
   searchResults: any[] = [];
   private searchSubject = new Subject<string>();
   
-  // Variable para controlar la ruta activa
   currentRoute: string = '';
 
   ngOnInit() {
-    // Detectar cambios de ruta
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
     ).subscribe((event: any) => {
       this.currentRoute = event.url;
     });
-    
-    // Valor inicial
     this.currentRoute = this.router.url;
   }
 
@@ -46,7 +42,6 @@ export class NavbarComponent implements OnInit {
     });
   }
 
-  // Método para verificar si una ruta está activa
   isActive(route: string): boolean {
     if (route === '/profile' && this.currentRoute.startsWith('/profile')) {
       return true;
@@ -54,7 +49,6 @@ export class NavbarComponent implements OnInit {
     return this.currentRoute === route;
   }
 
-  // Método específico para el botón de ajustes
   isSettingsActive(): boolean {
     return this.currentRoute === '/ajustes';
   }
@@ -71,11 +65,14 @@ export class NavbarComponent implements OnInit {
       return;
     }
     
+    // Obtiene usuarios (vacío por ahora hasta conectar búsqueda real)
     const allUsers = this.authService.getRegisteredUsers();
     
-    this.searchResults = allUsers.filter(user => 
-      user.name.toLowerCase().includes(cleanQuery)
-    );
+    this.searchResults = allUsers.filter(user => {
+      // Usamos (user.nombre || user.name) para asegurar compatibilidad
+      const userName = user.nombre || user.name || '';
+      return userName.toLowerCase().includes(cleanQuery);
+    });
   }
 
   closeSearch() {
@@ -91,7 +88,6 @@ export class NavbarComponent implements OnInit {
     this.closeSearch();
   }
 
-  // Navegar a ajustes
   goToSettings() {
     this.router.navigate(['/ajustes']);
   }
