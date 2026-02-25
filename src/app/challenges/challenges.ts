@@ -10,6 +10,7 @@ import { ChallengeService, Challenge, DailyChallengeDef } from '../services/chal
 interface ChallengeState extends Challenge {
   completed: boolean;
   inProgress: boolean;
+  progress?: number; // Para llevar el progreso
 }
 
 interface DailyChallengeState extends DailyChallengeDef {
@@ -42,7 +43,7 @@ export class ChallengesComponent implements OnInit {
   userProfile = this.userService.getUser();
   
   energyPoints = 0;
-  totalPoints = 0; // ✅ Variable crítica para el nivel
+  totalPoints = 0;
   currentStreak = 0;
   wellnessScore = 0;
   mentalHealth = 0;
@@ -71,18 +72,26 @@ export class ChallengesComponent implements OnInit {
   showCustomConfirmModal = false;
   challengeToConfirm: ChallengeState | null = null;
   
+  // ===== NUEVO: Getter para retos en curso =====
+  get inProgressChallenges(): ChallengeState[] {
+    return this.challenges.filter(c => c.inProgress && !c.completed);
+  }
+  
   get filteredChallenges(): ChallengeState[] {
-    let filtered = this.challenges;
+    // Excluimos los que están en progreso de la lista principal
+    // para que aparezcan solo en la sección "Retos en curso"
+    let filtered = this.challenges.filter(c => !c.inProgress || c.completed);
+    
     if (this.activeFilter !== 'all') {
-      filtered = this.challenges.filter(c => c.category === this.activeFilter);
+      filtered = filtered.filter(c => c.category === this.activeFilter);
     }
+    
     const completed = filtered.filter(c => c.completed);
     const notCompleted = filtered.filter(c => !c.completed);
     return [...notCompleted, ...completed];
   }
   
   ngOnInit() {
-    // ✅ 1. OBTENCIÓN SEGURA DEL ID (Evita guardar en 'anonymous')
     const email = this.authService.getCurrentUserEmail();
     this.currentUserId = email ? email.replace(/[.#$[\]]/g, '_') : 'anonymous';
     
@@ -94,7 +103,10 @@ export class ChallengesComponent implements OnInit {
 
   private initializeFromService() {
     this.challenges = this.challengeService.getAllChallenges().map(c => ({
-      ...c, completed: false, inProgress: false
+      ...c, 
+      completed: false, 
+      inProgress: false,
+      progress: 0 // Inicializamos progreso
     }));
     this.dailyChallenges = this.challengeService.getAllDailyChallenges().map(d => ({
       ...d, completed: false
@@ -121,7 +133,12 @@ export class ChallengesComponent implements OnInit {
   }
   
   getCategoryName(category: string): string {
-    const names: Record<string, string> = { mental: 'Mental', physical: 'Físico', mindfulness: 'Mindfulness', nutrition: 'Nutrición' };
+    const names: Record<string, string> = { 
+      mental: 'Mental', 
+      physical: 'Físico', 
+      mindfulness: 'Mindfulness', 
+      nutrition: 'Nutrición' 
+    };
     return names[category] || 'Bienestar';
   }
 
@@ -131,11 +148,10 @@ export class ChallengesComponent implements OnInit {
       const p = JSON.parse(saved);
       
       this.energyPoints = p.energyPoints || 0;
-      this.totalPoints = p.totalPoints || 0; // Carga los puntos del nivel
+      this.totalPoints = p.totalPoints || 0;
       this.currentStreak = p.currentStreak || 0;
       this.dailyTip = p.dailyTip || this.dailyTip;
       
-      // 1. Cargar estado de Retos Maestros y Reset 3AM
       let challengesChanged = false;
       if (p.challenges) {
           p.challenges.forEach((c: any) => {
@@ -148,16 +164,21 @@ export class ChallengesComponent implements OnInit {
           });
       }
 
-      // Aplicar estado visual a Retos Maestros
       if (p.challenges) {
         this.challenges = this.challenges.map(c => {
           const s = p.challenges.find((sc: any) => sc.id === c.id);
-          return s ? { ...c, completed: s.completed, inProgress: s.inProgress } : c;
+          if (s) {
+            return { 
+              ...c, 
+              completed: s.completed, 
+              inProgress: s.inProgress,
+              progress: s.progress || this.calculateProgress(c.category, s.inProgress)
+            };
+          }
+          return c;
         });
       }
 
-      // 2. ✅ CARGAR ESTADO DE RETOS DIARIOS (¡Esto faltaba!)
-      // Si no cargamos esto, los diarios se reinician siempre y causan inconsistencia
       if (p.dailyChallenges) {
         this.dailyChallenges = this.dailyChallenges.map(d => {
            const s = p.dailyChallenges.find((sd: any) => sd.id === d.id);
@@ -165,11 +186,8 @@ export class ChallengesComponent implements OnInit {
         });
       }
 
-      // 3. Recálculo de seguridad: Si totalPoints es 0 por error, reconstruimos
       let calculatedTotal = 0;
-      // Sumar maestros
       this.challenges.forEach(c => { if(c.completed) calculatedTotal += c.points; });
-      // Sumar diarios (Ahora sí podemos porque los hemos cargado)
       this.dailyChallenges.forEach(d => { if(d.completed) calculatedTotal += d.points; });
 
       if (this.totalPoints < calculatedTotal) {
@@ -177,12 +195,26 @@ export class ChallengesComponent implements OnInit {
           challengesChanged = true;
       }
 
-      // Guardamos correcciones si hubo
       if(challengesChanged) {
           this.saveProgress();
       }
 
       this.updateScoresFromService();
+    }
+  }
+
+  // NUEVO: Calcular progreso según categoría
+  private calculateProgress(category: string, inProgress: boolean): number {
+    if (!inProgress) return 0;
+    
+    // Simulamos progreso para retos en curso
+    // En una implementación real, esto vendría del localStorage
+    switch(category) {
+      case 'physical': return 30;
+      case 'mindfulness': return 45;
+      case 'mental': return 60;
+      case 'nutrition': return 75;
+      default: return 25;
     }
   }
 
@@ -199,21 +231,20 @@ export class ChallengesComponent implements OnInit {
   private saveProgress() {
     const data = {
       energyPoints: this.energyPoints,
-      totalPoints: this.totalPoints, // ✅ Guardamos XP del Nivel
+      totalPoints: this.totalPoints,
       currentStreak: this.currentStreak,
       mentalHealth: this.mentalHealth,
       physicalHealth: this.physicalHealth,
       mindfulness: this.mindfulnessScore,
       nutrition: this.nutritionScore,
       completedChallenges: this.completedChallenges,
-      // Guardamos Retos Maestros
       challenges: this.challenges.map(c => ({ 
         id: c.id, 
         completed: c.completed, 
         inProgress: c.inProgress,
+        progress: c.progress,
         completedAt: c.completed ? new Date().toISOString() : undefined 
       })),
-      // ✅ GUARDAMOS RETOS DIARIOS (Vital para que no se pierdan)
       dailyChallenges: this.dailyChallenges.map(d => ({
         id: d.id,
         completed: d.completed
@@ -221,7 +252,6 @@ export class ChallengesComponent implements OnInit {
       dailyTip: this.dailyTip
     };
     
-    // Guardamos en el localStorage asociado al usuario real
     localStorage.setItem(`pearly-wellness-progress-${this.currentUserId}`, JSON.stringify(data));
   }
 
@@ -230,6 +260,13 @@ export class ChallengesComponent implements OnInit {
 
   handleChallengeAction(challenge: ChallengeState) {
     if (challenge.completed) return;
+    
+    // Si está en progreso, lo completamos directamente
+    if (challenge.inProgress) {
+      this.completeChallenge(challenge.id);
+      return;
+    }
+    
     this.challengeToConfirm = challenge;
     this.showCustomConfirmModal = true;
   }
@@ -241,6 +278,7 @@ export class ChallengesComponent implements OnInit {
     if (c) {
       if (['physical', 'mindfulness'].includes(c.category) && !c.inProgress) {
         c.inProgress = true;
+        c.progress = 10; // Empezamos con 10% de progreso
         this.notificationService.info(`⏱️ Reto en curso: ${c.title}. ¡Tú puedes!`);
         this.saveProgress();
       } else {
@@ -250,12 +288,9 @@ export class ChallengesComponent implements OnInit {
     this.closeConfirmModal();
   }
 
-  closeConfirmModal() { this.showCustomConfirmModal = false; this.challengeToConfirm = null; }
-
-  getChallengeButtonText(c: ChallengeState): string {
-    if (c.completed) return '✓ COMPLETADO';
-    if (c.inProgress) return '⊹ FINALIZAR RETO';
-    return (['physical', 'mindfulness'].includes(c.category) ? '◴ COMENZAR' : '✧ COMPLETAR');
+  closeConfirmModal() { 
+    this.showCustomConfirmModal = false; 
+    this.challengeToConfirm = null; 
   }
 
   completeChallenge(id: string) {
@@ -263,8 +298,9 @@ export class ChallengesComponent implements OnInit {
     if (c && !c.completed) {
       c.completed = true;
       c.inProgress = false;
+      c.progress = 100;
       this.energyPoints += c.points;
-      this.totalPoints += c.points; // ✅ Sumar XP
+      this.totalPoints += c.points;
       
       this.updateScoresFromService();
       this.notificationService.showChallengeCompleted(c.title, c.points);
@@ -277,7 +313,7 @@ export class ChallengesComponent implements OnInit {
     if (d && !d.completed) {
       d.completed = true;
       this.energyPoints += d.points;
-      this.totalPoints += d.points; // ✅ Sumar XP
+      this.totalPoints += d.points;
       this.saveProgress();
     }
   }

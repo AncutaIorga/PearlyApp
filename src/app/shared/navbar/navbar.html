@@ -49,13 +49,41 @@
   </div>
 
   <div class="nav-links">
-    <a routerLink="/feed" routerLinkActive="active" title="Feed">Feed</a>
-    <a routerLink="/challenges" routerLinkActive="active" title="Retos" class="highlight-btn">Retos</a>
-    <a routerLink="/post-create" routerLinkActive="active" title="Crear">Crear</a>
-    <a routerLink="/profile" routerLinkActive="active" title="Perfil">Perfil</a>
+    <!-- Feed link con clase activa condicional -->
+    <a routerLink="/feed" 
+       [class.active]="isActive('/feed')"
+       title="Feed">
+      Feed
+    </a>
+    
+    <!-- Retos link con clase activa condicional -->
+    <a routerLink="/challenges" 
+       [class.active]="isActive('/challenges')"
+       class="highlight-btn" 
+       title="Retos">
+      Retos
+    </a>
+    
+    <!-- Crear link con clase activa condicional -->
+    <a routerLink="/post-create" 
+       [class.active]="isActive('/post-create')"
+       title="Crear">
+      Crear
+    </a>
+    
+    <!-- Perfil link con clase activa condicional (para /profile y /profile/username) -->
+    <a routerLink="/profile" 
+       [class.active]="isActive('/profile')"
+       title="Perfil">
+      Perfil
+    </a>
 
-    <button class="settings-btn" (click)="router.navigate(['/ajustes'])">
-      ☰
+    <!-- Botón de ajustes con clase activa condicional -->
+    <button class="settings-btn" 
+            [class.active]="isSettingsActive()"
+            (click)="goToSettings()"
+            title="Ajustes">
+      ⚙️
     </button>
   </div>
 </nav>

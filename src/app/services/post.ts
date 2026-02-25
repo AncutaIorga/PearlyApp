@@ -41,7 +41,7 @@ export class PostService {
   }
 
   private loadPosts() {
-    const savedPosts = localStorage.getItem('posts'); // Usamos la misma clave siempre
+    const savedPosts = localStorage.getItem('posts');
 
     if (savedPosts) {
       try {
@@ -121,7 +121,6 @@ export class PostService {
   }
 
   getPostsByUser(userName: string): Post[] {
-    // Filtramos por el nombre de usuario exacto
     return this.getAllPosts().filter(p => p.user === userName);
   }
 
@@ -151,7 +150,6 @@ export class PostService {
       challengeInfo: postData.challengeInfo 
     };
 
-    // Añadimos el nuevo post AL PRINCIPIO de la lista
     this.posts.update(p => [newPost, ...p]);
     this.savePosts();
     return newPost;
@@ -175,7 +173,7 @@ export class PostService {
           return {
             ...p,
             likedBy: newLikedBy,
-            likes: newLikedBy.length // Recalculamos el total basado en el array real
+            likes: newLikedBy.length
           };
         }
         return p;
@@ -202,6 +200,21 @@ export class PostService {
     this.savePosts();
   }
 
+  deleteComment(postId: number, commentId: number) {
+    this.posts.update(posts =>
+      posts.map(p => {
+        if (p.id === postId) {
+          return {
+            ...p,
+            comments: p.comments.filter(c => c.id !== commentId)
+          };
+        }
+        return p;
+      })
+    );
+    this.savePosts();
+  }
+
   updatePost(postId: number, data: any) {
     this.posts.update(posts =>
       posts.map(p => (p.id === postId ? { ...p, ...data } : p))
@@ -214,16 +227,13 @@ export class PostService {
     this.savePosts();
   }
 
-  // 🔥 NUEVO MÉTODO: Actualiza el autor en todos los posts antiguos
   updateUserPosts(oldName: string, newName: string, newAvatar?: string) {
     this.posts.update(posts => 
       posts.map(p => {
-        // Si el post era del nombre antiguo, lo actualizamos
         if (p.user === oldName) {
           return { 
             ...p, 
             user: newName,
-            // Solo actualizamos el avatar si nos pasan uno nuevo, si no mantenemos el que tenía
             userAvatar: newAvatar !== undefined ? newAvatar : p.userAvatar 
           };
         }

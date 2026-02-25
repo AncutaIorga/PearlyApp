@@ -55,18 +55,37 @@
           @for (comment of post.comments; track comment.id) {
             <div class="comment-item">
               <div class="comment-avatar">
-                 <span>{{ comment.user.charAt(0).toUpperCase() }}</span>
+                @if (comment.userAvatar) {
+                  <img [src]="comment.userAvatar" [alt]="comment.user">
+                } @else {
+                  <span>{{ comment.user.charAt(0).toUpperCase() }}</span>
+                }
               </div>
               <div class="comment-content">
-                <strong>{{ comment.user }}</strong>
+                <div class="comment-header">
+                  <strong>{{ comment.user }}</strong>
+                  <span class="comment-time">{{ comment.createdAt | timeAgo }}</span>
+                  
+                  @if (canDeleteComment(comment)) {
+                    <button class="delete-comment-btn" (click)="deleteComment(comment.id)" 
+                            title="Eliminar comentario">
+                      <span class="delete-icon">🗑️</span>
+                    </button>
+                  }
+                </div>
                 <p class="comment-text">{{ comment.text }}</p>
               </div>
             </div>
           }
         </div>
+        
         <div class="comment-input">
-          <input [(ngModel)]="newComment" placeholder="Añade un comentario..." (keyup.enter)="addComment()">
-          <button class="send-btn" (click)="addComment()">Enviar</button>
+          <input [(ngModel)]="newComment" placeholder="Añade un comentario..." 
+                 (keyup.enter)="addComment()" [disabled]="isAddingComment">
+          <button class="send-btn" (click)="addComment()" 
+                  [disabled]="!newComment.trim() || isAddingComment">
+            {{ isAddingComment ? 'Enviando...' : 'Enviar' }}
+          </button>
         </div>
       </div>
     }

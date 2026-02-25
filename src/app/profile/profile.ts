@@ -3,7 +3,7 @@ import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { UserService } from '../services/user';
-import { PostService, Post } from '../services/post';
+import { PostService, Post, Comment } from '../services/post';
 import { AuthService } from '../services/auth';
 import { NavbarComponent } from '../shared/navbar/navbar';
 import { NotificationService } from '../services/notification';
@@ -187,16 +187,70 @@ export class ProfileComponent implements OnInit {
     if (this.selectedPost && this.newComment.trim()) {
       const myUser = this.userService.getUser();
       this.postService.addComment(this.selectedPost.id, this.newComment.trim(), myUser.name, myUser.avatar);
-      if (!this.selectedPost.comments) this.selectedPost.comments = [];
-      this.selectedPost.comments.push({ id: Date.now(), user: myUser.name, userAvatar: myUser.avatar, text: this.newComment, createdAt: new Date().toISOString() });
+      
+      // Actualizar el post seleccionado
+      const updatedPost = this.postService.getPostById(this.selectedPost.id);
+      if (updatedPost) {
+        this.selectedPost.comments = updatedPost.comments;
+      }
+      
       this.newComment = '';
+      this.notificationService.showCommentAdded();
     }
   }
 
-  openEditPostModal(post: Post) { this.editingPost = post; this.editPostData = { ...post }; }
+  // ===== NUEVO: Verificar si puede eliminar un comentario =====
+  canDeleteComment(comment: Comment): boolean {
+    const currentUserName = this.authService.getCurrentUserName();
+    // Puede eliminar si: es dueño del comentario O es dueño del post
+    return comment.user === currentUserName || this.isPostOwner(this.selectedPost);
+  }
+
+  // ===== NUEVO: Eliminar comentario =====
+  deleteComment(postId: number, commentId: number, event: Event) {
+    event.stopPropagation(); // Evitar que cierre el modal
+    
+    this.notificationService.showConfirmAction(
+      '¿Eliminar este comentario?',
+      'Sí, eliminar',
+      () => {
+        // Llamar al servicio para eliminar el comentario
+        this.postService.deleteComment(postId, commentId);
+        
+        // Actualizar el post seleccionado
+        const updatedPost = this.postService.getPostById(postId);
+        if (updatedPost) {
+          this.selectedPost.comments = updatedPost.comments;
+        }
+        
+        this.notificationService.success('Comentario eliminado');
+      }
+    );
+  }
+
+  openEditPostModal(post: Post) { 
+    this.editingPost = post; 
+    this.editPostData = { ...post }; 
+  }
+  
   closeEditPostModal() { this.editingPost = null; }
-  saveEditedPost() { if (this.editingPost) { this.postService.updatePost(this.editingPost.id, this.editPostData); this.closeEditPostModal(); this.loadUserPosts(); } }
-  deletePost(id: number) { if (confirm('¿Borrar publicación?')) { this.postService.deletePost(id); this.loadUserPosts(); this.closeImageModal(); } }
+  
+  saveEditedPost() { 
+    if (this.editingPost) { 
+      this.postService.updatePost(this.editingPost.id, this.editPostData); 
+      this.closeEditPostModal(); 
+      this.loadUserPosts(); 
+    } 
+  }
+  
+  deletePost(id: number) { 
+    this.notificationService.showConfirmAction('¿Borrar publicación?', 'Sí, eliminar', () => {
+      this.postService.deletePost(id); 
+      this.loadUserPosts(); 
+      this.closeImageModal();
+      this.notificationService.success('Publicación eliminada');
+    });
+  }
 
   openFileSelector() {
     const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*';
@@ -209,7 +263,19 @@ export class ProfileComponent implements OnInit {
   }
 
   isPostOwner(post: any) { return post?.user === this.authService.getCurrentUserName(); }
-  toggleLike() { if (this.selectedPost) this.postService.toggleLike(this.selectedPost.id); }
+  
+  toggleLike() { 
+    if (this.selectedPost) {
+      this.postService.toggleLike(this.selectedPost.id);
+      
+      // Actualizar el estado local
+      const updatedPost = this.postService.getPostById(this.selectedPost.id);
+      if (updatedPost) {
+        this.selectedPost.likes = updatedPost.likes;
+        this.selectedPost.likedByMe = updatedPost.likedByMe;
+      }
+    }
+  }
   
   getCategoryIcon(cat: string) { 
     const icons: any = { physical: '💪', mental: '🧠', nutrition: '🍎', mindfulness: '🌿' }; 

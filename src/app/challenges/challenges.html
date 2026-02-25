@@ -54,6 +54,41 @@
     </div>
   </section>
 
+  <!-- ===== NUEVA SECCIÓN: RETOS EN CURSO ===== -->
+  @if (inProgressChallenges.length > 0) {
+    <section class="in-progress-section">
+      <div class="section-header">
+        <h2>⟡ Retos en curso</h2>
+        <span class="section-count">{{ inProgressChallenges.length }} activos</span>
+      </div>
+      
+      <div class="in-progress-cards">
+        @for (challenge of inProgressChallenges; track challenge.id) {
+          <div class="in-progress-card" [attr.data-category]="challenge.category">
+            <div class="in-progress-header">
+              <span class="category-icon">{{ getCategoryIcon(challenge.category) }}</span>
+              <span class="category-name">{{ getCategoryName(challenge.category) }}</span>
+              <span class="points-badge">+{{ challenge.points }} ✧</span>
+            </div>
+            
+            <h3 class="in-progress-title">{{ challenge.title }}</h3>
+            
+            <div class="progress-bar-container">
+              <div class="progress-bar" [style.width.%]="challenge.progress || 0"></div>
+            </div>
+            
+            <div class="in-progress-footer">
+              <span class="progress-text">{{ challenge.progress || 0 }}% completado</span>
+              <button class="continue-btn" (click)="handleChallengeAction(challenge)">
+                Continuar →
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </section>
+  }
+
   <div class="simple-filters">
     @for (filter of filters; track filter.id) {
       <button 
@@ -70,14 +105,15 @@
   <div class="challenges-cards">
     @for (challenge of filteredChallenges; track challenge.id) {
       <div 
-        class="challenge-card-simple {{challenge.category}}"
+        class="challenge-card-simple"
+        [attr.data-category]="challenge.category"
         [class.completed]="challenge.completed">
         
         <div class="challenge-status">
           <div class="status-left">
-            <div class="challenge-category-icon {{challenge.category}}">
-              <span class="category-icon {{challenge.category}}">{{ getCategoryIcon(challenge.category) }}</span>
-              <span class="category-name {{challenge.category}}">{{ getCategoryName(challenge.category) }}</span>
+            <div class="challenge-category-icon">
+              <span class="category-icon">{{ getCategoryIcon(challenge.category) }}</span>
+              <span class="category-name">{{ getCategoryName(challenge.category) }}</span>
             </div>
           </div>
           <span class="challenge-points">+{{ challenge.points }} ✧</span>
@@ -87,10 +123,10 @@
         <p class="challenge-desc-simple">{{ challenge.description }}</p>
 
         @if (challenge.benefits && challenge.benefits.length > 0) {
-          <div class="benefits-list {{challenge.category}}">
+          <div class="benefits-list">
             @for (benefit of challenge.benefits; track benefit) {
               <div class="benefit-item">
-                <span class="benefit-icon {{challenge.category}}">⟡</span>
+                <span class="benefit-icon">⟡</span>
                 <span class="benefit-text">{{ benefit }}</span>
               </div>
             }

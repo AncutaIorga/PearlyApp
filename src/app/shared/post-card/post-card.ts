@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router'; 
 import { PostOptionsComponent } from '../post-options/post-options';
-import { PostService, Post } from '../../services/post';
+import { PostService, Post, Comment } from '../../services/post';
 import { AuthService } from '../../services/auth';
 import { UserService } from '../../services/user';
 import { NotificationService } from '../../services/notification';
@@ -34,18 +34,15 @@ export class PostCardComponent implements OnInit {
   newComment = '';
   isLiked = false;
   isTextExpanded = false;
+  isAddingComment = false;
 
   ngOnInit() {
     this.isLiked = this.post.likedByMe || false;
   }
 
-  // 👇 AQUÍ ESTÁ LA MAGIA QUE FALTABA 👇
-  // Comprobación a prueba de balas para saber si el post es tuyo
   get isOwner(): boolean {
     if (!this.post || !this.post.user) return false;
     const currentUserName = localStorage.getItem('userName') || '';
-    
-    // Comparamos ignorando mayúsculas/minúsculas y espacios
     return this.post.user.trim().toLowerCase() === currentUserName.trim().toLowerCase();
   }
 
@@ -58,6 +55,28 @@ export class PostCardComponent implements OnInit {
       return this.post.text.substring(0, 100) + '...';
     }
     return this.post.text;
+  }
+
+  canDeleteComment(comment: Comment): boolean {
+    const currentUserName = this.getCurrentUserName();
+    return comment.user.toLowerCase() === currentUserName.toLowerCase();
+  }
+
+  deleteComment(commentId: number): void {
+    this.notificationService.showConfirmAction(
+      '¿Eliminar este comentario?',
+      'Sí, eliminar',
+      () => {
+        this.postService.deleteComment(this.post.id, commentId);
+        
+        const updatedPost = this.postService.getPostById(this.post.id);
+        if (updatedPost) {
+          this.post.comments = updatedPost.comments;
+        }
+        
+        this.notificationService.success('Comentario eliminado');
+      }
+    );
   }
 
   toggleLike() {
@@ -76,14 +95,17 @@ export class PostCardComponent implements OnInit {
   }
 
   addComment() {
-    if (this.newComment.trim()) {
+    if (this.newComment.trim() && !this.isAddingComment) {
+      this.isAddingComment = true;
+      
       const currentUser = this.authService.user();
       const userProfile = this.userService.getUser();
+      const userName = currentUser?.name || this.getCurrentUserName();
       
       this.postService.addComment(
         this.post.id,
         this.newComment.trim(),
-        currentUser?.name || 'Usuario',
+        userName,
         userProfile.avatar
       );
       
@@ -93,19 +115,18 @@ export class PostCardComponent implements OnInit {
       }
       
       this.newComment = '';
+      this.isAddingComment = false;
       this.notificationService.showCommentAdded();
     }
   }
 
-  // Cuando le das al botón de "Eliminar" en los 3 puntitos, entra por aquí
   onOptionSelected(event: { action: string; postId: number }) {
     if (event.action === 'delete') {
       this.deletePost();
     }
   }
 
-deletePost() {
-    // Usamos tu servicio de notificaciones en lugar del 'confirm' nativo
+  deletePost() {
     this.notificationService.showConfirmAction(
       '¿Seguro que quieres eliminar esta publicación?',
       'Sí, eliminar',
@@ -113,7 +134,6 @@ deletePost() {
         this.postService.deletePost(this.post.id);
         this.notificationService.success('Publicación eliminada');
         
-        // Si estamos en la página del perfil, forzamos la recarga para que desaparezca
         if (window.location.pathname.includes('/profile')) {
           setTimeout(() => window.location.reload(), 500);
         }

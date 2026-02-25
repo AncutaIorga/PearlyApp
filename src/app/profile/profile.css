@@ -1019,3 +1019,41 @@
   margin-top: 6px;
   text-align: center;
 }
+
+/* ===== BOTÓN DE ELIMINAR COMENTARIO EN MODAL ===== */
+.comment-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  position: relative;
+}
+
+.comment-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  opacity: 0;
+  transition: all 0.2s ease;
+  margin-left: auto;
+}
+
+.comment-item:hover .comment-delete-btn {
+  opacity: 0.7;
+}
+
+.comment-delete-btn:hover {
+  opacity: 1 !important;
+  color: #e74c3c !important;
+  background: var(--bg-secondary);
+}
+
+/* Para móviles, siempre visible */
+@media (max-width: 768px) {
+  .comment-delete-btn {
+    opacity: 0.7;
+  }
+}

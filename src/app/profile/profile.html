@@ -257,6 +257,13 @@
                       <strong>{{ c.user }}</strong>
                       <span class="comment-time">{{ c.createdAt | timeAgo }}</span>
                     </div>
+                    
+                    <!-- BOTÓN DE ELIMINAR COMENTARIO (solo para el dueño del comentario o dueño del post) -->
+                    @if (canDeleteComment(c)) {
+                      <button class="comment-delete-btn" (click)="deleteComment(selectedPost.id, c.id, $event)" title="Eliminar comentario">
+                        🗑️
+                      </button>
+                    }
                   </div>
                   <p class="comment-text-wrap">{{ c.text }}</p>
                 </div>

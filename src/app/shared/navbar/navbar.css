@@ -1,6 +1,5 @@
 /* NAVBAR GENERAL */
 .navbar {
-  /* Cambio clave: Usar la variable de fondo en lugar de blanco fijo */
   background: var(--bg-primary); 
   backdrop-filter: blur(10px);
   padding: 0 32px;
@@ -8,7 +7,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  /* Cambio clave: Borde dinámico */
   border-bottom: 1px solid var(--border-color); 
   position: sticky;
   top: 0;
@@ -20,7 +18,6 @@
 .logo {
   font-size: 22px;
   font-weight: 700;
-  /* Cambio clave: Texto primario (negro en claro, blanco en oscuro) */
   color: var(--text-primary); 
   text-decoration: none;
   letter-spacing: -0.5px;
@@ -37,7 +34,6 @@
 .search-box {
   display: flex;
   align-items: center;
-  /* Cambio clave: Fondo terciario (gris claro en light, gris oscuro en dark) */
   background: var(--bg-tertiary); 
   border-radius: 8px;
   padding: 8px 16px;
@@ -46,13 +42,12 @@
 }
 
 .search-box.active {
-  /* Cambio clave: Fondo tarjeta al activar */
   background: var(--card-bg); 
   border-color: var(--text-primary);
 }
 
 .search-icon {
-  color: var(--text-secondary); /* Icono gris adaptable */
+  color: var(--text-secondary);
   margin-right: 8px;
   font-size: 14px;
 }
@@ -63,10 +58,9 @@
   width: 100%;
   outline: none;
   font-size: 14px;
-  color: var(--text-primary); /* Texto que escribe el usuario */
+  color: var(--text-primary);
 }
 
-/* Placeholder color (opcional, para asegurar visibilidad) */
 .search-box input::placeholder {
   color: var(--text-muted);
 }
@@ -84,10 +78,9 @@
   top: 110%;
   left: 0;
   width: 100%;
-  background: var(--card-bg); /* Fondo del desplegable */
+  background: var(--card-bg);
   border-radius: 8px;
-  box-shadow: var(--shadow-md); /* Sombra definida en variables si existe, sino usa una genérica */
-  box-shadow: 0 4px 15px rgba(0,0,0,0.2); /* Fallback manual */
+  box-shadow: 0 4px 15px rgba(0,0,0,0.2);
   border: 1px solid var(--border-color);
   overflow: hidden;
   z-index: 1001;
@@ -104,7 +97,7 @@
 }
 
 .search-result-item:hover {
-  background: var(--bg-tertiary); /* Hover adaptable */
+  background: var(--bg-tertiary);
 }
 
 /* AVATAR MINIATURA */
@@ -146,53 +139,79 @@
   font-size: 13px;
 }
 
-/* ENLACES DE NAVEGACIÓN */
+/* ===== BOTONES DE NAVEGACIÓN ===== */
 .nav-links {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 8px;
 }
 
-.nav-links a {
-  color: var(--text-secondary); /* Enlaces inactivos */
+/* Estilo base para TODOS los botones (incluyendo ajustes) */
+.nav-links a, .settings-btn {
+  color: var(--text-secondary);
   text-decoration: none;
   font-weight: 500;
   font-size: 15px;
-  padding: 8px 12px;
-  border-radius: 6px;
-  transition: all 0.2s;
+  padding: 8px 16px;
+  border-radius: 30px;
+  transition: all 0.2s ease;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
-.nav-links a:hover, .nav-links a.active {
+/* Hover - todos iguales */
+.nav-links a:hover, .settings-btn:hover {
   color: var(--text-primary);
   background: var(--bg-tertiary);
 }
 
-/* Botón Retos destacado (Invertido: Blanco/Negro según tema) */
+/* ===== PÁGINA ACTIVA DESTACADA EN NEGRO ===== */
+.nav-links a.active {
+  background: var(--text-primary); /* Fondo negro (o blanco según tema) */
+  color: var(--bg-primary); /* Texto blanco (o negro según tema) */
+  font-weight: 600;
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* ===== BOTÓN RETOS - ESTILO ESPECIAL PERO SUTIL ===== */
 .nav-links a.highlight-btn {
-  background: var(--text-primary); /* Fondo: color del texto principal (Negro en claro, Blanco en oscuro) */
-  color: var(--bg-primary); /* Texto: color del fondo principal */
+  border: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
 }
 
 .nav-links a.highlight-btn:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border-color: transparent;
 }
 
-.settings-btn {
-  background: none;
+/* Cuando Retos es la página activa */
+.nav-links a.highlight-btn.active {
+  background: var(--text-primary); /* Mismo negro que los demás activos */
+  color: var(--bg-primary);
   border: none;
-  font-size: 18px;
-  cursor: pointer;
-  padding: 5px;
-  color: var(--text-secondary);
-  opacity: 0.7;
-  transition: color 0.2s, opacity 0.2s;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-.settings-btn:hover {
-  opacity: 1;
-  color: var(--text-primary);
+/* ===== BOTÓN AJUSTES ===== */
+.settings-btn {
+  font-size: 20px;
+  padding: 8px 16px;
+  margin-left: 5px;
+}
+
+/* Botón ajustes activo */
+.settings-btn.active {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border: none;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 /* Overlay */
@@ -202,7 +221,19 @@
   left: 0;
   width: 100vw;
   height: calc(100vh - 64px);
-  background: rgba(0,0,0,0.5); /* Oscurecer un poco más el fondo */
+  background: rgba(0,0,0,0.5);
   backdrop-filter: blur(2px);
   z-index: 900;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .navbar {
+    padding: 0 16px;
+  }
+  
+  .nav-links a, .settings-btn {
+    padding: 8px 12px;
+    font-size: 14px;
+  }
 }
