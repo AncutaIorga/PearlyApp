@@ -10,7 +10,8 @@ import { ChallengeService, Challenge, DailyChallengeDef } from '../services/chal
 interface ChallengeState extends Challenge {
   completed: boolean;
   inProgress: boolean;
-  progress?: number; 
+  progress?: number;
+  completedAt?: string; // AÑADIDO: Fecha de completado para ordenar
 }
 
 interface DailyChallengeState extends DailyChallengeDef {
@@ -56,8 +57,11 @@ export class ChallengesComponent implements OnInit {
   
   dailyTip = "Completa tu primer reto para desbloquear consejos personalizados.";
   
+  // ACTUALIZADO: Añadidos filtros 'available' y 'completed'
   filters: Filter[] = [
     { id: 'all', label: 'Todos' },
+    { id: 'available', label: 'Disponibles' },     // NUEVO
+    { id: 'completed', label: 'Completados' },     // NUEVO
     { id: 'mental', label: 'Mental' },
     { id: 'physical', label: 'Físico' },
     { id: 'mindfulness', label: 'Mindfulness' },
@@ -76,16 +80,43 @@ export class ChallengesComponent implements OnInit {
     return this.challenges.filter(c => c.inProgress && !c.completed);
   }
   
+  // ACTUALIZADO: Getter para manejar los nuevos filtros
   get filteredChallenges(): ChallengeState[] {
+    // Excluimos los que están en progreso de la lista principal
     let filtered = this.challenges.filter(c => !c.inProgress || c.completed);
     
     if (this.activeFilter !== 'all') {
-      filtered = filtered.filter(c => c.category === this.activeFilter);
+      if (this.activeFilter === 'available') {
+        // Filtrar solo retos disponibles (no completados y no en progreso)
+        filtered = filtered.filter(c => !c.completed && !c.inProgress);
+      } else if (this.activeFilter === 'completed') {
+        // Filtrar solo retos completados
+        filtered = filtered.filter(c => c.completed);
+      } else {
+        // Filtro por categoría
+        filtered = filtered.filter(c => c.category === this.activeFilter);
+      }
     }
     
-    const completed = filtered.filter(c => c.completed);
-    const notCompleted = filtered.filter(c => !c.completed);
-    return [...notCompleted, ...completed];
+    // Ordenar según el filtro activo
+    if (this.activeFilter === 'all') {
+      // Para todos: no completados primero, completados al final
+      const completed = filtered.filter(c => c.completed);
+      const notCompleted = filtered.filter(c => !c.completed);
+      return [...notCompleted, ...completed];
+    } else if (this.activeFilter === 'available') {
+      // Para disponibles, ordenar por puntos (de mayor a menor)
+      return filtered.sort((a, b) => b.points - a.points);
+    } else if (this.activeFilter === 'completed') {
+      // Para completados, ordenar por fecha (más recientes primero)
+      return filtered.sort((a, b) => {
+        if (!a.completedAt) return 1;
+        if (!b.completedAt) return -1;
+        return new Date(b.completedAt).getTime() - new Date(a.completedAt).getTime();
+      });
+    }
+    
+    return filtered;
   }
   
   ngOnInit() {
@@ -110,9 +141,16 @@ export class ChallengesComponent implements OnInit {
     }));
   }
 
+  // ACTUALIZADO: Añadidos iconos para los nuevos filtros
   getFilterIcon(filterId: string): string {
     const icons: Record<string, string> = {
-      'all': '⟡', 'mental': '⚛︎', 'physical': '⚡︎', 'mindfulness': '☘︎', 'nutrition': '❧'
+      'all': '⟡', 
+      'available': '○',           // NUEVO
+      'completed': '✓',            // NUEVO
+      'mental': '⚛︎', 
+      'physical': '⚡︎', 
+      'mindfulness': '☘︎', 
+      'nutrition': '❧'
     };
     return icons[filterId] || '📋';
   }
@@ -169,7 +207,8 @@ export class ChallengesComponent implements OnInit {
               ...c, 
               completed: s.completed, 
               inProgress: s.inProgress,
-              progress: s.progress || this.calculateProgress(c.category, s.inProgress)
+              progress: s.progress || this.calculateProgress(c.category, s.inProgress),
+              completedAt: s.completedAt // AÑADIDO: Cargar fecha de completado
             };
           }
           return c;
@@ -237,7 +276,7 @@ export class ChallengesComponent implements OnInit {
         completed: c.completed, 
         inProgress: c.inProgress,
         progress: c.progress,
-        completedAt: c.completed ? new Date().toISOString() : undefined 
+        completedAt: c.completedAt // AÑADIDO: Guardar fecha de completado
       })),
       dailyChallenges: this.dailyChallenges.map(d => ({
         id: d.id,
@@ -286,12 +325,14 @@ export class ChallengesComponent implements OnInit {
     this.challengeToConfirm = null; 
   }
 
+  // ACTUALIZADO: Guardar fecha de completado
   completeChallenge(id: string) {
     const c = this.challenges.find(x => x.id === id);
     if (c && !c.completed) {
       c.completed = true;
       c.inProgress = false;
       c.progress = 100;
+      c.completedAt = new Date().toISOString(); // AÑADIDO: Guardar fecha
       this.energyPoints += c.points;
       this.totalPoints += c.points;
       

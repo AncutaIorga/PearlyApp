@@ -613,3 +613,143 @@
     grid-template-columns: 1fr;
   }
 }
+
+/* ===== HEADER TIP - CONSEJO DEL DÍA DENTRO DEL HEADER ===== */
+.header-tip {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding-top: 20px;
+  margin-top: 10px;
+  border-top: 1px solid var(--border-color);
+  background: var(--bg-tertiary);
+  padding: 16px 20px;
+  border-radius: 12px;
+}
+
+.header-tip .tip-icon {
+  font-size: 1.8rem;
+  color: var(--accent-color);
+  flex-shrink: 0;
+}
+
+.header-tip .tip-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.header-tip .tip-label {
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--accent-color);
+  letter-spacing: 0.5px;
+}
+
+.header-tip .tip-text {
+  font-size: 1rem;
+  color: var(--text-primary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.tip-refresh-header {
+  background: transparent;
+  border: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.tip-refresh-header:hover {
+  background: var(--accent-color);
+  color: white;
+  border-color: var(--accent-color);
+  transform: rotate(180deg);
+}
+
+/* ===== MENSAJES PERSONALIZADOS PARA FILTROS ===== */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  background: var(--bg-tertiary);
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+}
+
+.empty-state .empty-icon {
+  font-size: 3rem;
+  margin-bottom: 16px;
+  color: var(--text-muted);
+}
+
+.empty-state h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 8px;
+}
+
+.empty-state p {
+  color: var(--text-secondary);
+  margin-bottom: 20px;
+}
+
+.reset-btn.wellness-reset {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+  border: none;
+  padding: 10px 20px;
+  border-radius: 30px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: auto;
+  margin: 0 auto;
+}
+
+.reset-btn.wellness-reset:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+/* Responsive para el header tip */
+@media (max-width: 768px) {
+  .header-main {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .quick-stats {
+    width: 100%;
+    justify-content: space-between;
+  }
+  
+  .stat-bubble {
+    min-width: auto;
+    flex: 1;
+    padding: 12px;
+  }
+  
+  .header-tip {
+    flex-wrap: wrap;
+  }
+  
+  .header-tip .tip-text {
+    font-size: 0.9rem;
+  }
+}
