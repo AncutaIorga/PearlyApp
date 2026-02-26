@@ -28,7 +28,7 @@
               @if (isOwnProfile) {
                 <div class="level-info">
                   <span class="level-badge" [style.background-color]="rankColor">
-                     Nivel {{ levelInfo.level }}
+                      Nivel {{ levelInfo.level }}
                   </span>
                   <span class="xp-text">{{ levelInfo.currentXP }} / {{ levelInfo.nextLevelXP }} XP</span>
                 </div>
@@ -76,7 +76,6 @@
               <div class="form-group">
                 <label>Nombre de usuario</label>
                 <input class="edit-input" [(ngModel)]="editableUser.name" placeholder="Tu nombre" maxlength="10" />
-                <!-- AÑADIDO: Contador para el nombre -->
                 <small class="char-counter">{{ editableUser.name?.length || 0 }}/10 caracteres</small>
               </div>
               <div class="form-group">
@@ -104,45 +103,6 @@
               </app-stats-chart>
             </div>
           </section>
-        
-          <div class="challenges-section">
-            <h3>⏳ Retos en Curso</h3>
-            <div class="challenges-list">
-              
-              @if (inProgressChallenges.length === 0) {
-                <div class="no-challenges-message">
-                  <div class="challenge-icon">🧘‍♀️</div>
-                  <div class="challenge-info">
-                    <div class="challenge-title">No hay retos en progreso</div>
-                    <div class="challenge-progress">Ve a la pestaña Retos para comenzar uno</div>
-                  </div>
-                </div>
-              } @else {
-                @for (challenge of inProgressChallenges; track challenge.id) {
-                  <div class="challenge-item" style="justify-content: space-between;">
-                    <div style="display: flex; align-items: center; gap: 12px;">
-                      <div class="challenge-icon">{{ getCategoryIcon(challenge.category) }}</div>
-                      <div class="challenge-info">
-                        <div class="challenge-title">{{ challenge.title }}</div>
-                        <div class="challenge-progress">
-                          <span class="points">+{{ challenge.points }} ⚡︎ Brillos</span>
-                        </div>
-                      </div>
-                    </div>
-                    <button class="btn-rect primary" style="padding: 8px 16px; width: auto; font-size: 12px; background: #10B981; color: white;" (click)="completeInProgressChallenge(challenge.id, $event)">
-                      Finalizar
-                    </button>
-                  </div>
-                }
-              }
-              
-              <div class="challenge-item view-all" routerLink="/challenges" style="justify-content: center; background: transparent; border: 1px dashed var(--border-color); cursor: pointer;">
-                <div class="challenge-info">
-                  <div class="challenge-title" style="color: var(--text-primary);">Ver todos los retos ➔</div>
-                </div>
-              </div>
-            </div>
-          </div>
         }
       </div> 
 
@@ -261,7 +221,6 @@
                       <span class="comment-time">{{ c.createdAt | timeAgo }}</span>
                     </div>
                     
-                    <!-- BOTÓN DE ELIMINAR COMENTARIO (solo para el dueño del comentario o dueño del post) -->
                     @if (canDeleteComment(c)) {
                       <button class="comment-delete-btn" (click)="deleteComment(selectedPost.id, c.id, $event)" title="Eliminar comentario">
                         🗑️

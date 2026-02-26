@@ -1,4 +1,4 @@
-import { Component, OnInit, inject } from '@angular/core';
+import { Component, OnInit, inject, effect } from '@angular/core'; 
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -43,13 +43,21 @@ export class ProfileComponent implements OnInit {
   showFollowModal = false;
   followModalType: 'followers' | 'following' = 'followers';
   followModalList: any[] = [];
-  inProgressChallenges: any[] = [];
 
   mentalHealth = 0; physicalHealth = 0; mindfulnessScore = 0; nutritionScore = 0;
   
   levelInfo = { level: 1, currentXP: 0, nextLevelXP: 500, progressPercent: 0 };
   rankColor = '#58595b';
   totalPoints = 0;
+
+  constructor() {
+    effect(() => {
+      const allPosts = this.postService.getAllPosts(); 
+      if (this.user && (this.user.nombre || this.user.name)) {
+        this.loadUserPosts();
+      }
+    });
+  }
 
   ngOnInit() {
     if (!this.authService.isLoggedIn()) {
@@ -100,6 +108,8 @@ export class ProfileComponent implements OnInit {
 
   loadUserPosts() {
     const userName = this.user.nombre || this.user.name;
+    if (!userName) return; 
+    
     this.posts = this.postService.getPostsByUser(userName).map(p => ({
       ...p,
       createdAt: (p as any).createdAt || (p as any).date || new Date().toISOString()
@@ -145,7 +155,6 @@ export class ProfileComponent implements OnInit {
 
       this.userService.updateUser(this.editableUser).subscribe({
         next: (updatedUser) => {
-          // ✅ Parche setTimeout para evitar el Error NG0100 en la vista
           setTimeout(() => {
             this.user = { ...updatedUser };
             this.editing = false;
@@ -333,35 +342,6 @@ export class ProfileComponent implements OnInit {
     return icons[cat] || '🌟'; 
   }
 
-  completeInProgressChallenge(id: any, e: Event) { 
-    e.stopPropagation(); 
-    this.notificationService.success("¡Reto finalizado!");
-    
-    this.inProgressChallenges = this.inProgressChallenges.filter(c => c.id !== id);
-    
-    const userData = this.userService.getUser();
-    const email = this.authService.getCurrentUserEmail();
-    const userId = email ? email.replace(/[.#$[\]]/g, '_') : 'anonymous';
-    
-    const saved = localStorage.getItem(`pearly-wellness-progress-${userId}`);
-    if (saved) {
-       const data = JSON.parse(saved);
-       const target = data.challenges.find((c:any) => c.id === id);
-       const masterDef = this.challengeService.getChallengeById(id);
-       const pointsEarned = masterDef ? masterDef.points : 0;
-
-       if(target) { 
-           target.completed = true; 
-           target.inProgress = false;
-           target.completedAt = new Date().toISOString(); 
-       }
-       
-       data.totalPoints = (data.totalPoints || 0) + pointsEarned;
-       localStorage.setItem(`pearly-wellness-progress-${userId}`, JSON.stringify(data));
-       this.loadWellnessData();
-    }
-  }
-
   loadWellnessData() {
     const userName = this.user.nombre || this.user.name;
     const targetEmail = this.isOwnProfile ? this.authService.getCurrentUserEmail() : (this.user.email || `${userName}@gmail.com`);
@@ -384,7 +364,6 @@ export class ProfileComponent implements OnInit {
         });
         if (challengesChanged) {
           localStorage.setItem(`pearly-wellness-progress-${userId}`, JSON.stringify(data));
-          this.inProgressChallenges = [];
         }
       }
 
@@ -398,15 +377,6 @@ export class ProfileComponent implements OnInit {
       this.mindfulnessScore = scores.mindfulness; 
       this.nutritionScore = scores.nutrition;
       
-      this.inProgressChallenges = (data.challenges || [])
-        .filter((c: any) => c.inProgress && !c.completed)
-        .map((c: any) => {
-          const masterData = this.challengeService.getChallengeById(c.id);
-          if (masterData) {
-            return { ...c, ...masterData }; 
-          }
-          return c;
-        });
     } else {
         this.levelInfo = { level: 1, currentXP: 0, nextLevelXP: 500, progressPercent: 0 };
         this.rankColor = '#58595b'; 

@@ -36,9 +36,9 @@
 .profile-header, .challenges-section, .profile-right {
   background: var(--card-bg);
   padding: 32px 24px;
-  border-radius: 16px; /* Radio de 16px coherente con crear-post */
+  border-radius: 16px; 
   box-shadow: var(--shadow-md);
-  border: 1px solid var(--border-color); /* Bordes más definidos y bonitos */
+  border: 1px solid var(--border-color); 
 }
 
 .profile-header {
@@ -188,7 +188,7 @@
 }
 
 /* =========================================
-   6. MODO EDICIÓN FORMULARIO (Ordenado)
+   6. MODO EDICIÓN FORMULARIO
    ========================================= */
 .edit-mode-form { 
   display: flex; 
@@ -238,7 +238,7 @@
 .action-pill { 
   flex: 1; 
   padding: 12px; 
-  border-radius: 8px; /* Botones de guardar/cancelar en 8px */
+  border-radius: 8px; 
   font-weight: 600; 
   font-size: 13px; 
   cursor: pointer; 
@@ -251,8 +251,38 @@
 .action-pill.cancel { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); }
 .action-pill.cancel:hover { background: var(--bg-tertiary); color: var(--text-primary); }
 
+/* Espaciado entre form groups */
+.form-group { margin-bottom: 20px; }
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.edit-buttons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+.edit-buttons .btn-rect { margin: 0; width: 100%; }
+
+.char-counter {
+  display: block;
+  text-align: right;
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  font-style: italic;
+}
+
 /* =========================================
-   7. SECCIÓN DE RETOS Y BRILLOS
+   7. SECCIÓN DE ESTADÍSTICAS Y NIVELES
    ========================================= */
 .challenges-section h3 { 
   font-size: 14px; 
@@ -263,25 +293,57 @@
   letter-spacing: 0.5px; 
 }
 
-.challenges-list { display: flex; flex-direction: column; gap: 12px; }
-
-.challenge-item { 
-  display: flex; 
-  align-items: center; 
-  gap: 12px; 
-  padding: 12px; 
-  border-radius: 12px; 
-  border: 1px solid var(--border-color); 
-  background: var(--bg-tertiary); 
-  cursor: pointer; 
-  transition: all 0.2s; 
-  margin-bottom: 8px; 
+.level-section {
+  margin: 10px 20px 24px;
+  text-align: left;
 }
 
-.challenge-item:hover { transform: translateX(4px); border-color: var(--text-muted); }
-.challenge-icon { font-size: 24px; flex-shrink: 0; }
-.challenge-title { font-size: 14px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px; }
-.challenge-progress { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary); }
+.level-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.level-badge {
+  color: white; 
+  padding: 4px 10px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.xp-text {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+.xp-track {
+  width: 100%;
+  height: 10px;
+  background: var(--bg-tertiary);
+  border-radius: 10px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+  margin: 10px 0;
+}
+
+.xp-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #6366F1, #8B5CF6); 
+  border-radius: 10px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.next-level-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 6px;
+  text-align: center;
+}
 
 .points { 
   font-weight: 700; 
@@ -345,7 +407,7 @@
 .mini-delete-btn:hover { background: #e74c3c; color: white; }
 
 /* =========================================
-   9. ESTADOS VACÍOS (INTACTOS)
+   9. ESTADOS VACÍOS
    ========================================= */
 .no-posts {
   text-align: center;
@@ -365,17 +427,9 @@
   margin: 0;
 }
 
-.no-challenges-message {
-  display: flex; align-items: center; gap: 20px; padding: 30px; background: rgba(16, 185, 129, 0.1); border-radius: 16px; border: 2px solid rgba(16, 185, 129, 0.2); text-align: center; flex-direction: column;
-}
-.no-challenges-message .challenge-info { text-align: center; }
-.no-challenges-message .challenge-title { font-size: 1.2rem; font-weight: 600; margin-bottom: 10px; }
-.no-challenges-message .challenge-progress { font-weight: 700; font-size: 1.1rem; }
-
 
 /* =========================================
    10. MODAL DE PUBLICACIONES Y COMENTARIOS
-   ¡¡¡INTACTO - LA VERSIÓN ANTIGUA BUENA!!!
    ========================================= */
 .image-modal {
   position: fixed;
@@ -426,7 +480,6 @@
   border-color: white;
 }
 
-/* Layout de dos columnas proporcionado */
 .modal-layout {
   display: flex;
   background: var(--card-bg);
@@ -436,7 +489,6 @@
   box-shadow: var(--shadow-lg);
 }
 
-/* Columna izquierda - Imagen (60%) */
 .modal-image-section {
   flex: 6;
   background: #000;
@@ -452,7 +504,6 @@
   object-fit: contain;
 }
 
-/* Columna derecha - Info y comentarios (40%) */
 .modal-sidebar {
   flex: 4;
   display: flex;
@@ -506,7 +557,6 @@
   margin: 2px 0 0 0;
 }
 
-/* Descripción */
 .modal-description {
   padding: 20px;
   border-bottom: 1px solid var(--border-color);
@@ -520,7 +570,6 @@
   font-size: 15px;
 }
 
-/* Sección de comentarios */
 .modal-comments {
   flex: 1;
   overflow-y: auto;
@@ -558,7 +607,8 @@
 .comment-header {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  position: relative;
   margin-bottom: 8px;
 }
 
@@ -596,14 +646,36 @@
   color: var(--text-secondary);
 }
 
-.comment-text {
+.comment-text-wrap {
   margin: 0 0 0 42px;
   color: var(--text-primary);
   font-size: 14px;
   line-height: 1.5;
 }
 
-/* Actions del modal */
+.comment-delete-btn {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 14px;
+  opacity: 0;
+  transition: all 0.2s ease;
+  margin-left: auto;
+}
+
+.comment-item:hover .comment-delete-btn {
+  opacity: 0.7;
+}
+
+.comment-delete-btn:hover {
+  opacity: 1 !important;
+  color: #e74c3c !important;
+  background: var(--bg-secondary);
+}
+
 .modal-actions {
   padding: 16px 20px;
   border-top: 1px solid var(--border-color);
@@ -638,7 +710,6 @@
   color: var(--text-primary);
 }
 
-/* Input de comentario */
 .modal-comment-input {
   padding: 20px;
   display: flex;
@@ -652,7 +723,7 @@
   flex: 1;
   padding: 12px 18px;
   border: 2px solid var(--border-color);
-  border-radius: 8px; /* Cambiado a 8px */
+  border-radius: 8px; 
   font-size: 14px;
   outline: none;
   background: var(--input-bg);
@@ -667,10 +738,10 @@
 
 .post-comment-btn {
   padding: 10px 24px;
-  background: var(--text-primary); /* Color sólido oscuro */
+  background: var(--text-primary); 
   color: var(--bg-primary);
   border: none;
-  border-radius: 8px; /* Cambiado a 8px */
+  border-radius: 8px; 
   font-weight: 600;
   cursor: pointer;
   font-size: 14px;
@@ -688,7 +759,6 @@
   cursor: not-allowed;
 }
 
-/* Botones de edición/eliminación en el modal header */
 .modal-post-actions {
   margin-left: auto;
   display: flex;
@@ -699,7 +769,7 @@
 .delete-post-btn {
   padding: 6px 12px;
   border: none;
-  border-radius: 8px; /* Cambiado a 8px */
+  border-radius: 8px; 
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
@@ -712,7 +782,6 @@
 .delete-post-btn { background: transparent; color: #e74c3c; border: 1px solid #e74c3c; }
 .delete-post-btn:hover { background: #e74c3c; color: white; }
 
-/* Modal de edición de post */
 /* =========================================
    MODAL DE EDICIÓN DE POST (DISEÑO PRO)
    ========================================= */
@@ -721,7 +790,7 @@
   top: 0; left: 0; right: 0; bottom: 0;
   background: rgba(0, 0, 0, 0.8);
   display: flex; align-items: center; justify-content: center;
-  z-index: 3000; /* Z-index alto para estar sobre el otro modal */
+  z-index: 3000; 
   animation: fadeIn 0.2s ease;
   padding: 20px;
 }
@@ -763,7 +832,7 @@
 
 .edit-form-group textarea {
   width: 100%;
-  min-height: 140px; /* Caja más grande y cómoda */
+  min-height: 140px; 
   padding: 16px;
   border: 1px solid var(--border-color);
   border-radius: 12px;
@@ -772,7 +841,7 @@
   font-family: inherit;
   font-size: 15px;
   line-height: 1.5;
-  resize: vertical; /* Permite estirar hacia abajo */
+  resize: vertical; 
   box-sizing: border-box;
   transition: all 0.2s ease;
 }
@@ -784,23 +853,15 @@
   background: var(--card-bg);
 }
 
-.char-counter {
-  text-align: right;
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--text-muted);
-}
-
-/* Botones en horizontal */
 .edit-buttons-row {
   display: flex;
-  justify-content: flex-end; /* Alineados a la derecha */
+  justify-content: flex-end; 
   gap: 12px;
 }
 
 .edit-buttons-row .btn-rect {
-  width: auto; /* Quitamos el 100% de ancho */
-  min-width: 120px; /* Un tamaño mínimo para que queden parejos */
+  width: auto; 
+  min-width: 120px; 
   padding: 12px 24px;
   margin: 0;
 }
@@ -816,6 +877,12 @@
   .modal-sidebar { flex: none; max-width: 100%; width: 100%; }
 }
 
+@media (max-width: 768px) {
+  .comment-delete-btn {
+    opacity: 0.7;
+  }
+}
+
 @media (max-width: 600px) {
   .profile-header, .challenges-section { padding: 20px; }
   .posts-grid { grid-template-columns: 1fr; }
@@ -824,350 +891,4 @@
   .modal-image-section { height: 40vh; }
   .modal-comment-input { flex-direction: column; gap: 10px; }
   .post-comment-btn { width: 100%; }
-}
-
-
-/* =========================================
-   ARREGLO FINAL RETOS: BOTÓN VERDE Y PEQUEÑO
-   ========================================= */
-
-.challenge-item {
-  display: flex; 
-  align-items: center; 
-  justify-content: space-between; 
-  gap: 12px; 
-  padding: 12px; 
-  border-radius: 12px; 
-  border: 1px solid var(--border-color); 
-  background: var(--bg-tertiary); 
-  margin-bottom: 8px;
-}
-
-/* Parte izquierda (Icono + Textos) */
-.challenge-item > div:first-child {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  flex: 1; /* Ocupa el espacio sobrante */
-  min-width: 0; 
-}
-
-.challenge-info {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.challenge-title {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  font-size: 14px; 
-  font-weight: 600; 
-  color: var(--text-primary); 
-  margin-bottom: 4px;
-}
-
-/* BOTÓN FINALIZAR: PEQUEÑO Y VERDE SIEMPRE */
-.challenge-item .btn-rect {
-  /* TAMAÑO */
-  width: auto !important;         /* Que ocupe solo lo necesario */
-  flex-shrink: 0 !important;      /* Que no se aplaste */
-  padding: 6px 12px !important;   /* Relleno pequeño */
-  font-size: 12px !important;     /* Letra compacta */
-  min-width: unset !important;    /* Quitar anchos mínimos forzados */
-  margin: 0 !important;
-  
-  /* COLOR (INDESTRUCTIBLE) */
-  background-color: #10B981 !important; /* Verde Esmeralda */
-  color: white !important;
-  border: 1px solid #10B981 !important;
-  font-weight: 600 !important;
-  border-radius: 6px !important; /* Un poco menos redondo para que se vea botón */
-}
-
-.challenge-item .btn-rect:hover {
-  background-color: #059669 !important; /* Verde oscuro al pasar ratón */
-  transform: translateY(-1px);
-}
-
-/* BARRA DE NIVEL */
-.level-section {
-  margin: 10px 20px 24px;
-  text-align: left;
-}
-
-.level-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.level-badge {
-  background: var(--text-primary);
-  color: var(--bg-primary);
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.xp-text {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.xp-track {
-  width: 100%;
-  height: 10px;
-  background: var(--bg-tertiary);
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid var(--border-color);
-}
-
-.xp-fill {
-  height: 100%;
-  background: linear-gradient(90deg, #6366F1, #8B5CF6); /* Degradado violeta/azul */
-  border-radius: 10px;
-  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.next-level-hint {
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-top: 6px;
-  text-align: center;
-}
-
-.level-badge {
-  color: white;
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 12px;
-  text-transform: uppercase;
-}
-
-.xp-track {
-  width: 100%;
-  height: 10px;
-  background: var(--bg-tertiary);
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid var(--border-color);
-  margin: 10px 0;
-}
-
-.xp-fill {
-  height: 100%;
-  transition: width 0.5s ease;
-}
-
-/* ... resto de tu css ... */
-
-.level-section {
-  margin: 10px 20px 24px;
-  text-align: left;
-}
-
-.level-info {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 8px;
-}
-
-.level-badge {
-  color: white; /* Texto blanco siempre */
-  padding: 4px 10px;
-  border-radius: 12px;
-  font-weight: 700;
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* El resto de estilos de xp-track y demás que ya tenías */
-.xp-text {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-secondary);
-}
-
-.xp-track {
-  width: 100%;
-  height: 10px;
-  background: var(--bg-tertiary);
-  border-radius: 10px;
-  overflow: hidden;
-  border: 1px solid var(--border-color);
-}
-
-.xp-fill {
-  height: 100%;
-  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.next-level-hint {
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-top: 6px;
-  text-align: center;
-}
-
-/* ===== BOTÓN DE ELIMINAR COMENTARIO EN MODAL ===== */
-.comment-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  position: relative;
-}
-
-.comment-delete-btn {
-  background: none;
-  border: none;
-  color: var(--text-muted);
-  cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 4px;
-  font-size: 14px;
-  opacity: 0;
-  transition: all 0.2s ease;
-  margin-left: auto;
-}
-
-.comment-item:hover .comment-delete-btn {
-  opacity: 0.7;
-}
-
-.comment-delete-btn:hover {
-  opacity: 1 !important;
-  color: #e74c3c !important;
-  background: var(--bg-secondary);
-}
-
-/* Para móviles, siempre visible */
-@media (max-width: 768px) {
-  .comment-delete-btn {
-    opacity: 0.7;
-  }
-}
-
-/* ===== CONTADOR DE CARACTERES PARA BIOGRAFÍA ===== */
-.char-counter {
-  display: block;
-  text-align: right;
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 4px;
-}
-
-/* Ajuste para el textarea en modo edición */
-.edit-textarea {
-  resize: none;
-  min-height: 80px;
-  width: 100%;
-  padding: 12px 16px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 14px;
-  transition: all 0.2s;
-  box-sizing: border-box;
-}
-
-.edit-textarea:focus {
-  outline: none;
-  border-color: var(--accent-color);
-  background: var(--card-bg);
-  box-shadow: 0 0 0 3px var(--accent-light);
-}
-
-/* ===== CONTADORES DE CARACTERES ===== */
-.char-counter {
-  display: block;
-  text-align: right;
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-top: 4px;
-  font-style: italic;
-}
-
-/* Espaciado entre form groups */
-.form-group {
-  margin-bottom: 20px;
-}
-
-.form-group label {
-  display: block;
-  margin-bottom: 8px;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-/* Ajuste para el input en modo edición */
-.edit-input {
-  width: 100%;
-  padding: 12px 16px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 14px;
-  transition: all 0.2s;
-  box-sizing: border-box;
-}
-
-.edit-input:focus {
-  outline: none;
-  border-color: var(--accent-color);
-  background: var(--card-bg);
-  box-shadow: 0 0 0 3px var(--accent-light);
-}
-
-/* Ajuste para el textarea en modo edición */
-.edit-textarea {
-  resize: none;
-  min-height: 80px;
-  width: 100%;
-  padding: 12px 16px;
-  border-radius: 8px;
-  border: 1px solid var(--border-color);
-  background: var(--bg-tertiary);
-  color: var(--text-primary);
-  font-family: inherit;
-  font-size: 14px;
-  transition: all 0.2s;
-  box-sizing: border-box;
-}
-
-.edit-textarea:focus {
-  outline: none;
-  border-color: var(--accent-color);
-  background: var(--card-bg);
-  box-shadow: 0 0 0 3px var(--accent-light);
-}
-
-/* Botones de edición */
-.edit-buttons {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-top: 24px;
-}
-
-.edit-buttons .btn-rect {
-  margin: 0;
-  width: 100%;
 }
