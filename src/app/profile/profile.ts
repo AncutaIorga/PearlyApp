@@ -133,24 +133,94 @@ export class ProfileComponent implements OnInit {
 
   toggleEdit() {
     if (this.editing) {
-      const newName = (this.editableUser.nombre || this.editableUser.name).trim();
+      const newName = (this.editableUser.nombre || this.editableUser.name)?.trim();
       
+      if (!newName) {
+        this.notificationService.warning('El nombre de usuario no puede estar vacío');
+        return;
+      }
+
       if (this.avatarPreview) this.editableUser.avatar = this.avatarPreview;
-      
       if (this.editableUser.name && !this.editableUser.nombre) this.editableUser.nombre = this.editableUser.name;
 
-      this.userService.updateUser(this.editableUser);
-      this.user = { ...this.editableUser };
+      this.userService.updateUser(this.editableUser).subscribe({
+        next: (updatedUser) => {
+          // ✅ Parche setTimeout para evitar el Error NG0100 en la vista
+          setTimeout(() => {
+            this.user = { ...updatedUser };
+            this.editing = false;
+            this.avatarPreview = null;
+            this.notificationService.success('¡Perfil actualizado con éxito!');
+          });
+        },
+        error: (err) => {
+          setTimeout(() => {
+            console.error('Error al actualizar perfil', err);
+            this.notificationService.error('Error al guardar en el servidor.');
+          });
+        }
+      });
       
-      
-      this.notificationService.showProfileUpdated();
     } else {
       this.editableUser = { ...this.user };
+      this.editing = true;
     }
-    this.editing = !this.editing;
   }
 
   cancelEdit() { this.editing = false; this.avatarPreview = null; }
+
+  openFileSelector() {
+    const input = document.createElement('input'); 
+    input.type = 'file'; 
+    input.accept = 'image/*';
+    
+    input.onchange = (event: any) => {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e: any) => {
+        const img = new Image();
+        img.src = e.target.result;
+        
+        img.onload = () => {
+          const canvas = document.createElement('canvas');
+          const MAX_SIZE = 400; 
+          let width = img.width;
+          let height = img.height;
+
+          if (width > height) {
+            if (width > MAX_SIZE) {
+              height = Math.round((height * MAX_SIZE) / width);
+              width = MAX_SIZE;
+            }
+          } else {
+            if (height > MAX_SIZE) {
+              width = Math.round((width * MAX_SIZE) / height);
+              height = MAX_SIZE;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+
+          if (ctx) {
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, width, height);
+            ctx.drawImage(img, 0, 0, width, height);
+          }
+
+          const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+          this.avatarPreview = compressedBase64;
+          
+          console.log(`✅ Tamaño del Avatar a enviar: ${Math.round(compressedBase64.length / 1024)} KB`);
+        };
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  }
 
   openFollowModal(type: 'followers' | 'following') {
     this.followModalType = type;
@@ -243,16 +313,6 @@ export class ProfileComponent implements OnInit {
       this.closeImageModal();
       this.notificationService.success('Publicación eliminada');
     });
-  }
-
-  openFileSelector() {
-    const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*';
-    input.onchange = (e: any) => {
-      const reader = new FileReader();
-      reader.onload = (ev: any) => this.avatarPreview = ev.target.result;
-      reader.readAsDataURL(e.target.files[0]);
-    };
-    input.click();
   }
 
   isPostOwner(post: any) { return post?.user === this.authService.getCurrentUserName(); }

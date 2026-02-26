@@ -2,7 +2,7 @@ import { Injectable, signal, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { AuthService, Usuario } from './authBACK';
 import { Observable, throwError } from 'rxjs';
-import { tap, catchError } from 'rxjs/operators';
+import { tap, catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
@@ -25,7 +25,7 @@ export class UserService {
     }
   }
 
-  getUser() {
+  getUser(): Usuario {
     this.syncWithAuthData();
     return this.userSignal();
   }
@@ -33,23 +33,33 @@ export class UserService {
   updateUser(data: Partial<Usuario>): Observable<Usuario> {
     const currentUser = this.getUser();
     
-    // ✅ Usamos idUsuario o id según lo que tengamos
-    const userId = currentUser.idUsuario || currentUser.idUsuario;
+    const userId = currentUser.idUsuario;
 
     if (!userId) {
+      console.error('No se encontró el ID del usuario actual.');
       return throwError(() => new Error('Falta ID de usuario'));
     }
 
     if (data.name && !data.nombre) data.nombre = data.name;
 
-    // ✅ URL correcta con idUsuario
-    return this.http.put<Usuario>(`${this.apiUrl}/${userId}`, data).pipe(
-      tap(updatedUser => {
-        const merged = { ...currentUser, ...updatedUser };
-        this.authService.updateRegisteredUser(currentUser.nombre, merged);
+    const payload: Usuario = {
+      ...currentUser,
+      ...data
+    };
+
+    console.log('Enviando actualización de perfil al servidor:', payload);
+
+    return this.http.put(`${this.apiUrl}/${userId}`, payload, { responseType: 'text' }).pipe(
+      map(() => payload),
+      tap((finalUser) => {
+        console.log('Perfil actualizado localmente tras respuesta OK del servidor');
+        this.authService.updateRegisteredUser(currentUser.nombre, finalUser);
         this.syncWithAuthData();
       }),
-      catchError(err => throwError(() => err))
+      catchError(err => {
+        console.error('Error al actualizar perfil en el backend:', err);
+        return throwError(() => err);
+      })
     );
   }
 

@@ -54,23 +54,29 @@ export class PostService {
   loadPostsFromBackend() {
     this.http.get<any[]>(this.apiUrl).subscribe({
       next: (data) => {
-        const mappedPosts: Post[] = data.map(dbPost => ({
-          id: dbPost.id,
-          user: dbPost.nombreUsuario || `Usuario ${dbPost.idUsuario || dbPost.id_usuario}`, 
-          userAvatar: dbPost.avatarUsuario || '',
-          image: dbPost.imagen,
-          text: dbPost.texto,
-          likes: dbPost.likesCount || 0,
-          likedBy: dbPost.likedBy || [],
-          comments: dbPost.comentarios || [],
-          createdAt: new Date(dbPost.fecha),
-          challengeInfo: dbPost.idRetoVinculado ? {
-            id: String(dbPost.idRetoVinculado),
-            title: 'Reto Completado',
-            category: 'mental',
-            points: 0
-          } : undefined
-        }));
+        const mappedPosts: Post[] = data.map(dbPost => {
+          // Aseguramos que pillamos el nombre venga como venga del Backend
+          const safeName = dbPost.nombreUsuario || dbPost.nombre_usuario || dbPost.user || `Usuario ${dbPost.idUsuario}`;
+          const safeAvatar = dbPost.avatarUsuario || dbPost.avatar_usuario || dbPost.avatar || '';
+
+          return {
+            id: dbPost.id,
+            user: safeName, 
+            userAvatar: safeAvatar,
+            image: dbPost.imagen,
+            text: dbPost.texto,
+            likes: dbPost.likesCount || 0,
+            likedBy: dbPost.likedBy || [],
+            comments: dbPost.comentarios || [],
+            createdAt: new Date(dbPost.fecha),
+            challengeInfo: dbPost.idRetoVinculado ? {
+              id: String(dbPost.idRetoVinculado),
+              title: 'Reto Completado',
+              category: 'mental',
+              points: 0
+            } : undefined
+          };
+        });
         
         mappedPosts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
         this.posts.set(mappedPosts);
@@ -90,14 +96,14 @@ export class PostService {
   }
 
   getPostsByUser(userName: string): Post[] {
-    return this.getAllPosts().filter(p => p.user === userName);
+    return this.getAllPosts().filter(p => p.user.toLowerCase() === userName.toLowerCase());
   }
 
   getPostById(id: number | string): Post | undefined {
     return this.getAllPosts().find(p => p.id == id);
   }
 
-addPost(postData: { image: string; text: string; challengeInfo?: any; }) {
+  addPost(postData: { image: string; text: string; challengeInfo?: any; }) {
     const userId = this.getCurrentUserId();
     
     if (!userId) {
@@ -110,7 +116,6 @@ addPost(postData: { image: string; text: string; challengeInfo?: any; }) {
       const idString = String(postData.challengeInfo.id);
       const parts = idString.split('-');
       retoId = parts.length > 1 ? parseInt(parts[1], 10) : parseInt(parts[0], 10);
-      
       if (isNaN(retoId)) retoId = null;
     }
 
@@ -119,29 +124,25 @@ addPost(postData: { image: string; text: string; challengeInfo?: any; }) {
     const payload = {
       idUsuario: userId,
       texto: postData.text.trim(),
-      fecha: fechaKotlin, // 👈 Fecha limpia y perfecta para el Back
+      fecha: fechaKotlin,
       imagen: postData.image,
       idRetoVinculado: retoId
     };
 
-    console.log('Enviando payload con fecha limpia:', payload);
-
-    const headers = new HttpHeaders({
-      'Content-Type': 'application/json'
-    });
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
 
     this.http.post<any>(this.apiUrl, payload, { headers }).subscribe({
-      next: (newDbPost) => {
+      next: () => {
         this.notification.success('¡Publicación creada!');
         this.loadPostsFromBackend(); 
       },
       error: (err) => {
         console.error('Error al crear publicación:', err);
-        this.notification.error('Error al enviar la publicación. Revisa la consola.');
+        this.notification.error('Error al enviar la publicación.');
       }
     });
   }
-// ✅ LIKES: PONER Y QUITAR (TOGGLE REAL CON EL BACKEND)
+
   toggleLike(postId: number) {
     const userId = this.getCurrentUserId();
     if (!userId) {
@@ -154,46 +155,39 @@ addPost(postData: { image: string; text: string; challengeInfo?: any; }) {
     
     if (!targetPost) return;
 
-    // 1. Comprobamos si el usuario ya le había dado like
     const hasLiked = targetPost.likedBy.includes(currentUser);
 
-    // 2. Estrategia Optimista (Cambiamos el color del corazón al instante)
     this.posts.update(posts => posts.map(p => {
       if (p.id === postId) {
         let newLikedBy = [...p.likedBy];
         if (hasLiked) {
-          newLikedBy = newLikedBy.filter(u => u !== currentUser); // Quitar
+          newLikedBy = newLikedBy.filter(u => u !== currentUser);
         } else {
-          newLikedBy.push(currentUser); // Añadir
+          newLikedBy.push(currentUser);
         }
         return { ...p, likedBy: newLikedBy, likes: newLikedBy.length };
       }
       return p;
     }));
 
-    // 3. Petición al Backend según lo que estemos haciendo
     if (!hasLiked) {
-      // 🟢 DAR LIKE (POST)
       const likeUrl = `${environment.apiUrl}/likes`;
       const payload = { idUsuario: userId, idPublicacion: postId };
       
       this.http.post(likeUrl, payload).subscribe({
-        next: () => console.log('¡Like añadido (201)!'),
+        next: () => console.log('¡Like añadido!'),
         error: (err) => {
           console.error('Error al dar like:', err);
-          this.loadPostsFromBackend(); // Si falla, revertimos el corazón
+          this.loadPostsFromBackend();
         }
       });
     } else {
-      // 🔴 QUITAR LIKE (DELETE)
-      // Usamos la ruta que ha creado tu compañero: /likes/{usuario}/{pub}
       const deleteUrl = `${environment.apiUrl}/likes/${userId}/${postId}`;
-      
       this.http.delete(deleteUrl).subscribe({
-        next: () => console.log('¡Like eliminado (200)!'),
+        next: () => console.log('¡Like eliminado!'),
         error: (err) => {
           console.error('Error al quitar like:', err);
-          this.loadPostsFromBackend(); // Si falla, revertimos el corazón
+          this.loadPostsFromBackend();
         }
       });
     }
@@ -204,23 +198,33 @@ addPost(postData: { image: string; text: string; challengeInfo?: any; }) {
     if (!userId) return;
 
     const comentarioUrl = `${environment.apiUrl}/comentarios`;
+    
+    // 🧹 PAYLOAD LIMPIO para Kotlin
     const payload = {
       idPublicacion: postId,
-      id_publicacion: postId,
       idUsuario: userId,
-      id_usuario: userId,
       contenido: text.trim()
     };
 
-    this.http.post<any>(comentarioUrl, payload).subscribe({
-      next: () => this.loadPostsFromBackend(),
-      error: () => this.notification.error('No se pudo enviar el comentario.')
+    const headers = new HttpHeaders({ 'Content-Type': 'application/json' });
+
+    this.http.post<any>(comentarioUrl, payload, { headers }).subscribe({
+      next: () => {
+        this.loadPostsFromBackend();
+        this.notification.success('Comentario añadido');
+      },
+      error: (err) => {
+        console.error('Error al añadir comentario', err);
+        this.notification.error('No se pudo enviar el comentario.');
+      }
     });
   }
 
   deletePost(postId: number) {
     this.http.delete(`${this.apiUrl}/${postId}`).subscribe({
-      next: () => this.posts.update(posts => posts.filter(p => p.id !== postId)),
+      next: () => {
+        this.posts.update(posts => posts.filter(p => p.id !== postId));
+      },
       error: () => this.notification.error('No se pudo eliminar la publicación.')
     });
   }
