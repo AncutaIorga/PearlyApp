@@ -22,6 +22,16 @@
         </div>
       </div>
     </div>
+
+    <!-- CONSEJO DEL DÍA DENTRO DEL HEADER -->
+    <div class="header-tip">
+      <div class="tip-icon">☼</div>
+      <div class="tip-content">
+        <span class="tip-label">Consejo del día</span>
+        <p class="tip-text">{{ dailyTip }}</p>
+      </div>
+      <button (click)="refreshTip()" class="tip-refresh-header" title="Nuevo consejo">↻</button>
+    </div>
   </header>
 
   <section class="balance-section">
@@ -54,7 +64,7 @@
     </div>
   </section>
 
-  <!-- ===== NUEVA SECCIÓN: RETOS EN CURSO ===== -->
+  <!-- SECCIÓN: RETOS EN CURSO -->
   @if (inProgressChallenges.length > 0) {
     <section class="in-progress-section">
       <div class="section-header">
@@ -89,6 +99,7 @@
     </section>
   }
 
+  <!-- FILTROS ACTUALIZADOS con Disponibles y Completados -->
   <div class="simple-filters">
     @for (filter of filters; track filter.id) {
       <button 
@@ -102,6 +113,7 @@
     }
   </div>
 
+  <!-- TARJETAS DE RETOS -->
   <div class="challenges-cards">
     @for (challenge of filteredChallenges; track challenge.id) {
       <div 
@@ -157,7 +169,22 @@
 
       </div>
     } @empty {
-      @if (activeFilter !== 'all') {
+      <!-- MENSAJES PERSONALIZADOS SEGÚN EL FILTRO -->
+      @if (activeFilter === 'available') {
+        <div class="empty-state wellness-empty">
+          <div class="empty-icon">✨</div>
+          <h3>¡Todos los retos completados!</h3>
+          <p>Has completado todos los retos disponibles. ¡Vuelve pronto para nuevos desafíos!</p>
+          <button (click)="setFilter('all')" class="reset-btn wellness-reset">☘︎ Ver todos los retos</button>
+        </div>
+      } @else if (activeFilter === 'completed') {
+        <div class="empty-state wellness-empty">
+          <div class="empty-icon">📋</div>
+          <h3>No hay retos completados</h3>
+          <p>Aún no has completado ningún reto. ¡Empieza con alguno disponible!</p>
+          <button (click)="setFilter('available')" class="reset-btn wellness-reset">☘︎ Ver retos disponibles</button>
+        </div>
+      } @else if (activeFilter !== 'all') {
         <div class="empty-state wellness-empty">
           <div class="empty-icon">⌕</div>
           <h3>No hay retos en esta categoría</h3>
@@ -203,15 +230,6 @@
       }
     </div>
   </section>
-
-  <div class="daily-tip">
-    <div class="tip-icon">☼</div>
-    <div class="tip-content">
-      <h3>Consejo del día</h3>
-      <p>{{ dailyTip }}</p>
-      <button (click)="refreshTip()" class="tip-refresh">↻ Nuevo consejo</button>
-    </div>
-  </div>
 </div>
 
 @if (showCustomConfirmModal && challengeToConfirm) {
