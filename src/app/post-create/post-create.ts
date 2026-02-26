@@ -36,6 +36,7 @@ export class PostCreateComponent implements OnInit {
   availableChallenges: CompletedChallenge[] = [];
   
   isSubmitting = false;
+  isImageProcessing = false;
 
   ngOnInit() {
     this.loadAvailableChallenges();
@@ -88,69 +89,102 @@ export class PostCreateComponent implements OnInit {
     return names[category] || 'Bienestar';
   }
 
-  // ✅ COMPRESOR EXTREMO (Asegura que la foto pese menos de 50-80 KB)
+  // ✅ VERSIÓN CORREGIDA - BORDES BLANCOS
   onImageSelected(event: any) {
     const file = event.target.files[0];
     if (!file) return;
 
-    const reader = new FileReader();
+    event.target.value = '';
+
+    if (file.size > 10 * 1024 * 1024) {
+      this.notificationService.error('La imagen es demasiado grande. Máximo 10MB.');
+      return;
+    }
+
+    this.isImageProcessing = true;
     
-    reader.onload = (e: any) => {
-      const img = new Image();
-      img.src = e.target.result;
+    requestAnimationFrame(() => {
+      const reader = new FileReader();
       
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        
-        // Reducimos el máximo a 500px (Suficiente para un feed tipo Instagram)
-        const MAX_SIZE = 500; 
-        let width = img.width;
-        let height = img.height;
-
-        if (width > height) {
-          if (width > MAX_SIZE) {
-            height = Math.round((height * MAX_SIZE) / width);
-            width = MAX_SIZE;
-          }
-        } else {
-          if (height > MAX_SIZE) {
-            width = Math.round((width * MAX_SIZE) / height);
-            height = MAX_SIZE;
-          }
-        }
-
-        canvas.width = width;
-        canvas.height = height;
-        const ctx = canvas.getContext('2d');
-
-        if (ctx) {
-          // 1. Pintamos un fondo blanco (Vital si la foto era un PNG sin fondo)
-          ctx.fillStyle = '#FFFFFF';
-          ctx.fillRect(0, 0, width, height);
+      reader.onload = (e: any) => {
+        setTimeout(() => {
+          const img = new Image();
+          img.src = e.target.result;
           
-          // 2. Dibujamos la imagen encima
-          ctx.drawImage(img, 0, 0, width, height);
-        }
+          img.onload = () => {
+            try {
+              const canvas = document.createElement('canvas');
+              
+              // SOLUCIÓN: En lugar de tamaño fijo, mantener proporciones
+              // pero limitar el tamaño máximo
+              const MAX_SIZE = 600; // Tamaño máximo
+              
+              let width = img.width;
+              let height = img.height;
+              
+              // Redimensionar manteniendo proporción
+              if (width > height) {
+                if (width > MAX_SIZE) {
+                  height = Math.round((height * MAX_SIZE) / width);
+                  width = MAX_SIZE;
+                }
+              } else {
+                if (height > MAX_SIZE) {
+                  width = Math.round((width * MAX_SIZE) / height);
+                  height = MAX_SIZE;
+                }
+              }
+              
+              canvas.width = width;
+              canvas.height = height;
+              
+              const ctx = canvas.getContext('2d');
+              if (ctx) {
+                // FONDO BLANCO (importante para que no haya bordes negros)
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, width, height);
+                
+                // Dibujar la imagen SIN escalado forzado
+                ctx.drawImage(img, 0, 0, width, height);
+              }
 
-        // 3. Comprimimos a JPEG con calidad 0.6 (Reduce el peso drásticamente)
-        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
-        
-        this.selectedImage = compressedBase64;
-        
-        // 🔍 CHIVATO PARA LA CONSOLA: Te dirá cuánto pesa exactamente
-        const pesoFinalKB = Math.round(compressedBase64.length / 1024);
-        console.log(`✅ Tamaño del Base64 a enviar: ${pesoFinalKB} KB`);
-        
-        if (pesoFinalKB > 150) {
-           this.notificationService.warning(`La imagen sigue pesando ${pesoFinalKB}KB, el servidor podría rechazarla.`);
-        }
+              // Comprimir con calidad media para balance velocidad/calidad
+              const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+              
+              this.selectedImage = compressedBase64;
+              this.isImageProcessing = false;
+              
+              const pesoFinalKB = Math.round(compressedBase64.length / 1024);
+              console.log(`✅ Imagen procesada: ${pesoFinalKB} KB - ${width}x${height}`);
+              
+              this.notificationService.success('¡Imagen lista!');
+              
+            } catch (error) {
+              console.error('Error:', error);
+              this.isImageProcessing = false;
+              this.notificationService.error('Error al procesar la imagen');
+            }
+          };
+
+          img.onerror = () => {
+            this.isImageProcessing = false;
+            this.notificationService.error('Error al cargar la imagen');
+          };
+        }, 10);
       };
-    };
-    
-    reader.readAsDataURL(file);
+      
+      reader.onerror = () => {
+        this.isImageProcessing = false;
+        this.notificationService.error('Error al leer el archivo');
+      };
+      
+      reader.readAsDataURL(file);
+    });
   }
 
-  removeImage() { this.selectedImage = null; }
+  removeImage() { 
+    this.selectedImage = null; 
+  }
 
   async submit() {
     if (!this.selectedChallengeId) {
@@ -164,33 +198,37 @@ export class PostCreateComponent implements OnInit {
     }
 
     if (!this.selectedImage) {
-        this.notificationService.warning('Añade una foto para inspirar a otros 📸');
-        return;
+      this.notificationService.warning('Añade una foto para inspirar a otros 📸');
+      return;
+    }
+
+    if (this.isImageProcessing) {
+      this.notificationService.warning('Por favor espera a que la imagen termine de procesarse');
+      return;
     }
 
     this.isSubmitting = true;
 
     try {
-        await new Promise(resolve => setTimeout(resolve, 800));
+      await new Promise(resolve => setTimeout(resolve, 500));
 
-        this.postService.addPost({
-          image: this.selectedImage, 
-          text: this.text,
-          challengeInfo: this.selectedChallenge ? {
-            id: String(this.selectedChallenge.id),
-            title: this.selectedChallenge.title,
-            category: this.selectedChallenge.category,
-            points: this.selectedChallenge.points
-          } : undefined
-        });
+      this.postService.addPost({
+        image: this.selectedImage, 
+        text: this.text,
+        challengeInfo: this.selectedChallenge ? {
+          id: String(this.selectedChallenge.id),
+          title: this.selectedChallenge.title,
+          category: this.selectedChallenge.category,
+          points: this.selectedChallenge.points
+        } : undefined
+      });
 
-        // La redirección ocurrirá instantáneamente, y el post aparecerá al recargar
-        this.router.navigate(['/feed']);
+      this.router.navigate(['/feed']);
 
     } catch (error: any) {
-        console.error(error);
-        this.notificationService.error(error.message || 'Error al publicar. Inténtalo de nuevo.');
-        this.isSubmitting = false; 
+      console.error(error);
+      this.notificationService.error(error.message || 'Error al publicar');
+      this.isSubmitting = false; 
     }
   }
 }

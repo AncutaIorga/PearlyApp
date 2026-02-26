@@ -13,7 +13,7 @@
             name="challengeId" 
             class="challenge-select" 
             (change)="onChallengeSelected()"
-            [disabled]="isSubmitting">
+            [disabled]="isSubmitting || isImageProcessing">
           <option value="" disabled selected>Selecciona un reto completado</option>
           @for (challenge of availableChallenges; track challenge.id) {
             <option [value]="challenge.id">
@@ -31,7 +31,7 @@
           placeholder="Describe tu logro saludable del día... ¿Qué has conseguido hoy?"
           maxlength="250"
           rows="5"
-          [disabled]="isSubmitting"></textarea>
+          [disabled]="isSubmitting || isImageProcessing"></textarea>
           <small class="char-counter">{{ text.length || 0 }}/250 caracteres</small>
       </div>
 
@@ -40,7 +40,8 @@
         
         <div class="image-upload-area" 
              [class.has-image]="selectedImage" 
-             (click)="!isSubmitting && fileInput.click()">
+             [class.processing]="isImageProcessing"
+             (click)="!isSubmitting && !isImageProcessing && fileInput.click()">
              
           <input 
             #fileInput 
@@ -48,16 +49,23 @@
             accept="image/*" 
             (change)="onImageSelected($event)" 
             hidden
-            [disabled]="isSubmitting">
+            [disabled]="isSubmitting || isImageProcessing">
 
-          @if (selectedImage) {
+          @if (isImageProcessing) {
+            <div class="image-processing-indicator">
+              <div class="spinner"></div>
+              <span>Procesando imagen...</span>
+            </div>
+          } @else if (selectedImage) {
             <div class="image-preview-wrapper">
               <img [src]="selectedImage" alt="Preview">
               <button class="remove-btn" (click)="removeImage(); $event.stopPropagation()" [disabled]="isSubmitting">✕</button>
             </div>
           } @else {
             <div class="upload-placeholder">
+              <span class="upload-icon">📸</span>
               <span>Haz clic para subir una foto</span>
+              <small class="upload-hint">Máximo 10MB</small>
             </div>
           }
         </div>
@@ -82,7 +90,7 @@
         <button 
             class="btn-submit" 
             (click)="submit()" 
-            [disabled]="isSubmitting || !selectedImage || !text.trim() || !selectedChallengeId"
+            [disabled]="isSubmitting || isImageProcessing || !selectedImage || !text.trim() || !selectedChallengeId"
             [class.loading]="isSubmitting">
             
             @if (isSubmitting) {

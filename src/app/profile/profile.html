@@ -76,10 +76,13 @@
               <div class="form-group">
                 <label>Nombre de usuario</label>
                 <input class="edit-input" [(ngModel)]="editableUser.name" placeholder="Tu nombre" maxlength="10" />
+                <!-- AÑADIDO: Contador para el nombre -->
+                <small class="char-counter">{{ editableUser.name?.length || 0 }}/10 caracteres</small>
               </div>
               <div class="form-group">
                 <label>Biografía</label>
-                <textarea class="edit-textarea" [(ngModel)]="editableUser.bio" placeholder="Cuenta algo sobre ti" maxlength="30" rows="2"></textarea>
+                <textarea class="edit-textarea" [(ngModel)]="editableUser.bio" placeholder="Cuenta algo sobre ti" maxlength="50" rows="2"></textarea>
+                <small class="char-counter">{{ editableUser.bio?.length || 0 }}/50 caracteres</small>
               </div>
               <div class="edit-buttons">
                 <button class="btn-rect primary" (click)="toggleEdit()">Guardar</button>
