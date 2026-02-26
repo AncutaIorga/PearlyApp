@@ -141,34 +141,62 @@ addPost(postData: { image: string; text: string; challengeInfo?: any; }) {
       }
     });
   }
-
+// ✅ LIKES: PONER Y QUITAR (TOGGLE REAL CON EL BACKEND)
   toggleLike(postId: number) {
     const userId = this.getCurrentUserId();
-    if (!userId) return;
-
-    const likeUrl = `${environment.apiUrl}/likes`;
-    const payload = {
-      idUsuario: userId,
-      id_usuario: userId,
-      idPublicacion: postId,
-      id_publicacion: postId
-    };
+    if (!userId) {
+      this.notification.error('Error de sesión.');
+      return;
+    }
 
     const currentUser = this.getCurrentUserName();
+    const targetPost = this.posts().find(p => p.id === postId);
+    
+    if (!targetPost) return;
+
+    // 1. Comprobamos si el usuario ya le había dado like
+    const hasLiked = targetPost.likedBy.includes(currentUser);
+
+    // 2. Estrategia Optimista (Cambiamos el color del corazón al instante)
     this.posts.update(posts => posts.map(p => {
       if (p.id === postId) {
-        const hasLiked = p.likedBy.includes(currentUser);
         let newLikedBy = [...p.likedBy];
-        if (hasLiked) newLikedBy = newLikedBy.filter(u => u !== currentUser);
-        else newLikedBy.push(currentUser);
+        if (hasLiked) {
+          newLikedBy = newLikedBy.filter(u => u !== currentUser); // Quitar
+        } else {
+          newLikedBy.push(currentUser); // Añadir
+        }
         return { ...p, likedBy: newLikedBy, likes: newLikedBy.length };
       }
       return p;
     }));
 
-    this.http.post(likeUrl, payload).subscribe({
-      error: () => this.loadPostsFromBackend() 
-    });
+    // 3. Petición al Backend según lo que estemos haciendo
+    if (!hasLiked) {
+      // 🟢 DAR LIKE (POST)
+      const likeUrl = `${environment.apiUrl}/likes`;
+      const payload = { idUsuario: userId, idPublicacion: postId };
+      
+      this.http.post(likeUrl, payload).subscribe({
+        next: () => console.log('¡Like añadido (201)!'),
+        error: (err) => {
+          console.error('Error al dar like:', err);
+          this.loadPostsFromBackend(); // Si falla, revertimos el corazón
+        }
+      });
+    } else {
+      // 🔴 QUITAR LIKE (DELETE)
+      // Usamos la ruta que ha creado tu compañero: /likes/{usuario}/{pub}
+      const deleteUrl = `${environment.apiUrl}/likes/${userId}/${postId}`;
+      
+      this.http.delete(deleteUrl).subscribe({
+        next: () => console.log('¡Like eliminado (200)!'),
+        error: (err) => {
+          console.error('Error al quitar like:', err);
+          this.loadPostsFromBackend(); // Si falla, revertimos el corazón
+        }
+      });
+    }
   }
 
   addComment(postId: number, text: string, user: string, userAvatar?: string) {
