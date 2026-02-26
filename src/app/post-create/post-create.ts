@@ -8,7 +8,6 @@ import { NavbarComponent } from '../shared/navbar/navbar';
 import { NotificationService } from '../services/notification';
 import { ChallengeService } from '../services/challenge';
 
-// Definimos la interfaz localmente para evitar errores de importación si no existe en el servicio
 interface CompletedChallenge {
   id: string;
   title: string;
@@ -36,7 +35,6 @@ export class PostCreateComponent implements OnInit {
   selectedChallenge: CompletedChallenge | null = null;
   availableChallenges: CompletedChallenge[] = [];
   
-  // ✅ Variable para bloquear el botón durante el envío
   isSubmitting = false;
 
   ngOnInit() {
@@ -52,18 +50,16 @@ export class PostCreateComponent implements OnInit {
       try {
         const progress = JSON.parse(savedProgress);
         if (progress.challenges && Array.isArray(progress.challenges)) {
-          // Filtramos solo los completados para que pueda presumir de ellos
           const completedIds = progress.challenges
             .filter((c: any) => c.completed === true)
             .map((c: any) => c.id);
           
-          // Recuperamos la info completa del servicio de retos
           this.availableChallenges = completedIds
             .map((id: string) => {
               const masterDef = this.challengeService.getChallengeById(id);
               return masterDef ? { ...masterDef, completed: true } : null;
             })
-            .filter((c: any) => c !== null); // Eliminamos nulos
+            .filter((c: any) => c !== null);
         }
       } catch (error) {
         console.error('Error cargando retos:', error);
@@ -71,15 +67,11 @@ export class PostCreateComponent implements OnInit {
     }
   }
 
-  // Se ejecuta cuando el usuario elige un reto del desplegable
   onChallengeSelected() {
-    // Busque el reto seleccionado en la lista
-    // IMPORTANTE: Convertimos selectedChallengeId a string para comparar, por si viene como número
     const found = this.availableChallenges.find(c => String(c.id) === String(this.selectedChallengeId));
     
     if (found) {
       this.selectedChallenge = found;
-      // Si el textarea está vacío, le ponemos un texto por defecto
       if (!this.text.trim()) {
         this.text = `¡He conseguido completar el reto "${this.selectedChallenge.title}"! 💪`;
       }
@@ -96,27 +88,71 @@ export class PostCreateComponent implements OnInit {
     return names[category] || 'Bienestar';
   }
 
+  // ✅ COMPRESOR EXTREMO (Asegura que la foto pese menos de 50-80 KB)
   onImageSelected(event: any) {
     const file = event.target.files[0];
-    if (file) {
-      // Validación de tamaño (opcional, ej: 5MB)
-      if (file.size > 5 * 1024 * 1024) {
-        this.notificationService.warning('La imagen es demasiado grande (Máx 5MB)');
-        return;
-      }
+    if (!file) return;
+
+    const reader = new FileReader();
+    
+    reader.onload = (e: any) => {
+      const img = new Image();
+      img.src = e.target.result;
       
-      const reader = new FileReader();
-      reader.onload = (e: any) => this.selectedImage = e.target.result;
-      reader.readAsDataURL(file);
-    }
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        
+        // Reducimos el máximo a 500px (Suficiente para un feed tipo Instagram)
+        const MAX_SIZE = 500; 
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height) {
+          if (width > MAX_SIZE) {
+            height = Math.round((height * MAX_SIZE) / width);
+            width = MAX_SIZE;
+          }
+        } else {
+          if (height > MAX_SIZE) {
+            width = Math.round((width * MAX_SIZE) / height);
+            height = MAX_SIZE;
+          }
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        const ctx = canvas.getContext('2d');
+
+        if (ctx) {
+          // 1. Pintamos un fondo blanco (Vital si la foto era un PNG sin fondo)
+          ctx.fillStyle = '#FFFFFF';
+          ctx.fillRect(0, 0, width, height);
+          
+          // 2. Dibujamos la imagen encima
+          ctx.drawImage(img, 0, 0, width, height);
+        }
+
+        // 3. Comprimimos a JPEG con calidad 0.6 (Reduce el peso drásticamente)
+        const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
+        
+        this.selectedImage = compressedBase64;
+        
+        // 🔍 CHIVATO PARA LA CONSOLA: Te dirá cuánto pesa exactamente
+        const pesoFinalKB = Math.round(compressedBase64.length / 1024);
+        console.log(`✅ Tamaño del Base64 a enviar: ${pesoFinalKB} KB`);
+        
+        if (pesoFinalKB > 150) {
+           this.notificationService.warning(`La imagen sigue pesando ${pesoFinalKB}KB, el servidor podría rechazarla.`);
+        }
+      };
+    };
+    
+    reader.readAsDataURL(file);
   }
 
   removeImage() { this.selectedImage = null; }
 
   async submit() {
-    // 1. Validaciones
-    // NOTA: Si quieres permitir posts sin reto, quita esta validación. 
-    // Pero tu lógica original obligaba a seleccionar uno.
     if (!this.selectedChallengeId) {
       this.notificationService.warning('Por favor selecciona el reto que has completado');
       return;
@@ -132,40 +168,29 @@ export class PostCreateComponent implements OnInit {
         return;
     }
 
-    // 2. Bloqueo del botón
     this.isSubmitting = true;
 
     try {
-        // Simulamos espera de red (UX)
         await new Promise(resolve => setTimeout(resolve, 800));
-        
-        // (Opcional) Descomenta para probar errores
-        // if (Math.random() > 0.8) throw new Error('Error de conexión simulado');
 
-        const currentUser = this.userService.getUser();
-        
-        // 3. Crear el post
         this.postService.addPost({
-          user: currentUser.nombre,
-          userAvatar: currentUser.avatar,
           image: this.selectedImage, 
           text: this.text,
           challengeInfo: this.selectedChallenge ? {
-            id: this.selectedChallenge.id,
+            id: String(this.selectedChallenge.id),
             title: this.selectedChallenge.title,
             category: this.selectedChallenge.category,
             points: this.selectedChallenge.points
           } : undefined
         });
 
-        // 4. Éxito y Redirección
-        this.notificationService.success('¡Publicado con éxito! 🎉');
+        // La redirección ocurrirá instantáneamente, y el post aparecerá al recargar
         this.router.navigate(['/feed']);
 
     } catch (error: any) {
         console.error(error);
         this.notificationService.error(error.message || 'Error al publicar. Inténtalo de nuevo.');
-        this.isSubmitting = false; // Desbloqueamos para reintentar
+        this.isSubmitting = false; 
     }
   }
 }
