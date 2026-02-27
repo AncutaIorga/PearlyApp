@@ -66,4 +66,16 @@ export class UserService {
   updatePrivacy(isPrivate: boolean): Observable<any> {
     return this.updateUser({ isPrivate });
   }
+
+  // MÉTODO AÑADIDO PARA LA BÚSQUEDA
+  buscarUsuariosPorNombre(query: string): Observable<Usuario[]> {
+    return this.http.get<Usuario[]>(`${this.apiUrl}/buscar`, {
+      params: { nombre: query }
+    }).pipe(
+      catchError(err => {
+        console.error('Error buscando usuarios:', err);
+        return throwError(() => err);
+      })
+    );
+  }
 }

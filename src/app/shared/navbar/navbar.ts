@@ -3,6 +3,7 @@ import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/authBACK';
+import { UserService } from '../../services/user'; // IMPORTANTE: Asegúrate que la ruta sea correcta
 import { Subject, filter } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
@@ -16,6 +17,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 export class NavbarComponent implements OnInit {
   router = inject(Router);
   private authService = inject(AuthService);
+  private userService = inject(UserService); // INYECTADO
 
   isSearchActive = false;
   searchQuery = '';
@@ -35,7 +37,7 @@ export class NavbarComponent implements OnInit {
 
   constructor() {
     this.searchSubject.pipe(
-      debounceTime(150),
+      debounceTime(300), // Subido a 300ms para mejor rendimiento con el servidor
       distinctUntilChanged()
     ).subscribe(query => {
       this.performSearch(query);
@@ -58,20 +60,22 @@ export class NavbarComponent implements OnInit {
   }
 
   performSearch(query: string) {
-    const cleanQuery = (query || '').toLowerCase().trim();
+    const cleanQuery = (query || '').trim();
     
     if (cleanQuery.length === 0) {
       this.searchResults = [];
       return;
     }
     
-    // Obtiene usuarios (vacío por ahora hasta conectar búsqueda real)
-    const allUsers = this.authService.getRegisteredUsers();
-    
-    this.searchResults = allUsers.filter(user => {
-      // Usamos (user.nombre || user.name) para asegurar compatibilidad
-      const userName = user.nombre || user.name || '';
-      return userName.toLowerCase().includes(cleanQuery);
+    // CAMBIO: Ahora llama al UserService para buscar en el Backend
+    this.userService.buscarUsuariosPorNombre(cleanQuery).subscribe({
+      next: (usuarios) => {
+        this.searchResults = usuarios;
+      },
+      error: (err) => {
+        console.error('Error en el buscador del navbar', err);
+        this.searchResults = [];
+      }
     });
   }
 
@@ -83,10 +87,12 @@ export class NavbarComponent implements OnInit {
     }, 200);
   }
 
-  goToUserProfile(username: string) {
+goToUserProfile(username: string) {
+  if (username) {
     this.router.navigate(['/profile', username]);
     this.closeSearch();
   }
+}
 
   goToSettings() {
     this.router.navigate(['/ajustes']);

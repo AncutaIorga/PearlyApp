@@ -23,18 +23,18 @@
         
         @if (searchResults.length > 0) {
           @for (user of searchResults; track user.email) {
-            <div class="search-result-item" (mousedown)="goToUserProfile(user.name)">
+            <div class="search-result-item" (mousedown)="goToUserProfile(user.nombre)">
               
               <div class="mini-avatar">
                 @if (user.avatar) {
                   <img [src]="user.avatar" alt="User" class="avatar-img">
                 } @else {
-                  <span class="initial">{{ user.name.charAt(0).toUpperCase() }}</span>
+                  <span class="initial">{{ (user.nombre || 'U').charAt(0).toUpperCase() }}</span>
                 }
               </div>
               
               <div class="user-info">
-                <span class="result-name">{{ user.name }}</span>
+                <span class="result-name">{{ user.nombre }}</span>
               </div>
             </div>
           }
@@ -49,42 +49,11 @@
   </div>
 
   <div class="nav-links">
-    <!-- Feed link con clase activa condicional -->
-    <a routerLink="/feed" 
-       [class.active]="isActive('/feed')"
-       title="Feed">
-      Feed
-    </a>
-    
-    <!-- Retos link con clase activa condicional -->
-    <a routerLink="/challenges" 
-       [class.active]="isActive('/challenges')"
-       class="highlight-btn" 
-       title="Retos">
-      Retos
-    </a>
-    
-    <!-- Crear link con clase activa condicional -->
-    <a routerLink="/post-create" 
-       [class.active]="isActive('/post-create')"
-       title="Crear">
-      Crear
-    </a>
-    
-    <!-- Perfil link con clase activa condicional (para /profile y /profile/username) -->
-    <a routerLink="/profile" 
-       [class.active]="isActive('/profile')"
-       title="Perfil">
-      Perfil
-    </a>
-
-    <!-- Botón de ajustes con clase activa condicional -->
-    <button class="settings-btn" 
-            [class.active]="isSettingsActive()"
-            (click)="goToSettings()"
-            title="Ajustes">
-      ⚙️
-    </button>
+    <a routerLink="/feed" [class.active]="isActive('/feed')" title="Feed">Feed</a>
+    <a routerLink="/challenges" [class.active]="isActive('/challenges')" class="highlight-btn" title="Retos">Retos</a>
+    <a routerLink="/post-create" [class.active]="isActive('/post-create')" title="Crear">Crear</a>
+    <a routerLink="/profile" [class.active]="isActive('/profile')" title="Perfil">Perfil</a>
+    <button class="settings-btn" [class.active]="isSettingsActive()" (click)="goToSettings()" title="Ajustes">⚙️</button>
   </div>
 </nav>
 
