@@ -67,15 +67,16 @@ export class AjustesComponent implements OnInit {
     });
   }
 
-  unblockUser(id: number) {
-    this.blockService.unblockUser(id).subscribe({
-      next: () => {
-        this.notificationService.success('Usuario desbloqueado');
-        if (this.blockedUsers().length === 0) this.closeBlockedModal();
-      },
-      error: () => this.notificationService.error('Error al desbloquear usuario.')
-    });
-  }
+  unblockUser(id: number | undefined) {
+  if (!id) return;
+  // Asegúrate de que no diga "unblockUsser"
+  this.blockService.blockUser(id).subscribe({
+    next: () => {
+      this.notificationService.success('Usuario desbloqueado');
+      this.blockService.cargarRestricciones();
+    }
+  });
+}
 
   submitTicket() {
     if (!this.newTicket.subject.trim() || !this.newTicket.description.trim()) {

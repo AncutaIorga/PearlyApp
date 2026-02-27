@@ -1,99 +1,93 @@
 import { Injectable, signal, inject } from '@angular/core';
-import { Observable, of, delay } from 'rxjs';
-import { PostService } from './post'; 
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { environment } from '../../environments/environment';
+import { Observable, tap, catchError, throwError } from 'rxjs';
 
-export interface BlockedUser {
-  id: number;
-  name: string;
-  avatar?: string;
-  blockedAt: Date;
-}
-
-export interface MutedUser {
-  name: string;
+export interface Bloqueo {
+  id?: number;
+  idBloqueador: number;
+  idBloqueado: number;
+  tipo: 'block' | 'mute';
+  name?: string; 
   avatar?: string;
 }
 
 @Injectable({ providedIn: 'root' })
 export class BlockService {
-  public blockedUsers = signal<BlockedUser[]>([]);
-  public mutedUsers = signal<MutedUser[]>([]);
-  private postService = inject(PostService);
+  private http = inject(HttpClient);
+  private apiUrl = `${environment.apiUrl}/bloqueos`;
 
-  constructor() {
-    this.loadFromStorage();
+  public blockedUsers = signal<Bloqueo[]>([]);
+  public mutedUsers = signal<Bloqueo[]>([]);
+
+  constructor() { this.cargarRestricciones(); }
+
+  private getMyId(): number {
+    const id = localStorage.getItem('idUsuario') || localStorage.getItem('userId');
+    return id ? Number(id) : 0;
+  }
+  
+  /**
+   * Carga las restricciones desde el backend y actualiza los signals locales.
+   */
+  cargarRestricciones() {
+    const myId = this.getMyId();
+    if (myId === 0) return;
+
+    // CORRECCIÓN: Se define la URL completa usando el ID del usuario
+    const fetchUrl = `${this.apiUrl}/usuario/${myId}`;
+
+    this.http.get<Bloqueo[]>(fetchUrl).subscribe({
+      next: (data) => {
+        const mapped = data.map(b => ({
+          ...b,
+          name: b.name || `Usuario ${b.idBloqueado}`
+        }));
+        
+        // Seteamos los signals filtrando por tipo para que el HTML los pinte bien
+        this.blockedUsers.set(mapped.filter(r => r.tipo === 'block'));
+        this.mutedUsers.set(mapped.filter(r => r.tipo === 'mute'));
+      },
+      error: (err) => console.error('Error cargando restricciones:', err)
+    });
   }
 
-  // --- SEPARACIÓN DE DATOS POR USUARIO ---
-  private getKey(type: 'blocked' | 'muted'): string {
-    const email = localStorage.getItem('userEmail') || 'default';
-    return `${type}-users-${email}`;
+  isBlocked(targetId: number | string): boolean {
+    return this.blockedUsers().some(u => u.idBloqueado === Number(targetId));
   }
 
-  private loadFromStorage() {
-    const savedBlocks = localStorage.getItem(this.getKey('blocked'));
-    if (savedBlocks) {
-      try { this.blockedUsers.set(JSON.parse(savedBlocks)); } catch (e) {}
-    }
-    const savedMutes = localStorage.getItem(this.getKey('muted'));
-    if (savedMutes) {
-      try { this.mutedUsers.set(JSON.parse(savedMutes)); } catch (e) {}
-    }
+  isMuted(targetId: number | string): boolean {
+    return this.mutedUsers().some(u => u.idBloqueado === Number(targetId));
   }
 
-  private saveToStorage() {
-    localStorage.setItem(this.getKey('blocked'), JSON.stringify(this.blockedUsers()));
-    localStorage.setItem(this.getKey('muted'), JSON.stringify(this.mutedUsers()));
+  blockUser(targetId: number): Observable<any> {
+    return this.restringir(targetId, 'block');
   }
 
-  isBlocked(username: string): boolean {
-    return this.blockedUsers().some(u => u.name === username);
+  muteUser(targetId: number | string): Observable<any> {
+    return this.restringir(Number(targetId), 'mute');
   }
 
-  isMuted(username: string): boolean {
-    return this.mutedUsers().some(u => u.name === username);
+  private restringir(targetId: number, tipo: 'block' | 'mute'): Observable<any> {
+    const payload = { idBloqueador: this.getMyId(), idBloqueado: targetId, tipo };
+    return this.http.post(this.apiUrl, payload).pipe(
+      tap(() => this.cargarRestricciones())
+    );
   }
 
-  blockUserByUsername(username: string): Observable<void> {
-    if (!this.isBlocked(username)) {
-      const userPosts = this.postService.getPostsByUser(username);
-      const userAvatar = userPosts.length > 0 ? userPosts[0].userAvatar : '';
-      this.blockedUsers.update(users => [
-        ...users,
-        { id: Date.now(), name: username, avatar: userAvatar, blockedAt: new Date() }
-      ]);
-      this.saveToStorage();
-    }
-    return of(void 0).pipe(delay(100));
+  unrestrict(targetId: number | string, tipo: 'block' | 'mute'): Observable<any> {
+    const params = new HttpParams()
+      .set('bloqueador', this.getMyId().toString())
+      .set('bloqueado', targetId.toString())
+      .set('tipo', tipo);
+      
+    return this.http.delete(`${this.apiUrl}/eliminar`, { params, responseType: 'text' }).pipe(
+      tap(() => this.cargarRestricciones())
+    );
   }
 
-  unblockUser(userId: number): Observable<void> {
-    this.blockedUsers.update(users => users.filter(u => u.id !== userId));
-    this.saveToStorage();
-    return of(void 0).pipe(delay(100));
-  }
-
-  unblockUserByUsername(username: string): Observable<void> {
-    this.blockedUsers.update(users => users.filter(u => u.name !== username));
-    this.saveToStorage();
-    return of(void 0).pipe(delay(100));
-  }
-
-  muteUserByUsername(username: string): Observable<void> {
-    if (!this.isMuted(username)) {
-      const userPosts = this.postService.getPostsByUser(username);
-      this.mutedUsers.update(users => [...users, { name: username, avatar: userPosts.length > 0 ? userPosts[0].userAvatar : '' }]);
-      this.saveToStorage();
-    }
-    return of(void 0).pipe(delay(100));
-  }
-
-  unmuteUser(username: string): void {
-    this.mutedUsers.update(users => users.filter(u => u.name !== username));
-    this.saveToStorage();
-  }
-
-  getBlockedUsers(): Observable<BlockedUser[]> {
-    return of(this.blockedUsers());
-  }
+  // Métodos de compatibilidad
+  blockUserByUsername(id: any) { return this.blockUser(Number(id)); }
+  unblockUserByUsername(id: any) { return this.unrestrict(id, 'block'); }
+  unmuteUser(id: any) { return this.unrestrict(id, 'mute'); }
 }

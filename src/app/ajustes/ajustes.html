@@ -1,6 +1,6 @@
 <app-navbar></app-navbar>
 
-<div class="settings-container">
+<div class="settings-container theme-transition">
   <div class="settings-content">
     <h1>⚙︎ Ajustes</h1>
 
@@ -54,16 +54,16 @@
             <div class="blocked-user-item">
               <div class="blocked-user-info">
                  <div class="blocked-avatar-container">
-                    @if (user.avatar) { 
-                      <img [src]="user.avatar" class="blocked-img"> 
+                    @if (user?.avatar) { 
+                      <img [src]="user?.avatar" class="blocked-img"> 
                     } @else { 
                       <div class="blocked-avatar-placeholder">
-                        {{ user.name.charAt(0).toUpperCase() }}
+                        {{ user?.name?.charAt(0)?.toUpperCase() }}
                       </div> 
                     }
                  </div>
                  <div class="blocked-user-text">
-                   <h4>{{ user.name }}</h4>
+                   <h4>{{ user?.name }}</h4>
                    <p>Bloqueado</p>
                  </div>
               </div>
@@ -93,19 +93,19 @@
         </div>
       } @else {
         <div class="blocked-users-list">
-          @for (user of blockService.mutedUsers(); track user.name) {
+          @for (user of blockService.mutedUsers(); track user.id) {
             <div class="blocked-user-item">
               <div class="blocked-user-info">
                  <div class="blocked-avatar-container">
-                    @if (user.avatar) { <img [src]="user.avatar" class="blocked-img"> }
-                    @else { <div class="blocked-avatar-placeholder">{{ user.name.charAt(0).toUpperCase() }}</div> }
+                    @if (user?.avatar) { <img [src]="user?.avatar" class="blocked-img"> }
+                    @else { <div class="blocked-avatar-placeholder">{{ user?.name?.charAt(0)?.toUpperCase() }}</div> }
                  </div>
                  <div class="blocked-user-text">
-                   <h4>{{ user.name }}</h4>
+                   <h4>{{ user?.name }}</h4>
                    <p>Silenciado</p>
                  </div>
               </div>
-              <button class="unblock-btn" (click)="blockService.unmuteUser(user.name)">Desilenciar</button>
+              <button class="unblock-btn" (click)="blockService.unrestrict(user.idBloqueado, 'mute')">Desilenciar</button>
             </div>
           }
         </div>
@@ -153,11 +153,11 @@
             <div class="blocked-user-item">
               <div class="blocked-user-info">
                  <div class="blocked-avatar-container">
-                    @if (user.avatar) { <img [src]="user.avatar" class="blocked-img"> }
-                    @else { <div class="blocked-avatar-placeholder">{{ user.name.charAt(0).toUpperCase() }}</div> }
+                    @if (user?.avatar) { <img [src]="user?.avatar" class="blocked-img"> }
+                    @else { <div class="blocked-avatar-placeholder">{{ user?.name?.charAt(0)?.toUpperCase() }}</div> }
                  </div>
                  <div class="blocked-user-text">
-                   <h4>{{ user.name }}</h4>
+                   <h4>{{ user?.name }}</h4>
                    <p>Bloqueado</p>
                  </div>
               </div>

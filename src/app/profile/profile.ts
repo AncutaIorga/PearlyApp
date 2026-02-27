@@ -270,8 +270,13 @@ export class ProfileComponent implements OnInit {
   addComment() {
     if (this.selectedPost && this.newComment.trim()) {
       const myUser = this.userService.getUser();
-      this.postService.addComment(this.selectedPost.id, this.newComment.trim(), myUser.nombre, myUser.avatar);
-      
+      this.postService.addComment(this.selectedPost.id, this.newComment.trim()).subscribe({
+        next: () => {
+          this.newComment = ''; // Limpia el campo tras el éxito
+          this.notificationService.showCommentAdded();
+        },
+        error: (err) => console.error('Error al comentar:', err)
+      });      
       const updatedPost = this.postService.getPostById(this.selectedPost.id);
       if (updatedPost) {
         this.selectedPost.comments = updatedPost.comments;
