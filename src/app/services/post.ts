@@ -1,10 +1,10 @@
 import { Injectable, signal, inject } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
+import { HttpClient } from '@angular/common/http';
 import { environment } from '../../environments/environment';
 import { NotificationService } from './notification';
 import { BlockService } from './block';
 import { Observable } from 'rxjs';
-import { map, tap } from 'rxjs/operators';
+import { tap } from 'rxjs/operators';
 
 export interface Comment {
   id: number;
@@ -28,12 +28,7 @@ export interface Post {
   comments: Comment[];
   createdAt: Date;
   likedByMe?: boolean; 
-  challengeInfo?: { 
-    id: string;
-    title: string;
-    category: string;
-    points: number;
-  };
+  idRetoVinculado?: number;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -61,25 +56,24 @@ export class PostService {
   loadPostsFromBackend() {
     this.http.get<any[]>(this.apiUrl).subscribe({
       next: (data) => {
-        const mutes = this.blockService.mutedUsers().map(m => m.idBloqueado);
-        const blocks = this.blockService.blockedUsers().map(b => b.idBloqueado);
-        const restringidos = [...mutes, ...blocks];
+        const restringidos = new Set([
+          ...this.blockService.mutedUsers().map(m => m.idBloqueado),
+          ...this.blockService.blockedUsers().map(b => b.idBloqueado)
+        ]);
 
-        // CORRECCIÓN: Se añaden todos los campos necesarios para cumplir con la interfaz Post
         const mappedPosts: Post[] = data
-          .filter(dbPost => !restringidos.includes(dbPost.idUsuario))
+          .filter(dbPost => !restringidos.has(dbPost.idUsuario))
           .map(dbPost => ({
             id: dbPost.id,
             idUsuario: dbPost.idUsuario,
-            user: dbPost.nombreUsuario || dbPost.user || `Usuario ${dbPost.idUsuario}`,
-            userAvatar: dbPost.avatarUsuario || dbPost.avatar || '',
+            user: dbPost.nombreUsuario || `Usuario ${dbPost.idUsuario}`,
+            userAvatar: dbPost.avatarUsuario || '',
             image: dbPost.imagen,
             text: dbPost.texto,
             likes: dbPost.likesCount || 0,
             likedBy: dbPost.likedBy || [],
-            // Mapeo detallado de comentarios
-            comments: (dbPost.comments || dbPost.comentarios || []).map((c: any) => ({
-              id: c.idComentario || c.id,
+            comments: (dbPost.comments || []).map((c: any) => ({
+              id: c.id || c.idComentario,
               idPublicacion: c.idPublicacion,
               idUsuario: c.idUsuario,
               user: c.nombreUsuario || 'Usuario',
@@ -87,12 +81,7 @@ export class PostService {
               createdAt: new Date(c.fecha)
             })),
             createdAt: new Date(dbPost.fecha),
-            challengeInfo: dbPost.idRetoVinculado ? {
-              id: String(dbPost.idRetoVinculado),
-              title: 'Reto Completado',
-              category: 'mental',
-              points: 0
-            } : undefined
+            idRetoVinculado: dbPost.idRetoVinculado
           }));
         
         mappedPosts.sort((a, b) => b.createdAt.getTime() - a.createdAt.getTime());
@@ -101,6 +90,8 @@ export class PostService {
       error: (err) => console.error('Error cargando publicaciones', err)
     });
   }
+
+  // --- MÉTODOS RECUPERADOS PARA EL PERFIL Y COMPATIBILIDAD ---
 
   getAllPosts(): Post[] {
     const currentUser = this.getCurrentUserName();
@@ -115,23 +106,31 @@ export class PostService {
   }
 
   getPostById(id: number | string): Post | undefined {
+    // Usamos == para permitir comparaciones entre string y number si fuera necesario
     return this.getAllPosts().find(p => p.id == id);
   }
 
-  addPost(postData: { image: string; text: string; challengeInfo?: any; }) {
+  updatePost(postId: number, data: any) {
+    this.http.put(`${this.apiUrl}/${postId}`, data).subscribe({
+      next: () => {
+        this.notification.success('Publicación actualizada');
+        this.loadPostsFromBackend();
+      },
+      error: () => this.notification.error('Error al actualizar')
+    });
+  }
+
+  // ---------------------------------------------------------
+
+  addPost(postData: { image: string; text: string; idRetoVinculado?: number; }) {
     const userId = this.getCurrentUserId();
     if (!userId) return;
 
-    const payload: any = {
-      idUsuario: Number(userId),
+    const payload = {
+      idUsuario: userId,
       texto: postData.text.trim(),
-      fecha: new Date().toISOString().split('.')[0],
       imagen: postData.image,
-      idRetoVinculado: postData.challengeInfo?.id ? Number(postData.challengeInfo.id) : undefined,
-      likesCount: 0,
-      likedBy: [],
-      nombreUsuario: this.getCurrentUserName(),
-      avatarUsuario: undefined
+      idRetoVinculado: postData.idRetoVinculado || null
     };
 
     this.http.post(this.apiUrl, payload).subscribe({
@@ -140,10 +139,23 @@ export class PostService {
         this.loadPostsFromBackend(); 
       },
       error: (err) => {
-        console.error('Error 400 detallado:', err);
-        this.notification.error('Error al crear la publicación.');
+        console.error('Error al crear post:', err);
+        this.notification.error('No se pudo publicar.');
       }
     });
+  }
+
+  addComment(postId: number, text: string): Observable<any> {
+    const userId = this.getCurrentUserId();
+    const payload = {
+      idPublicacion: postId,
+      idUsuario: userId,
+      contenido: text.trim()
+    };
+    
+    return this.http.post(`${environment.apiUrl}/comentarios`, payload).pipe(
+      tap(() => this.loadPostsFromBackend())
+    );
   }
 
   toggleLike(postId: number) {
@@ -166,34 +178,20 @@ export class PostService {
     }
   }
 
-  addComment(postId: number, text: string): Observable<any> {
-    const userId = Number(localStorage.getItem('idUsuario') || localStorage.getItem('userId'));
-    const fechaActual = new Date().toISOString().split('.')[0]; // Formato YYYY-MM-DDTHH:mm:ss
-
-    const payload = {
-      idPublicacion: postId,
-      idUsuario: userId,
-      contenido: text.trim(),
-      fecha: fechaActual // <--- Crucial para el Backend
-    };
-    
-    return this.http.post(`${environment.apiUrl}/comentarios`, payload).pipe(
-      tap(() => this.loadPostsFromBackend())
-    );
+  deleteComment(postId: number, commentId: number) {
+    this.http.delete(`${environment.apiUrl}/comentarios/${commentId}`).subscribe({
+      next: () => {
+        this.notification.success('Comentario eliminado');
+        this.loadPostsFromBackend();
+      },
+      error: () => this.notification.error('No se pudo eliminar el comentario')
+    });
   }
 
   deletePost(postId: number) {
     this.http.delete(`${this.apiUrl}/${postId}`).subscribe({
       next: () => this.loadPostsFromBackend(),
-      error: () => this.notification.error('No se pudo eliminar la publicación.')
+      error: () => this.notification.error('Error al eliminar.')
     });
-  }
-  
-  updatePost(postId: number, data: any) {
-    this.http.put(`${this.apiUrl}/${postId}`, data).subscribe(() => this.loadPostsFromBackend());
-  }
-
-  deleteComment(postId: number, commentId: number) {
-    this.http.delete(`${environment.apiUrl}/comentarios/${commentId}`).subscribe(() => this.loadPostsFromBackend());
   }
 }

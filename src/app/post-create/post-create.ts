@@ -9,7 +9,7 @@ import { NotificationService } from '../services/notification';
 import { ChallengeService } from '../services/challenge';
 
 interface CompletedChallenge {
-  id: string;
+  id: number | string;
   title: string;
   category: string;
   points: number;
@@ -74,7 +74,7 @@ export class PostCreateComponent implements OnInit {
     if (found) {
       this.selectedChallenge = found;
       if (!this.text.trim()) {
-        this.text = `¡He conseguido completar el reto "${this.selectedChallenge.title}"! 💪`;
+        this.text = `¡He conseguido completar el resto "${this.selectedChallenge.title}"! 💪`;
       }
     }
   }
@@ -89,7 +89,6 @@ export class PostCreateComponent implements OnInit {
     return names[category] || 'Bienestar';
   }
 
-  // ✅ VERSIÓN CORREGIDA - BORDES BLANCOS
   onImageSelected(event: any) {
     const file = event.target.files[0];
     if (!file) return;
@@ -114,15 +113,11 @@ export class PostCreateComponent implements OnInit {
           img.onload = () => {
             try {
               const canvas = document.createElement('canvas');
-              
-              // SOLUCIÓN: En lugar de tamaño fijo, mantener proporciones
-              // pero limitar el tamaño máximo
-              const MAX_SIZE = 600; // Tamaño máximo
+              const MAX_SIZE = 600;
               
               let width = img.width;
               let height = img.height;
               
-              // Redimensionar manteniendo proporción
               if (width > height) {
                 if (width > MAX_SIZE) {
                   height = Math.round((height * MAX_SIZE) / width);
@@ -140,23 +135,14 @@ export class PostCreateComponent implements OnInit {
               
               const ctx = canvas.getContext('2d');
               if (ctx) {
-                // FONDO BLANCO (importante para que no haya bordes negros)
                 ctx.fillStyle = '#FFFFFF';
                 ctx.fillRect(0, 0, width, height);
-                
-                // Dibujar la imagen SIN escalado forzado
                 ctx.drawImage(img, 0, 0, width, height);
               }
 
-              // Comprimir con calidad media para balance velocidad/calidad
               const compressedBase64 = canvas.toDataURL('image/jpeg', 0.6);
-              
               this.selectedImage = compressedBase64;
               this.isImageProcessing = false;
-              
-              const pesoFinalKB = Math.round(compressedBase64.length / 1024);
-              console.log(`✅ Imagen procesada: ${pesoFinalKB} KB - ${width}x${height}`);
-              
               this.notificationService.success('¡Imagen lista!');
               
             } catch (error) {
@@ -210,20 +196,17 @@ export class PostCreateComponent implements OnInit {
     this.isSubmitting = true;
 
     try {
-      await new Promise(resolve => setTimeout(resolve, 500));
-
+      // Ajuste para que coincida con la interfaz de PostService
       this.postService.addPost({
         image: this.selectedImage, 
         text: this.text,
-        challengeInfo: this.selectedChallenge ? {
-          id: String(this.selectedChallenge.id),
-          title: this.selectedChallenge.title,
-          category: this.selectedChallenge.category,
-          points: this.selectedChallenge.points
-        } : undefined
+        idRetoVinculado: this.selectedChallenge ? Number(this.selectedChallenge.id) : undefined
       });
 
-      this.router.navigate(['/feed']);
+      // Pequeño delay para dejar que el service inicie la carga antes de navegar
+      setTimeout(() => {
+        this.router.navigate(['/feed']);
+      }, 300);
 
     } catch (error: any) {
       console.error(error);

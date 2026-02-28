@@ -1,4 +1,4 @@
-import { Component, Input, inject, OnInit } from '@angular/core';
+import { Component, Input, inject, OnInit, OnChanges, SimpleChanges } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router'; 
@@ -16,7 +16,7 @@ import { TimeAgoPipe } from '../../pipes/time-ago-pipe';
   templateUrl: './post-card.html',
   styleUrls: ['./post-card.css']
 })
-export class PostCardComponent implements OnInit {
+export class PostCardComponent implements OnInit, OnChanges {
   @Input() post!: Post;
   
   private postService = inject(PostService);
@@ -28,9 +28,25 @@ export class PostCardComponent implements OnInit {
   newComment = '';
   isLiked = false;
   isTextExpanded = false;
+  
+  // VARIABLE CRÍTICA: Añadida para resolver el error TS2551 del terminal
   isAddingComment = false;
 
+  // Imagen por defecto para usuarios sin avatar
+  defaultAvatar = 'assets/default-avatar.png';
+
   ngOnInit() {
+    this.updateLikeStatus();
+  }
+
+  // Sincroniza el estado del Like cuando el Signal del servicio actualiza el @Input
+  ngOnChanges(changes: SimpleChanges) {
+    if (changes['post']) {
+      this.updateLikeStatus();
+    }
+  }
+
+  private updateLikeStatus() {
     this.isLiked = this.post.likedByMe || false;
   }
 
@@ -39,56 +55,103 @@ export class PostCardComponent implements OnInit {
     return this.post.user?.toLowerCase() === currentName.toLowerCase();
   }
 
+  // Manejador centralizado de acciones del menú de opciones
   onOptionSelected(event: { action: string; postId: number }) {
-    if (event.action === 'delete') this.deletePost();
-    if (event.action === 'block') this.bloquearAutor();
-    if (event.action === 'mute') this.silenciarAutor();
+    switch (event.action) {
+      case 'delete':
+        this.deletePost();
+        break;
+      case 'block':
+        this.bloquearAutor();
+        break;
+      case 'mute':
+        this.silenciarAutor();
+        break;
+    }
   }
 
   private bloquearAutor() {
-    this.blockService.blockUser(this.post.idUsuario).subscribe(() => {
-      this.notificationService.success('Usuario bloqueado');
-      this.postService.loadPostsFromBackend();
-    });
+    if (confirm(`¿Estás seguro de que quieres bloquear a ${this.post.user}?`)) {
+      this.blockService.blockUser(this.post.idUsuario).subscribe({
+        next: () => {
+          this.notificationService.success(`Usuario ${this.post.user} bloqueado`);
+          this.postService.loadPostsFromBackend();
+        },
+        error: () => this.notificationService.error('Error al bloquear usuario')
+      });
+    }
   }
 
   private silenciarAutor() {
-    this.blockService.muteUser(this.post.idUsuario).subscribe(() => {
-      this.notificationService.success('Usuario silenciado');
-      this.postService.loadPostsFromBackend();
+    this.blockService.muteUser(this.post.idUsuario).subscribe({
+      next: () => {
+        this.notificationService.success(`Usuario ${this.post.user} silenciado`);
+        this.postService.loadPostsFromBackend();
+      },
+      error: () => this.notificationService.error('Error al silenciar usuario')
     });
   }
 
   canDeleteComment(comment: Comment): boolean {
     const currentName = localStorage.getItem('userName') || '';
-    return comment.user.toLowerCase() === currentName.toLowerCase();
+    // Un comentario puede ser borrado por su autor O por el dueño del post
+    return comment.user?.toLowerCase() === currentName.toLowerCase() || this.isOwner;
   }
 
   deleteComment(commentId: number): void {
-    this.postService.deleteComment(this.post.id, commentId);
+    if (confirm('¿Borrar comentario?')) {
+      this.postService.deleteComment(this.post.id, commentId);
+    }
   }
 
   addComment() {
-    if (this.newComment.trim()) {
-      this.postService.addComment(this.post.id, this.newComment).subscribe({
+    const text = this.newComment.trim();
+    if (text && !this.isAddingComment) {
+      this.isAddingComment = true; // Deshabilita el botón en el HTML
+      
+      this.postService.addComment(this.post.id, text).subscribe({
         next: () => {
-          this.newComment = ''; // Limpia el input
+          this.newComment = ''; 
+          this.isAddingComment = false;
           this.notificationService.success('¡Comentario añadido!');
-          // No hace falta llamar a loadPosts aquí porque el servicio ya lo hace con el 'tap'
+          this.showComments = true;
+        },
+        error: () => {
+          this.isAddingComment = false;
+          this.notificationService.error('Error al enviar el comentario');
         }
       });
     }
   }
 
   toggleLike() {
-    this.postService.toggleLike(this.post.id);
+    // UI Optimista: Cambiamos visualmente antes de la respuesta del servidor
     this.isLiked = !this.isLiked;
+    this.postService.toggleLike(this.post.id);
   }
 
-  toggleComments() { this.showComments = !this.showComments; }
-  deletePost() { this.postService.deletePost(this.post.id); }
-  getCurrentUserAvatar() { return this.userService.getUser().avatar || ''; }
-  get shouldTruncate() { return this.post.text.length > 100; }
-  get displayText() { return (this.shouldTruncate && !this.isTextExpanded) ? this.post.text.substring(0, 100) + '...' : this.post.text; }
-}
+  toggleComments() { 
+    this.showComments = !this.showComments; 
+  }
 
+  deletePost() { 
+    if (confirm('¿Seguro que quieres eliminar esta publicación?')) {
+      this.postService.deletePost(this.post.id); 
+    }
+  }
+
+  getCurrentUserAvatar() { 
+    return this.userService.getUser()?.avatar || this.defaultAvatar; 
+  }
+
+  get shouldTruncate() { 
+    return (this.post.text?.length || 0) > 100; 
+  }
+
+  get displayText() { 
+    if (this.shouldTruncate && !this.isTextExpanded) {
+      return this.post.text.substring(0, 100) + '...';
+    }
+    return this.post.text;
+  }
+}
