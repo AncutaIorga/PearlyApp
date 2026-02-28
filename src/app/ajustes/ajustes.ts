@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, Signal, computed, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, computed, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { NavbarComponent } from '../shared/navbar/navbar';
@@ -8,6 +8,7 @@ import { SupportService, CreateTicketDto } from '../services/support';
 import { BlockService } from '../services/block';
 import { ThemeService } from '../services/theme';
 import { NotificationService } from '../services/notification';
+import { PostService } from '../services/post';
 
 @Component({
   selector: 'app-ajustes',
@@ -23,23 +24,38 @@ export class AjustesComponent implements OnInit {
   public themeService = inject(ThemeService);
   public authService = inject(AuthService);
   public userService = inject(UserService);
-  
+  public postService = inject(PostService);
   private cdr = inject(ChangeDetectorRef);
 
-  public blockedUsers = computed(() => this.blockService.blockedUsers ? this.blockService.blockedUsers() : []);
+  /**
+   * Como el Backend ahora envía el nombre real ("Ivan"), 
+   * el computed solo se encarga de eliminar duplicados.
+   */
+  public blockedUsers = computed(() => {
+    const list = this.blockService.blockedUsers();
+    const uniqueMap = new Map(list.map(u => [u.idBloqueado, u]));
+    return Array.from(uniqueMap.values());
+  });
+
+  public mutedUsers = computed(() => {
+    const list = this.blockService.mutedUsers();
+    const uniqueMap = new Map(list.map(u => [u.idBloqueado, u]));
+    return Array.from(uniqueMap.values());
+  });
+
   public tickets = this.supportService.getTicketsSignal(); 
   
   showBlockedModal = false;
-
   loading = { privacy: false, tickets: false };
   privacySettings = { isPrivate: false };
   newTicket: CreateTicketDto = { subject: '', description: '' };
 
   ngOnInit() {
     const user = this.userService.getUser();
-    if (user) {
-      this.privacySettings.isPrivate = user.isPrivate ?? false;
+    if (user) { 
+      this.privacySettings.isPrivate = user.isPrivate ?? false; 
     }
+    this.blockService.cargarRestricciones();
   }
 
   openBlockedModal() { this.showBlockedModal = true; }
@@ -52,6 +68,36 @@ export class AjustesComponent implements OnInit {
     this.notificationService.showThemeChanged(newTheme);
   }
 
+  /**
+   * DESBLOQUEAR
+   */
+  unblockUser(idBloqueado: number | undefined) {
+    if (!idBloqueado) return;
+    
+    this.blockService.unblockUserByUsername(idBloqueado).subscribe({
+      next: () => {
+        this.notificationService.success('Usuario desbloqueado');
+        this.postService.loadPostsFromBackend(); // Refresca feed
+      },
+      error: () => this.notificationService.error('Error al desbloquear')
+    });
+  }
+
+  /**
+   * DESILENCIAR (Añadido para que funcione igual que el desbloqueo)
+   */
+  unmuteUser(idBloqueado: number | undefined) {
+    if (!idBloqueado) return;
+
+    this.blockService.unmuteUser(idBloqueado).subscribe({
+      next: () => {
+        this.notificationService.success('Usuario desilenciado');
+        this.postService.loadPostsFromBackend(); // Refresca feed
+      },
+      error: () => this.notificationService.error('Error al desilenciar')
+    });
+  }
+
   updatePrivacy() {
     this.loading.privacy = true;
     this.userService.updatePrivacy(this.privacySettings.isPrivate).subscribe({
@@ -59,55 +105,26 @@ export class AjustesComponent implements OnInit {
         this.loading.privacy = false;
         this.notificationService.showPrivacyUpdated(this.privacySettings.isPrivate);
       },
-      error: (err) => {
+      error: () => {
         this.loading.privacy = false;
         this.privacySettings.isPrivate = !this.privacySettings.isPrivate;
-        this.notificationService.error('Error de conexión al cambiar privacidad.');
       }
     });
   }
 
-  unblockUser(id: number | undefined) {
-  if (!id) return;
-  // Asegúrate de que no diga "unblockUsser"
-  this.blockService.blockUser(id).subscribe({
-    next: () => {
-      this.notificationService.success('Usuario desbloqueado');
-      this.blockService.cargarRestricciones();
-    }
-  });
-}
-
   submitTicket() {
-    if (!this.newTicket.subject.trim() || !this.newTicket.description.trim()) {
-       this.notificationService.warning('Completa todos los campos.');
-       return;
-    }
-    
+    if (!this.newTicket.subject.trim() || !this.newTicket.description.trim()) return;
     this.loading.tickets = true;
-    this.cdr.detectChanges(); 
-    
     this.supportService.createTicket(this.newTicket).subscribe({
       next: (ticket) => {
         this.loading.tickets = false;
         this.newTicket = { subject: '', description: '' };
-        
         this.notificationService.showTicketCreated(ticket.id || 0);
-        
         this.cdr.detectChanges();
       },
-      error: (error) => {
-        this.loading.tickets = false;
-        console.error('Error ticket:', error);
-        
-        if (error.message === 'Usuario no identificado') {
-           this.notificationService.error('Error de sesión. Por favor, recarga la página.');
-        } else if (error.status === 400) {
-           this.notificationService.error('Error 400: El servidor rechazó los datos.');
-        } else {
-           this.notificationService.error('Error de conexión con el servidor.');
-        }
-        this.cdr.detectChanges();
+      error: () => { 
+        this.loading.tickets = false; 
+        this.cdr.detectChanges(); 
       }
     });
   }

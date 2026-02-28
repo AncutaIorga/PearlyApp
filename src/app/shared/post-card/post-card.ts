@@ -62,7 +62,7 @@ export class PostCardComponent implements OnInit, OnChanges {
         this.deletePost();
         break;
       case 'block':
-        this.bloquearAutor();
+        this.bloquearUsuario();
         break;
       case 'mute':
         this.silenciarAutor();
@@ -70,16 +70,20 @@ export class PostCardComponent implements OnInit, OnChanges {
     }
   }
 
-  private bloquearAutor() {
-    if (confirm(`¿Estás seguro de que quieres bloquear a ${this.post.user}?`)) {
-      this.blockService.blockUser(this.post.idUsuario).subscribe({
-        next: () => {
-          this.notificationService.success(`Usuario ${this.post.user} bloqueado`);
-          this.postService.loadPostsFromBackend();
-        },
-        error: () => this.notificationService.error('Error al bloquear usuario')
-      });
-    }
+  bloquearUsuario() {
+    if (!this.post.idUsuario) return;
+
+    this.blockService.blockUser(this.post.idUsuario).subscribe({
+      next: () => {
+        this.notificationService.success('Usuario bloqueado correctamente');
+        // ¡ESTO ES CLAVE! Refresca la lista de posts para que el del usuario bloqueado desaparezca
+        this.postService.loadPostsFromBackend(); 
+      },
+      error: (err) => {
+        console.error('Error al bloquear:', err);
+        this.notificationService.error('No se pudo bloquear al usuario');
+      }
+    });
   }
 
   private silenciarAutor() {

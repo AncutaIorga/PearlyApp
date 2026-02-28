@@ -4,7 +4,7 @@ import { Injectable, signal } from '@angular/core';
   providedIn: 'root'
 })
 export class ThemeService {
-  // Signal para el tema actual
+  // Inicializamos por defecto en 'light'
   currentTheme = signal<'light' | 'dark'>('light');
   
   constructor() {
@@ -12,8 +12,11 @@ export class ThemeService {
   }
   
   private loadSavedTheme() {
-    const savedTheme = localStorage.getItem('pearly-theme') as 'light' | 'dark';
-    if (savedTheme) {
+    // Buscamos la preferencia en el navegador
+    const savedTheme = localStorage.getItem('pearly-theme') as 'light' | 'dark' | null;
+    
+    // Si existe una preferencia guardada, la aplicamos; si no, forzamos 'light'
+    if (savedTheme === 'dark' || savedTheme === 'light') {
       this.setTheme(savedTheme);
     } else {
       this.setTheme('light');
@@ -23,20 +26,27 @@ export class ThemeService {
   setTheme(theme: 'light' | 'dark') {
     this.currentTheme.set(theme);
     localStorage.setItem('pearly-theme', theme);
+    
+    // Aplicamos el atributo al HTML (útil para variables CSS :root)
     document.documentElement.setAttribute('data-theme', theme);
     
-    
-    document.body.classList.toggle('dark-theme', theme === 'dark');
-    document.body.classList.toggle('light-theme', theme === 'light');
+    // Gestión de clases en el body
+    if (theme === 'dark') {
+      document.body.classList.add('dark-theme');
+      document.body.classList.remove('light-theme');
+    } else {
+      document.body.classList.add('light-theme');
+      document.body.classList.remove('dark-theme');
+    }
   }
   
-  toggleTheme() {
+  toggleTheme(): 'light' | 'dark' {
     const newTheme = this.currentTheme() === 'light' ? 'dark' : 'light';
     this.setTheme(newTheme);
     return newTheme;
   }
   
-  isDarkMode() {
+  isDarkMode(): boolean {
     return this.currentTheme() === 'dark';
   }
 }

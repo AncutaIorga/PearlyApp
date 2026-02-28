@@ -10,6 +10,7 @@ export interface Bloqueo {
   tipo: 'block' | 'mute';
   name?: string; 
   avatar?: string;
+  username?: string; 
 }
 
 @Injectable({ providedIn: 'root' })
@@ -20,7 +21,9 @@ export class BlockService {
   public blockedUsers = signal<Bloqueo[]>([]);
   public mutedUsers = signal<Bloqueo[]>([]);
 
-  constructor() { this.cargarRestricciones(); }
+  constructor() { 
+    this.cargarRestricciones(); 
+  }
 
   private getMyId(): number {
     const id = localStorage.getItem('idUsuario') || localStorage.getItem('userId');
@@ -28,23 +31,22 @@ export class BlockService {
   }
   
   /**
-   * Carga las restricciones desde el backend y actualiza los signals locales.
+   * Carga las restricciones. Ahora confía plenamente en el Backend
+   * porque el DTO de Kotlin ya incluye 'name' y 'avatar'.
    */
   cargarRestricciones() {
     const myId = this.getMyId();
     if (myId === 0) return;
 
-    // CORRECCIÓN: Se define la URL completa usando el ID del usuario
-    const fetchUrl = `${this.apiUrl}/usuario/${myId}`;
-
-    this.http.get<Bloqueo[]>(fetchUrl).subscribe({
+    this.http.get<Bloqueo[]>(`${this.apiUrl}/usuario/${myId}`).subscribe({
       next: (data) => {
+        // Limpiamos la lista y asignamos valores por defecto si algo falla
         const mapped = data.map(b => ({
           ...b,
-          name: b.name || `Usuario ${b.idBloqueado}`
+          // Prioridad: El nombre que viene del JOIN, si no, el username, si no, el ID
+          name: b.name || b.username || `Usuario ${b.idBloqueado}`
         }));
         
-        // Seteamos los signals filtrando por tipo para que el HTML los pinte bien
         this.blockedUsers.set(mapped.filter(r => r.tipo === 'block'));
         this.mutedUsers.set(mapped.filter(r => r.tipo === 'mute'));
       },
@@ -60,8 +62,10 @@ export class BlockService {
     return this.mutedUsers().some(u => u.idBloqueado === Number(targetId));
   }
 
-  blockUser(targetId: number): Observable<any> {
-    return this.restringir(targetId, 'block');
+  // --- ACCIONES ---
+
+  blockUser(targetId: number | string): Observable<any> {
+    return this.restringir(Number(targetId), 'block');
   }
 
   muteUser(targetId: number | string): Observable<any> {
@@ -75,19 +79,25 @@ export class BlockService {
     );
   }
 
+  /**
+   * Elimina la restricción. He cambiado responseType a 'json' (por defecto)
+   * ya que ahora el Back devuelve un Map/JSON con un mensaje.
+   */
   unrestrict(targetId: number | string, tipo: 'block' | 'mute'): Observable<any> {
     const params = new HttpParams()
       .set('bloqueador', this.getMyId().toString())
       .set('bloqueado', targetId.toString())
       .set('tipo', tipo);
       
-    return this.http.delete(`${this.apiUrl}/eliminar`, { params, responseType: 'text' }).pipe(
-      tap(() => this.cargarRestricciones())
+    return this.http.delete(`${this.apiUrl}/eliminar`, { params }).pipe(
+      tap(() => this.cargarRestricciones()),
+      catchError(err => {
+        console.error(`Error al quitar restricción (${tipo}):`, err);
+        return throwError(() => err);
+      })
     );
   }
 
-  // Métodos de compatibilidad
-  blockUserByUsername(id: any) { return this.blockUser(Number(id)); }
   unblockUserByUsername(id: any) { return this.unrestrict(id, 'block'); }
   unmuteUser(id: any) { return this.unrestrict(id, 'mute'); }
 }

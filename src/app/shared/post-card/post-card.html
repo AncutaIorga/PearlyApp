@@ -3,9 +3,9 @@
     <div class="user-section">
       <div class="avatar" [routerLink]="['/profile', post.user]" style="cursor: pointer">
         @if (post.userAvatar) {
-          <img [src]="post.userAvatar" [alt]="post.user">
+          <img [src]="post.userAvatar" [alt]="post.user" (error)="post.userAvatar = undefined">
         } @else {
-          <span>{{ post.user.charAt(0).toUpperCase() }}</span>
+          <span>{{ post.user?.charAt(0)?.toUpperCase() || '?' }}</span>
         }
       </div>
       <div class="user-info">
@@ -56,9 +56,9 @@
             <div class="comment-item">
               <div class="comment-avatar">
                 @if (comment.userAvatar) {
-                  <img [src]="comment.userAvatar" [alt]="comment.user">
+                  <img [src]="comment.userAvatar" [alt]="comment.user" (error)="comment.userAvatar = undefined">
                 } @else {
-                  <span>{{ comment.user.charAt(0).toUpperCase() }}</span>
+                  <span>{{ comment.user?.charAt(0)?.toUpperCase() || '?' }}</span>
                 }
               </div>
               <div class="comment-content">
@@ -76,15 +76,22 @@
                 <p class="comment-text">{{ comment.text }}</p>
               </div>
             </div>
+          } @empty {
+            <div class="empty-comments">
+              <p>Sé el primero en comentar...</p>
+            </div>
           }
         </div>
         
         <div class="comment-input">
-          <input [(ngModel)]="newComment" placeholder="Añade un comentario..." 
-                 (keyup.enter)="addComment()" [disabled]="isAddingComment">
-          <button class="send-btn" (click)="addComment()" 
+          <input [(ngModel)]="newComment" 
+                 placeholder="Añade un comentario..." 
+                 (keyup.enter)="addComment()" 
+                 [disabled]="isAddingComment">
+          <button class="send-btn" 
+                  (click)="addComment()" 
                   [disabled]="!newComment.trim() || isAddingComment">
-            {{ isAddingComment ? 'Enviando...' : 'Enviar' }}
+            {{ isAddingComment ? '...' : 'Enviar' }}
           </button>
         </div>
       </div>
