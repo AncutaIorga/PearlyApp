@@ -125,3 +125,36 @@ La fiabilidad de la aplicación está respaldada por un entorno de pruebas autom
 ng test
 
 ```
+
+## Despligue en Desktop
+
+- **Instalacion de rustup:** https://rustup.rs
+
+**PASO 1: isntalar tauri-apps/cli**
+```bash
+
+npm install -g @tauri-apps/cli
+
+```
+
+**PASO 2: isntalar tauri-apps/api**
+```bash
+
+npm install @tauri-apps/api
+
+```
+
+**Para crear el instalador final (.exe):**
+```bash
+
+PowerShell
+
+# Primero compila Angular para producción
+ng build --configuration production --base-href ./
+
+# Luego genera el ejecutable de Tauri
+npx tauri build
+
+El resultado estará en src-tauri/target/release/bundle/msi/.
+
+```
