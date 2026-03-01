@@ -152,6 +152,9 @@ PowerShell
 # Primero compila Angular para producción
 ng build --configuration production --base-href ./
 
+# Para inicar
+npx tauri init
+
 # Luego genera el ejecutable de Tauri
 npx tauri build
 
