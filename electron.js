@@ -1,44 +1,28 @@
 const { app, BrowserWindow } = require('electron');
 const path = require('path');
-const url = require('url');
-
-let mainWindow;
 
 function createWindow() {
-  mainWindow = new BrowserWindow({
+  const win = new BrowserWindow({
     width: 1200,
     height: 800,
-    // El icono en producción debe tomarse de la carpeta compilada (dist) o recursos
-    icon: path.join(__dirname, 'dist/pearly-app/browser/assets/icons/icon-512x512.png'),
     webPreferences: {
-      nodeIntegration: false,
-      contextIsolation: true,
+      nodeIntegration: true,
+      contextIsolation: false,
+      webSecurity: false
     }
   });
 
-  // Construimos la ruta al index.html
-  // Importante: Verifica si tu carpeta es 'dist/pearly-app/browser/index.html' 
-  // o simplemente 'dist/pearly-app/index.html'
-  const indexPath = path.join(__dirname, 'dist/pearly-app/browser/index.html');
+  // PRUEBA ESTA RUTA DIRECTA (Asegúrate de que esta carpeta existe)
+  // Si tu build de Angular crea 'browser', déjalo así. Si no, quita '/browser'
+  const startUrl = path.join(__dirname, 'dist/pearly-app/browser/index.html');
+  
+  console.log("Intentando cargar:", startUrl);
+  win.loadFile(startUrl);
 
-  mainWindow.loadURL(
-    url.format({
-      pathname: indexPath,
-      protocol: 'file:',
-      slashes: true
-    })
-  );
-
-  // SIEMPRE deja esto activado mientras arreglas la pantalla blanca
-  // para ver los errores con Ctrl+Shift+I
-  mainWindow.webContents.openDevTools();
-
-  mainWindow.on('closed', () => {
-    mainWindow = null;
-  });
+  win.webContents.openDevTools();
 }
 
-app.on('ready', createWindow);
+app.whenReady().then(createWindow);
 
 app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') app.quit();

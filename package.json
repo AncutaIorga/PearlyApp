@@ -1,31 +1,14 @@
 {
   "name": "pearly-app",
-  "version": "0.0.0",
-  "main": "electron.js",
+  "version": "1.0.0",
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build",
+    "build": "ng build --base-href ./",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "electron": "electron .",
-    "electron-build": "ng build --configuration=production && electron .",
-    "package-linux": "ng build --configuration=production && electron-builder --linux",
-    "package-windows": "ng build --configuration=production && electron-builder --win",
-    "package-mac": "ng build --configuration=production && electron-builder --mac",
-    "package-all": "ng build --configuration=production && electron-builder -mwl"
-  },
-  "prettier": {
-    "printWidth": 100,
-    "singleQuote": true,
-    "overrides": [
-      {
-        "files": "*.html",
-        "options": {
-          "parser": "angular"
-        }
-      }
-    ]
+    "dev": "tauri dev",
+    "build-desktop": "tauri build"
   },
   "private": true,
   "packageManager": "npm@10.9.3",
@@ -37,6 +20,7 @@
     "@angular/platform-browser": "^21.1.2",
     "@angular/router": "^21.1.2",
     "@angular/service-worker": "^21.1.2",
+    "@tauri-apps/api": "^2.0.0",
     "chart.js": "^4.5.1",
     "ng2-charts": "^8.0.0",
     "rxjs": "~7.8.0",
@@ -47,38 +31,10 @@
     "@angular/build": "^21.1.2",
     "@angular/cli": "^21.1.2",
     "@angular/compiler-cli": "^21.1.2",
+    "@tauri-apps/cli": "^2.0.0",
     "angular-three-plugin": "^4.0.9",
-    "electron": "^40.1.0",
-    "electron-builder": "^26.4.0",
     "jsdom": "^27.1.0",
     "typescript": "~5.9.2",
     "vitest": "^4.0.8"
-  },
-  "build": {
-    "appId": "com.pearlyapp.app",
-    "productName": "PearlyApp",
-    "directories": {
-      "output": "release"
-    },
-    "files": [
-      "dist/**/*",
-      "electron.js"
-    ],
-    "linux": {
-      "target": [
-        "AppImage",
-        "deb"
-      ],
-      "category": "Health",
-      "icon": "src/assets/icons/icon-512x512.png"
-    },
-    "win": {
-      "target": "nsis",
-      "icon": "src/assets/icons/icon-512x512.png"
-    },
-    "mac": {
-      "target": "dmg",
-      "icon": "src/assets/icons/icon-512x512.png"
-    }
   }
 }
