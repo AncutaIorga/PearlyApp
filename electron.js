@@ -8,41 +8,38 @@ function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1200,
     height: 800,
-    icon: path.join(__dirname, 'src/assets/icons/icon-512x512.png'),
+    // El icono en producción debe tomarse de la carpeta compilada (dist) o recursos
+    icon: path.join(__dirname, 'dist/pearly-app/browser/assets/icons/icon-512x512.png'),
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true,
-      enableRemoteModule: false
     }
   });
 
-  // Carga la app de Angular
+  // Construimos la ruta al index.html
+  // Importante: Verifica si tu carpeta es 'dist/pearly-app/browser/index.html' 
+  // o simplemente 'dist/pearly-app/index.html'
+  const indexPath = path.join(__dirname, 'dist/pearly-app/browser/index.html');
+
   mainWindow.loadURL(
     url.format({
-      pathname: path.join(__dirname, 'dist/pearly-app/browser/index.html'),
+      pathname: indexPath,
       protocol: 'file:',
       slashes: true
     })
   );
 
-  // Abre DevTools en desarrollo (opcional)
-  // mainWindow.webContents.openDevTools();
+  // SIEMPRE deja esto activado mientras arreglas la pantalla blanca
+  // para ver los errores con Ctrl+Shift+I
+  mainWindow.webContents.openDevTools();
 
-  mainWindow.on('closed', function () {
+  mainWindow.on('closed', () => {
     mainWindow = null;
   });
 }
 
 app.on('ready', createWindow);
 
-app.on('window-all-closed', function () {
-  if (process.platform !== 'darwin') {
-    app.quit();
-  }
-});
-
-app.on('activate', function () {
-  if (mainWindow === null) {
-    createWindow();
-  }
+app.on('window-all-closed', () => {
+  if (process.platform !== 'darwin') app.quit();
 });
