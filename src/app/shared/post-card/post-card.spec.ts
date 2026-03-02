@@ -24,6 +24,7 @@ describe('PostCardComponent', () => {
     // Objeto Mock con tipos corregidos según tus errores de TS
     component.post = { 
       id: 1, 
+      idUsuario: 1,
       user: 'Usuario Test', 
       text: 'Texto de prueba para la excelencia', 
       image: 'https://picsum.photos/400', 
