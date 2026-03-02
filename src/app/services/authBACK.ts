@@ -118,6 +118,10 @@ export class AuthService {
       const newUser = { nombre, email, password };
       await firstValueFrom(this.http.post(this.apiUrl, newUser, this.httpOptions));
       this.notificationService.success('¡Registro completado!');
+      
+      // Guarda la marca de usuario nuevo para mostrar el tutorial de bienvenida en el Feed.
+      localStorage.setItem('isNewUser', 'true');
+      
       return await this.login(email, password);
     } catch (error: any) {
       if (error.status === 409) this.notificationService.warning('Email ya registrado.');
