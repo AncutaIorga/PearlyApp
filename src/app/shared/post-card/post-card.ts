@@ -67,23 +67,34 @@ export class PostCardComponent implements OnInit, OnChanges {
       case 'mute':
         this.silenciarAutor();
         break;
+      // Añadido el caso para reportar
+      case 'report':
+        this.reportarPost();
+        break;
     }
   }
 
+  // CAMBIADO: Ahora usa la notificación de confirmación
   bloquearUsuario() {
     if (!this.post.idUsuario) return;
 
-    this.blockService.blockUser(this.post.idUsuario).subscribe({
-      next: () => {
-        this.notificationService.success('Usuario bloqueado correctamente');
-        // ¡ESTO ES CLAVE! Refresca la lista de posts para que el del usuario bloqueado desaparezca
-        this.postService.loadPostsFromBackend(); 
-      },
-      error: (err) => {
-        console.error('Error al bloquear:', err);
-        this.notificationService.error('No se pudo bloquear al usuario');
+    this.notificationService.showConfirmAction(
+      `¿Seguro que quieres bloquear a ${this.post.user}?`,
+      'Sí, bloquear',
+      () => {
+        this.blockService.blockUser(this.post.idUsuario).subscribe({
+          next: () => {
+            this.notificationService.success(`Has bloqueado a ${this.post.user}`);
+            // ¡ESTO ES CLAVE! Refresca la lista de posts para que el del usuario bloqueado desaparezca
+            this.postService.loadPostsFromBackend(); 
+          },
+          error: (err) => {
+            console.error('Error al bloquear:', err);
+            this.notificationService.error('No se pudo bloquear al usuario');
+          }
+        });
       }
-    });
+    );
   }
 
   private silenciarAutor() {
@@ -96,16 +107,32 @@ export class PostCardComponent implements OnInit, OnChanges {
     });
   }
 
+  // AÑADIDO: Función para manejar el reporte con la notificación elegante
+  private reportarPost() {
+    this.notificationService.showConfirmAction(
+      '¿Reportar este contenido como inapropiado?',
+      'Sí, reportar',
+      () => {
+        this.notificationService.success('Gracias por tu reporte. Lo revisaremos pronto.');
+      }
+    );
+  }
+
   canDeleteComment(comment: Comment): boolean {
     const currentName = localStorage.getItem('userName') || '';
     // Un comentario puede ser borrado por su autor O por el dueño del post
     return comment.user?.toLowerCase() === currentName.toLowerCase() || this.isOwner;
   }
 
+  // CAMBIADO: Ahora usa la notificación de confirmación
   deleteComment(commentId: number): void {
-    if (confirm('¿Borrar comentario?')) {
-      this.postService.deleteComment(this.post.id, commentId);
-    }
+    this.notificationService.showConfirmAction(
+      '¿Borrar comentario?',
+      'Sí, eliminar',
+      () => {
+        this.postService.deleteComment(this.post.id, commentId);
+      }
+    );
   }
 
   addComment() {
@@ -137,10 +164,15 @@ export class PostCardComponent implements OnInit, OnChanges {
     this.showComments = !this.showComments; 
   }
 
+  // CAMBIADO: Ahora usa la notificación de confirmación
   deletePost() { 
-    if (confirm('¿Seguro que quieres eliminar esta publicación?')) {
-      this.postService.deletePost(this.post.id); 
-    }
+    this.notificationService.showConfirmAction(
+      '¿Seguro que quieres eliminar esta publicación?',
+      'Sí, eliminar',
+      () => {
+        this.postService.deletePost(this.post.id); 
+      }
+    );
   }
 
   getCurrentUserAvatar() { 

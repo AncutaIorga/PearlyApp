@@ -1,43 +1,151 @@
 .notifications-container { 
   position: fixed; 
-  top: 80px; /* Debajo del navbar */
+  top: 85px; /* Un poco más de margen del navbar */
   right: 24px; 
   z-index: 10000; 
   display: flex; 
   flex-direction: column; 
-  gap: 12px; 
+  gap: 16px; 
 }
 
+/* LA TARJETA PRINCIPAL (Igual para todos) */
 .notification {
   background: var(--card-bg); 
   border: 1px solid var(--border-color); 
-  border-radius: 12px;
-  box-shadow: var(--shadow-lg); 
-  min-width: 300px; 
-  overflow: hidden; 
-  animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  border-radius: 16px; /* Más redondeado y moderno */
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); /* Sombra elegante y difusa */
+  width: 340px; 
+  position: relative;
+  animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
-@keyframes slideDown { 
-  from { opacity: 0; transform: translateY(-20px); } 
-  to { opacity: 1; transform: translateY(0); } 
+@keyframes slideIn { 
+  from { opacity: 0; transform: translateX(40px) scale(0.95); } 
+  to { opacity: 1; transform: translateX(0) scale(1); } 
 }
 
-.notification-content { padding: 14px 16px; display: flex; align-items: center; gap: 12px; }
-.notification-icon { width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 14px; color: white; }
-.notification-text { flex: 1; }
-.notification-title { font-size: 14px; font-weight: 700; margin-bottom: 2px; color: var(--text-primary); }
-.notification-message { font-size: 13px; color: var(--text-secondary); }
+.notification-content { 
+  padding: 16px 20px; 
+  display: flex; 
+  align-items: flex-start; 
+  gap: 16px; 
+}
 
-/* Colores pastel elegantes */
-.notification-success .notification-icon { background: #10B981; }
-.notification-error .notification-icon { background: #EF4444; }
-.notification-info .notification-icon { background: #3B82F6; }
-.notification-warning .notification-icon { background: #F59E0B; }
+/* ICONOS (Misma forma geométrica, distinto color) */
+.notification-icon { 
+  width: 36px; 
+  height: 36px; 
+  border-radius: 10px; /* Estilo 'Squircle' de iOS */
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-size: 16px; 
+  font-weight: bold;
+  flex-shrink: 0;
+}
 
-.notification-progress { height: 3px; background: var(--bg-tertiary); width: 100%; position: absolute; bottom: 0; left: 0;}
-.progress-bar { height: 100%; background: var(--text-primary); animation: progress linear forwards; }
-@keyframes progress { from { width: 100%; } to { width: 0%; } }
+/* Colores pastel integrados para el fondo del icono */
+.notification-success .notification-icon { background: rgba(16, 185, 129, 0.15); color: #10B981; }
+.notification-error .notification-icon { background: rgba(239, 68, 68, 0.15); color: #EF4444; }
+.notification-info .notification-icon { background: rgba(59, 130, 246, 0.15); color: #3B82F6; }
+.notification-warning .notification-icon { background: rgba(245, 158, 11, 0.15); color: #F59E0B; }
 
-.notification-close { background: transparent; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; border-radius: 50%; }
-.notification-close:hover { background: var(--bg-tertiary); color: var(--text-primary); }
+/* TEXTOS */
+.notification-body { 
+  flex: 1; 
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 36px; /* Centra el texto si no hay botones */
+}
+
+.notification-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.notification-title { 
+  font-size: 15px; 
+  font-weight: 700; 
+  color: var(--text-primary); 
+  margin-bottom: 4px; 
+}
+
+.notification-message { 
+  font-size: 13.5px; 
+  color: var(--text-secondary); 
+  line-height: 1.4;
+}
+
+/* BOTÓN DE CERRAR (X) */
+.notification-close { 
+  background: transparent; 
+  border: none; 
+  color: var(--text-muted); 
+  cursor: pointer; 
+  padding: 6px; 
+  border-radius: 50%; 
+  transition: all 0.2s ease;
+  margin-top: -2px;
+  margin-right: -8px;
+}
+
+.notification-close:hover { 
+  background: var(--bg-tertiary); 
+  color: var(--text-primary); 
+}
+
+/* =====================================
+   BOTONES DE ACCIÓN (Confirmar / Editar)
+   ===================================== */
+.notification-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+  justify-content: flex-end;
+}
+
+.btn-action-cancel, .btn-action-confirm {
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  border: none;
+}
+
+.btn-action-cancel {
+  background: transparent;
+  color: var(--text-secondary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-action-cancel:hover {
+  background: var(--bg-tertiary);
+  color: var(--text-primary);
+}
+
+.btn-action-confirm {
+  background: var(--text-primary);
+  color: var(--bg-primary);
+}
+
+.btn-action-confirm:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
+/* Responsive para móvil */
+@media (max-width: 600px) {
+  .notifications-container {
+    top: 16px;
+    right: 16px;
+    left: 16px;
+  }
+  .notification {
+    width: 100%;
+    min-width: unset;
+  }
+}

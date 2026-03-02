@@ -18,7 +18,7 @@
       
       @if (!isOwner) {
         <button class="option-item" (click)="handleAction('mute')">
-          <span class="option-label">{{ isMuted() ? 'Desilenciar' : 'Silenciar' }} a {{ userId }}</span>
+          <span class="option-label">{{ isMuted() ? 'Desilenciar' : 'Silenciar' }} a {{ userName }}</span>
         </button>
 
         <button class="option-item danger" (click)="handleAction('block')">

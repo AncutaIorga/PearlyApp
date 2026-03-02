@@ -182,6 +182,6 @@ export class NotificationService {
   }
 
   showConfirmAction(message: string, actionLabel: string, actionHandler: () => void) {
-    return this.show({ type: 'info', title: '🤔 Confirmación', message, duration: 10000, dismissible: true, action: { label: actionLabel, handler: actionHandler } });
+    return this.show({ type: 'info', message, duration: 10000, dismissible: true, action: { label: actionLabel, handler: actionHandler } });
   }
 }

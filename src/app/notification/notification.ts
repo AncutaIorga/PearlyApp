@@ -46,9 +46,4 @@ export class NotificationComponent {
       this.timers.delete(id);
     }
   }
-
-  // Método helper para el template
-  hasDuration(notification: any): boolean {
-    return notification.duration && notification.duration > 0 && notification.duration !== Number.POSITIVE_INFINITY;
-  }
 }
