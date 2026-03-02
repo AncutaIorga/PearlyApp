@@ -6,7 +6,6 @@ import { BlockService } from './block';
 import { Observable } from 'rxjs';
 import { tap } from 'rxjs/operators';
 
-// LAS EXPORTACIONES SON VITALES PARA QUE PROFILE Y POST-CARD NO DEN ERROR
 export interface Comment {
   id: number;
   idPublicacion: number;
@@ -41,7 +40,7 @@ export class PostService {
 
   private rawPosts = signal<Post[]>([]);
 
-  // Signal computado que filtra por bloqueos automáticamente
+  // Filtra de forma automatica y oculta los posts de personas bloqueadas.
   public posts = computed(() => {
     const restringidos = new Set([
       ...this.blockService.mutedUsers().map(m => m.idBloqueado),
@@ -58,19 +57,23 @@ export class PostService {
       }));
   });
 
+  // Carga todas las publicaciones nada mas abrir la aplicacion.
   constructor() {
     this.loadPostsFromBackend();
   }
 
+  // Obtiene el identificador numerico del usuario actual.
   private getCurrentUserId(): number | null {
     const idStr = localStorage.getItem('idUsuario') || localStorage.getItem('userId');
     return idStr ? parseInt(idStr, 10) : null;
   }
 
+  // Obtiene el nombre del usuario actual.
   private getCurrentUserName(): string {
     return localStorage.getItem('userName') || 'Usuario';
   }
 
+  // Pide al servidor todas las publicaciones y las ordena por fecha de creacion.
   loadPostsFromBackend() {
     this.http.get<any[]>(this.apiUrl).subscribe({
       next: (data) => {
@@ -102,22 +105,22 @@ export class PostService {
     });
   }
 
-  // --- MÉTODOS DE CONSULTA ---
-
+  // Devuelve la lista de publicaciones ya filtrada sin la gente toxica.
   getAllPosts(): Post[] {
     return this.posts();
   }
 
+  // Devuelve solamente las publicaciones que ha creado un usuario en especifico.
   getPostsByUser(userName: string): Post[] {
     return this.posts().filter(p => p.user.toLowerCase() === userName.toLowerCase());
   }
 
+  // Busca los datos de una unica publicacion segun su numero de ID.
   getPostById(id: number | string): Post | undefined {
     return this.posts().find(p => p.id == id);
   }
 
-  // --- MÉTODOS DE ACCIÓN ---
-
+  // Envia al servidor los datos y la foto para crear un post nuevo.
   addPost(postData: { image: string; text: string; idRetoVinculado?: number; }) {
     const userId = this.getCurrentUserId();
     if (!userId) return;
@@ -141,13 +144,12 @@ export class PostService {
     });
   }
 
-updatePost(postId: number, data: any) {
-    // 1. Guardar la edición localmente en LocalStorage
+  // Guarda los cambios del texto de una publicacion localmente para simular que se ha editado.
+  updatePost(postId: number, data: any) {
     const editedPosts = JSON.parse(localStorage.getItem('pearly_edited_posts') || '{}');
     editedPosts[postId] = data;
     localStorage.setItem('pearly_edited_posts', JSON.stringify(editedPosts));
 
-    // 2. Actualizar el Signal para que la vista cambie inmediatamente sin usar el Backend
     this.rawPosts.update(posts => posts.map(p => {
       if (p.id === postId) {
         return { 
@@ -162,20 +164,18 @@ updatePost(postId: number, data: any) {
     this.notification.success('Publicación actualizada');
   }
 
+  // Borra una publicacion visualmente de la lista sin tener que esperar al backend.
   deletePost(postId: number) {
-    // 1. Guardar el ID borrado localmente en LocalStorage
     const deletedPosts = JSON.parse(localStorage.getItem('pearly_deleted_posts') || '[]');
     if (!deletedPosts.includes(postId)) {
       deletedPosts.push(postId);
       localStorage.setItem('pearly_deleted_posts', JSON.stringify(deletedPosts));
     }
 
-    // 2. Eliminar visualmente del Signal de inmediato sin usar el Backend
     this.rawPosts.update(posts => posts.filter(p => p.id !== postId));
   }
 
-  // --- GESTIÓN DE LIKES Y COMENTARIOS ---
-
+  // Da o quita el me gusta y se lo envia al backend.
   toggleLike(postId: number) {
     const userId = this.getCurrentUserId();
     const currentUser = this.getCurrentUserName();
@@ -196,6 +196,7 @@ updatePost(postId: number, data: any) {
     }
   }
 
+  // Envia un comentario nuevo hacia una publicacion especifica.
   addComment(postId: number, text: string): Observable<any> {
     const userId = this.getCurrentUserId();
     const payload = {
@@ -209,6 +210,7 @@ updatePost(postId: number, data: any) {
     );
   }
 
+  // Borra un comentario existente del servidor.
   deleteComment(postId: number, commentId: number) {
     this.http.delete(`${environment.apiUrl}/comentarios/${commentId}`).subscribe({
       next: () => {

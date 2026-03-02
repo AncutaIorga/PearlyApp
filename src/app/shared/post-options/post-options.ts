@@ -25,11 +25,13 @@ export class PostOptionsComponent {
 
   constructor(private elementRef: ElementRef) {}
 
+  // Abre o cierra el menu de los tres puntitos al hacer click en el.
   toggleMenu(event: Event) {
     event.stopPropagation();
     this.isOpen = !this.isOpen;
   }
 
+  // Decide que accion tomar dependiendo de si pulsaste copiar, bloquear o borrar.
   handleAction(action: string) {
     this.isOpen = false;
 
@@ -38,19 +40,21 @@ export class PostOptionsComponent {
     } else if (action === 'share') {
       this.share();
     } else {
-      // Delegamos "block", "mute", "report" y "delete" a la tarjeta padre (post-card)
       this.optionSelected.emit({ action, postId: this.postId });
     }
   }
 
+  // Comprueba si ya teniamos a este creador de post silenciado previamente.
   isMuted(): boolean {
     return this.blockService.mutedUsers().some(m => m.idBloqueado === this.userId);
   }
 
+  // Comprueba si ya teniamos a este creador de post bloqueado previamente.
   isBlocked(): boolean {
     return this.blockService.blockedUsers().some(b => b.idBloqueado === this.userId);
   }
 
+  // Copia el link directo de la publicacion para pasarlo por WhatsApp u otro medio.
   private copyLink() {
     const url = `${window.location.origin}/post/${this.postId}`;
     navigator.clipboard.writeText(url).then(() => {
@@ -58,6 +62,7 @@ export class PostOptionsComponent {
     });
   }
 
+  // Activa el modo nativo del movil para compartir o simplemente copia el enlace en PC.
   private share() {
     const url = `${window.location.origin}/post/${this.postId}`;
     if (navigator.share) {
@@ -67,6 +72,7 @@ export class PostOptionsComponent {
     }
   }
 
+  // Cierra automaticamente el menu de los puntitos si pulsamos en cualquier otro lado.
   @HostListener('document:click', ['$event'])
   onDocumentClick(event: Event) {
     if (!this.elementRef.nativeElement.contains(event.target)) {

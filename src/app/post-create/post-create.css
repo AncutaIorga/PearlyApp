@@ -342,7 +342,6 @@ textarea:disabled {
   }
 }
 
-/* Pequeños retoques para móviles muy pequeños */
 @media (max-width: 380px) {
   .create-post h2 {
     font-size: 20px;

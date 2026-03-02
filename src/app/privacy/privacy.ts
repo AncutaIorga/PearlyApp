@@ -14,13 +14,15 @@ export class PrivacyComponent {
   showProfile = true;
   showActivity = true;
   
+  // Simula la accion de solicitar la descarga de datos personales.
   exportData() {
     alert('📊 Preparando exportación de datos...');
   }
   
+  // Muestra una advertencia y simula la eliminacion definitiva de la cuenta.
   deleteAccount() {
     if (confirm('¿Estás seguro? Esta acción no se puede deshacer.')) {
-      alert('🗑️ Cuenta marcada para eliminación');
+      alert(' Cuenta marcada para eliminación');
     }
   }
 }

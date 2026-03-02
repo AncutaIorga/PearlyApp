@@ -1,6 +1,6 @@
 .notifications-container { 
   position: fixed; 
-  top: 85px; /* Un poco más de margen del navbar */
+  top: 85px; 
   right: 24px; 
   z-index: 10000; 
   display: flex; 
@@ -8,12 +8,11 @@
   gap: 16px; 
 }
 
-/* LA TARJETA PRINCIPAL (Igual para todos) */
 .notification {
   background: var(--card-bg); 
   border: 1px solid var(--border-color); 
-  border-radius: 16px; /* Más redondeado y moderno */
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); /* Sombra elegante y difusa */
+  border-radius: 16px; 
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08); 
   width: 340px; 
   position: relative;
   animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
@@ -31,11 +30,10 @@
   gap: 16px; 
 }
 
-/* ICONOS (Misma forma geométrica, distinto color) */
 .notification-icon { 
   width: 36px; 
   height: 36px; 
-  border-radius: 10px; /* Estilo 'Squircle' de iOS */
+  border-radius: 10px; 
   display: flex; 
   align-items: center; 
   justify-content: center; 
@@ -44,19 +42,17 @@
   flex-shrink: 0;
 }
 
-/* Colores pastel integrados para el fondo del icono */
 .notification-success .notification-icon { background: rgba(16, 185, 129, 0.15); color: #10B981; }
 .notification-error .notification-icon { background: rgba(239, 68, 68, 0.15); color: #EF4444; }
 .notification-info .notification-icon { background: rgba(59, 130, 246, 0.15); color: #3B82F6; }
 .notification-warning .notification-icon { background: rgba(245, 158, 11, 0.15); color: #F59E0B; }
 
-/* TEXTOS */
 .notification-body { 
   flex: 1; 
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 36px; /* Centra el texto si no hay botones */
+  min-height: 36px; 
 }
 
 .notification-header {
@@ -78,7 +74,6 @@
   line-height: 1.4;
 }
 
-/* BOTÓN DE CERRAR (X) */
 .notification-close { 
   background: transparent; 
   border: none; 
@@ -96,9 +91,6 @@
   color: var(--text-primary); 
 }
 
-/* =====================================
-   BOTONES DE ACCIÓN (Confirmar / Editar)
-   ===================================== */
 .notification-actions {
   display: flex;
   gap: 10px;
@@ -137,7 +129,6 @@
   transform: translateY(-1px);
 }
 
-/* Responsive para móvil */
 @media (max-width: 600px) {
   .notifications-container {
     top: 16px;

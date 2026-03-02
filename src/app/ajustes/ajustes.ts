@@ -27,10 +27,6 @@ export class AjustesComponent implements OnInit {
   public postService = inject(PostService);
   private cdr = inject(ChangeDetectorRef);
 
-  /**
-   * Como el Backend ahora envía el nombre real ("Ivan"), 
-   * el computed solo se encarga de eliminar duplicados.
-   */
   public blockedUsers = computed(() => {
     const list = this.blockService.blockedUsers();
     const uniqueMap = new Map(list.map(u => [u.idBloqueado, u]));
@@ -50,6 +46,7 @@ export class AjustesComponent implements OnInit {
   privacySettings = { isPrivate: false };
   newTicket: CreateTicketDto = { subject: '', description: '' };
 
+  // Inicializa la configuracion de privacidad y carga la lista de usuarios bloqueados.
   ngOnInit() {
     const user = this.userService.getUser();
     if (user) { 
@@ -58,19 +55,22 @@ export class AjustesComponent implements OnInit {
     this.blockService.cargarRestricciones();
   }
 
+  // Abre la ventana modal para gestionar usuarios bloqueados.
   openBlockedModal() { this.showBlockedModal = true; }
+  
+  // Cierra la ventana modal de usuarios bloqueados.
   closeBlockedModal() { this.showBlockedModal = false; }
 
+  // Comprueba si el tema actual de la aplicacion es oscuro.
   isDarkMode() { return this.themeService.isDarkMode(); }
   
+  // Alterna entre el modo claro y oscuro de la aplicacion.
   toggleTheme() {
     const newTheme = this.themeService.toggleTheme();
     this.notificationService.showThemeChanged(newTheme);
   }
 
-  /**
-   * DESBLOQUEAR
-   */
+  // Desbloquea a un usuario especifico y actualiza el muro de publicaciones.
   unblockUser(idBloqueado: number | undefined) {
     if (!idBloqueado) return;
     
@@ -83,9 +83,7 @@ export class AjustesComponent implements OnInit {
     });
   }
 
-  /**
-   * DESILENCIAR (Añadido para que funcione igual que el desbloqueo)
-   */
+  // Quita el silencio a un usuario especifico y actualiza el muro de publicaciones.
   unmuteUser(idBloqueado: number | undefined) {
     if (!idBloqueado) return;
 
@@ -98,6 +96,7 @@ export class AjustesComponent implements OnInit {
     });
   }
 
+  // Guarda la configuracion de privacidad de la cuenta en el servidor.
   updatePrivacy() {
     this.loading.privacy = true;
     this.userService.updatePrivacy(this.privacySettings.isPrivate).subscribe({
@@ -112,6 +111,7 @@ export class AjustesComponent implements OnInit {
     });
   }
 
+  // Envia un ticket de soporte tecnico al backend si los campos no estan vacios.
   submitTicket() {
     if (!this.newTicket.subject.trim() || !this.newTicket.description.trim()) return;
     this.loading.tickets = true;
@@ -129,5 +129,6 @@ export class AjustesComponent implements OnInit {
     });
   }
 
+  // Cierra la sesion activa del usuario.
   logout() { this.authService.logout(); }
 }

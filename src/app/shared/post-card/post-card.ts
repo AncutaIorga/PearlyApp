@@ -28,34 +28,34 @@ export class PostCardComponent implements OnInit, OnChanges {
   newComment = '';
   isLiked = false;
   isTextExpanded = false;
-  
-  // VARIABLE CRÍTICA: Añadida para resolver el error TS2551 del terminal
   isAddingComment = false;
 
-  // Imagen por defecto para usuarios sin avatar
   defaultAvatar = 'assets/default-avatar.png';
 
+  // Verifica si le diste like a esta publicacion antes al cargarla.
   ngOnInit() {
     this.updateLikeStatus();
   }
 
-  // Sincroniza el estado del Like cuando el Signal del servicio actualiza el @Input
+  // Mantiene tu corazoncito rojo en tiempo real si ocurren cambios globales.
   ngOnChanges(changes: SimpleChanges) {
     if (changes['post']) {
       this.updateLikeStatus();
     }
   }
 
+  // Pinta el corazon si detecta que has dado like al post.
   private updateLikeStatus() {
     this.isLiked = this.post.likedByMe || false;
   }
 
+  // Comprueba si nosotros mismos somos los creadores del post para darnos mas permisos.
   get isOwner(): boolean {
     const currentName = localStorage.getItem('userName') || '';
     return this.post.user?.toLowerCase() === currentName.toLowerCase();
   }
 
-  // Manejador centralizado de acciones del menú de opciones
+  // Actua como centralita para ejecutar lo que hayas pulsado en el menu de opciones.
   onOptionSelected(event: { action: string; postId: number }) {
     switch (event.action) {
       case 'delete':
@@ -67,14 +67,13 @@ export class PostCardComponent implements OnInit, OnChanges {
       case 'mute':
         this.silenciarAutor();
         break;
-      // Añadido el caso para reportar
       case 'report':
         this.reportarPost();
         break;
     }
   }
 
-  // CAMBIADO: Ahora usa la notificación de confirmación
+  // Pide confirmacion y envia al backend la orden de bloquear a ese usuario.
   bloquearUsuario() {
     if (!this.post.idUsuario) return;
 
@@ -85,7 +84,6 @@ export class PostCardComponent implements OnInit, OnChanges {
         this.blockService.blockUser(this.post.idUsuario).subscribe({
           next: () => {
             this.notificationService.success(`Has bloqueado a ${this.post.user}`);
-            // ¡ESTO ES CLAVE! Refresca la lista de posts para que el del usuario bloqueado desaparezca
             this.postService.loadPostsFromBackend(); 
           },
           error: (err) => {
@@ -97,6 +95,7 @@ export class PostCardComponent implements OnInit, OnChanges {
     );
   }
 
+  // Envia al backend la orden silenciosa de dejar de ver a esa persona sin borrarla.
   private silenciarAutor() {
     this.blockService.muteUser(this.post.idUsuario).subscribe({
       next: () => {
@@ -107,7 +106,7 @@ export class PostCardComponent implements OnInit, OnChanges {
     });
   }
 
-  // AÑADIDO: Función para manejar el reporte con la notificación elegante
+  // Simula el reporte de una publicacion pidiendo confirmacion previa.
   private reportarPost() {
     this.notificationService.showConfirmAction(
       '¿Reportar este contenido como inapropiado?',
@@ -118,13 +117,13 @@ export class PostCardComponent implements OnInit, OnChanges {
     );
   }
 
+  // Comprueba si eres el dueño del post o del comentario para poder borrarlo.
   canDeleteComment(comment: Comment): boolean {
     const currentName = localStorage.getItem('userName') || '';
-    // Un comentario puede ser borrado por su autor O por el dueño del post
     return comment.user?.toLowerCase() === currentName.toLowerCase() || this.isOwner;
   }
 
-  // CAMBIADO: Ahora usa la notificación de confirmación
+  // Saca el aviso de borrar comentario y le dice al backend que lo elimine.
   deleteComment(commentId: number): void {
     this.notificationService.showConfirmAction(
       '¿Borrar comentario?',
@@ -135,10 +134,11 @@ export class PostCardComponent implements OnInit, OnChanges {
     );
   }
 
+  // Procesa lo que has escrito, lo valida y lo sube como comentario.
   addComment() {
     const text = this.newComment.trim();
     if (text && !this.isAddingComment) {
-      this.isAddingComment = true; // Deshabilita el botón en el HTML
+      this.isAddingComment = true; 
       
       this.postService.addComment(this.post.id, text).subscribe({
         next: () => {
@@ -155,16 +155,18 @@ export class PostCardComponent implements OnInit, OnChanges {
     }
   }
 
+  // Da like si no lo tenias o lo quita si ya estaba puesto.
   toggleLike() {
     this.isLiked = !this.isLiked;
     this.postService.toggleLike(this.post.id);
   }
 
+  // Despliega o recoge visualmente la lista de comentarios al hacer clic.
   toggleComments() { 
     this.showComments = !this.showComments; 
   }
 
-  // CAMBIADO: Ahora usa la notificación de confirmación
+  // Saca el aviso definitivo y borra la publicacion entera de la base de datos.
   deletePost() { 
     this.notificationService.showConfirmAction(
       '¿Seguro que quieres eliminar esta publicación?',
@@ -175,14 +177,17 @@ export class PostCardComponent implements OnInit, OnChanges {
     );
   }
 
+  // Busca el avatar correcto para ponerlo y usa una silueta vacia si falla.
   getCurrentUserAvatar() { 
     return this.userService.getUser()?.avatar || this.defaultAvatar; 
   }
 
+  // Revisa si el texto de la publicacion es muy largo para esconder parte de el.
   get shouldTruncate() { 
     return (this.post.text?.length || 0) > 100; 
   }
 
+  // Devuelve el texto completo o recortado con los puntitos dependiendo de si apretaste "Ver mas".
   get displayText() { 
     if (this.shouldTruncate && !this.isTextExpanded) {
       return this.post.text.substring(0, 100) + '...';

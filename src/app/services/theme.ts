@@ -4,18 +4,17 @@ import { Injectable, signal } from '@angular/core';
   providedIn: 'root'
 })
 export class ThemeService {
-  // Inicializamos por defecto en 'light'
   currentTheme = signal<'light' | 'dark'>('light');
   
+  // Verifica el tema preferido del usuario al abrir la aplicacion.
   constructor() {
     this.loadSavedTheme();
   }
   
+  // Carga desde el navegador si el usuario tenia modo oscuro o modo claro.
   private loadSavedTheme() {
-    // Buscamos la preferencia en el navegador
     const savedTheme = localStorage.getItem('pearly-theme') as 'light' | 'dark' | null;
     
-    // Si existe una preferencia guardada, la aplicamos; si no, forzamos 'light'
     if (savedTheme === 'dark' || savedTheme === 'light') {
       this.setTheme(savedTheme);
     } else {
@@ -23,14 +22,13 @@ export class ThemeService {
     }
   }
   
+  // Aplica el tema elegido cambiando las variables CSS del HTML de la pagina entera.
   setTheme(theme: 'light' | 'dark') {
     this.currentTheme.set(theme);
     localStorage.setItem('pearly-theme', theme);
     
-    // Aplicamos el atributo al HTML (útil para variables CSS :root)
     document.documentElement.setAttribute('data-theme', theme);
     
-    // Gestión de clases en el body
     if (theme === 'dark') {
       document.body.classList.add('dark-theme');
       document.body.classList.remove('light-theme');
@@ -40,12 +38,14 @@ export class ThemeService {
     }
   }
   
+  // Alterna entre encender el modo oscuro si esta en claro y viceversa.
   toggleTheme(): 'light' | 'dark' {
     const newTheme = this.currentTheme() === 'light' ? 'dark' : 'light';
     this.setTheme(newTheme);
     return newTheme;
   }
   
+  // Devuelve verdadero si la aplicacion esta actualmente en modo oscuro.
   isDarkMode(): boolean {
     return this.currentTheme() === 'dark';
   }

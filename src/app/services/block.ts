@@ -21,29 +21,26 @@ export class BlockService {
   public blockedUsers = signal<Bloqueo[]>([]);
   public mutedUsers = signal<Bloqueo[]>([]);
 
+  // Inicializa el servicio cargando la lista de bloqueos desde el servidor.
   constructor() { 
     this.cargarRestricciones(); 
   }
 
+  // Obtiene el ID del usuario actual desde el almacenamiento local.
   private getMyId(): number {
     const id = localStorage.getItem('idUsuario') || localStorage.getItem('userId');
     return id ? Number(id) : 0;
   }
   
-  /**
-   * Carga las restricciones. Ahora confía plenamente en el Backend
-   * porque el DTO de Kotlin ya incluye 'name' y 'avatar'.
-   */
+  // Solicita al servidor y guarda la lista de usuarios que hemos bloqueado o silenciado.
   cargarRestricciones() {
     const myId = this.getMyId();
     if (myId === 0) return;
 
     this.http.get<Bloqueo[]>(`${this.apiUrl}/usuario/${myId}`).subscribe({
       next: (data) => {
-        // Limpiamos la lista y asignamos valores por defecto si algo falla
         const mapped = data.map(b => ({
           ...b,
-          // Prioridad: El nombre que viene del JOIN, si no, el username, si no, el ID
           name: b.name || b.username || `Usuario ${b.idBloqueado}`
         }));
         
@@ -54,24 +51,27 @@ export class BlockService {
     });
   }
 
+  // Comprueba si un usuario especifico esta en nuestra lista de bloqueados.
   isBlocked(targetId: number | string): boolean {
     return this.blockedUsers().some(u => u.idBloqueado === Number(targetId));
   }
 
+  // Comprueba si un usuario especifico esta en nuestra lista de silenciados.
   isMuted(targetId: number | string): boolean {
     return this.mutedUsers().some(u => u.idBloqueado === Number(targetId));
   }
 
-  // --- ACCIONES ---
-
+  // Envia una orden al servidor para bloquear a un usuario.
   blockUser(targetId: number | string): Observable<any> {
     return this.restringir(Number(targetId), 'block');
   }
 
+  // Envia una orden al servidor para silenciar a un usuario.
   muteUser(targetId: number | string): Observable<any> {
     return this.restringir(Number(targetId), 'mute');
   }
 
+  // Metodo interno que ejecuta la peticion HTTP para bloquear o silenciar.
   private restringir(targetId: number, tipo: 'block' | 'mute'): Observable<any> {
     const payload = { idBloqueador: this.getMyId(), idBloqueado: targetId, tipo };
     return this.http.post(this.apiUrl, payload).pipe(
@@ -79,10 +79,7 @@ export class BlockService {
     );
   }
 
-  /**
-   * Elimina la restricción. He cambiado responseType a 'json' (por defecto)
-   * ya que ahora el Back devuelve un Map/JSON con un mensaje.
-   */
+  // Elimina una restriccion (bloqueo o silencio) de un usuario en el servidor.
   unrestrict(targetId: number | string, tipo: 'block' | 'mute'): Observable<any> {
     const params = new HttpParams()
       .set('bloqueador', this.getMyId().toString())
@@ -98,6 +95,9 @@ export class BlockService {
     );
   }
 
+  // Llama a la funcion de eliminar restriccion especificamente para desbloquear.
   unblockUserByUsername(id: any) { return this.unrestrict(id, 'block'); }
+  
+  // Llama a la funcion de eliminar restriccion especificamente para quitar el silencio.
   unmuteUser(id: any) { return this.unrestrict(id, 'mute'); }
 }

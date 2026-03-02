@@ -271,7 +271,6 @@
   gap: 8px;
 }
 
-/* BOTONES DE ACCIÓN */
 .action-btn {
   width: 100%;
   padding: 12px;
@@ -285,7 +284,6 @@
   justify-content: center;
   gap: 8px;
   
-  /* Estado por defecto (Comenzar): Oscuro/Negro */
   background: var(--text-primary); 
   color: var(--bg-primary);
   border: none;
@@ -298,7 +296,7 @@
 
 .action-btn.in-progress,
 .btn-rect.success { 
-  background-color: #10B981 !important; /* Verde esmeralda */
+  background-color: #10B981 !important; 
   color: #ffffff !important;
   border: 1px solid #10B981 !important;
 }
@@ -309,7 +307,6 @@
   transform: scale(1.02);
 }
 
-/* Estado Completado (Gris) */
 .action-btn:disabled, .action-btn.completed-btn {
   background: var(--bg-tertiary) !important;
   color: var(--text-muted) !important;
@@ -337,7 +334,6 @@
   margin-top: 30px;
 }
 
-/* RETOS DIARIOS ESTILOS MEJORADOS */
 .daily-challenge-card {
   background: var(--card-bg);
   color: var(--text-primary);
@@ -360,7 +356,6 @@
 .daily-action-btn { background: var(--bg-tertiary); color: var(--text-primary); border: 1px solid var(--border-color); }
 .daily-action-btn:hover:not(:disabled) { background: var(--text-primary); color: var(--bg-primary); }
 
-/* CONSEJO DEL DÍA MÁS ELEGANTE */
 .tip-refresh { 
   background: transparent; 
   color: var(--accent-color); 
@@ -394,7 +389,6 @@
   padding: 6px 16px !important;
 }
 
-/* Custom Modal Retos */
 .custom-modal-overlay {
   position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
   display: flex; align-items: center; justify-content: center; z-index: 10000; padding: 20px;
@@ -412,15 +406,10 @@
 .btn-rect.primary { background: var(--text-primary); color: var(--bg-primary); }
 .btn-rect.secondary { background: var(--bg-tertiary); color: var(--text-primary); }
 
-/* =========================================
-   ARREGLO DE RETOS (FLEXIBILIDAD Y BOTÓN)
-   ========================================= */
-
-/* El contenedor del reto */
 .challenge-item {
   display: flex; 
   align-items: center; 
-  justify-content: space-between; /* Separa texto a la izq y botón a la derecha */
+  justify-content: space-between; 
   gap: 12px; 
   padding: 12px; 
   border-radius: 12px; 
@@ -429,35 +418,33 @@
   cursor: pointer; 
   transition: all 0.2s; 
   margin-bottom: 8px;
-  overflow: hidden; /* Evita desbordamientos */
+  overflow: hidden; 
 }
 
-/* La parte izquierda (Icono + Texto) */
 .challenge-item > div:first-child {
   display: flex;
   align-items: center;
   gap: 12px;
-  flex: 1; /* Ocupa todo el espacio disponible */
-  min-width: 0; /* Permite que el texto se corte si es larguísimo */
+  flex: 1; 
+  min-width: 0; 
 }
 
 .challenge-info {
   display: flex;
   flex-direction: column;
-  min-width: 0; /* Necesario para el truncate */
+  min-width: 0; 
 }
 
 .challenge-title {
   white-space: nowrap;
   overflow: hidden;
-  text-overflow: ellipsis; /* Pone "..." si el título es muy largo */
+  text-overflow: ellipsis; 
   font-size: 14px; 
   font-weight: 600; 
   color: var(--text-primary); 
   margin-bottom: 4px;
 }
 
-/* EL BOTÓN (ESTÁTICO) */
 .challenge-item .btn-rect {
   white-space: nowrap !important; 
   flex-shrink: 0 !important;      
@@ -467,7 +454,6 @@
   margin: 0 !important;
 }
 
-/* ===== NUEVA SECCIÓN: RETOS EN CURSO ===== */
 .in-progress-section {
   margin-bottom: 40px;
   padding: 24px;
@@ -521,7 +507,6 @@
   box-shadow: var(--shadow-md);
 }
 
-/* Colores por categoría */
 .in-progress-card[data-category="mental"] { border-left: 4px solid #6366F1; }
 .in-progress-card[data-category="physical"] { border-left: 4px solid #F43F5E; }
 .in-progress-card[data-category="mindfulness"] { border-left: 4px solid #10B981; }
@@ -607,14 +592,12 @@
   border-color: var(--text-primary);
 }
 
-/* Responsive */
 @media (max-width: 768px) {
   .in-progress-cards {
     grid-template-columns: 1fr;
   }
 }
 
-/* ===== HEADER TIP - CONSEJO DEL DÍA DENTRO DEL HEADER ===== */
 .header-tip {
   display: flex;
   align-items: center;
@@ -678,7 +661,6 @@
   transform: rotate(180deg);
 }
 
-/* ===== MENSAJES PERSONALIZADOS PARA FILTROS ===== */
 .empty-state {
   text-align: center;
   padding: 60px 20px;
@@ -727,7 +709,6 @@
   box-shadow: var(--shadow-md);
 }
 
-/* Responsive para el header tip */
 @media (max-width: 768px) {
   .header-main {
     flex-direction: column;

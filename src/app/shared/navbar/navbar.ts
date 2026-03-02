@@ -3,7 +3,7 @@ import { RouterModule, Router, NavigationEnd } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../services/authBACK';
-import { UserService } from '../../services/user'; // IMPORTANTE: Asegúrate que la ruta sea correcta
+import { UserService } from '../../services/user'; 
 import { Subject, filter } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
@@ -17,7 +17,7 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 export class NavbarComponent implements OnInit {
   router = inject(Router);
   private authService = inject(AuthService);
-  private userService = inject(UserService); // INYECTADO
+  private userService = inject(UserService); 
 
   isSearchActive = false;
   searchQuery = '';
@@ -26,6 +26,7 @@ export class NavbarComponent implements OnInit {
   
   currentRoute: string = '';
 
+  // Actualiza la variable de la ruta actual para saber que boton del menu pintar.
   ngOnInit() {
     this.router.events.pipe(
       filter(event => event instanceof NavigationEnd)
@@ -35,15 +36,17 @@ export class NavbarComponent implements OnInit {
     this.currentRoute = this.router.url;
   }
 
+  // Espera medio segundo despues de teclear para buscar y no saturar el servidor.
   constructor() {
     this.searchSubject.pipe(
-      debounceTime(300), // Subido a 300ms para mejor rendimiento con el servidor
+      debounceTime(300), 
       distinctUntilChanged()
     ).subscribe(query => {
       this.performSearch(query);
     });
   }
 
+  // Comprueba si el link de la pestaña actual coincide con el boton del menu.
   isActive(route: string): boolean {
     if (route === '/profile' && this.currentRoute.startsWith('/profile')) {
       return true;
@@ -51,14 +54,17 @@ export class NavbarComponent implements OnInit {
     return this.currentRoute === route;
   }
 
+  // Comprueba especificamente si estas dentro de la rueda de engranaje (ajustes).
   isSettingsActive(): boolean {
     return this.currentRoute === '/ajustes';
   }
 
+  // Avisa de que has escrito algo nuevo en la barra buscadora.
   onSearchInput(value: string) {
     this.searchSubject.next(value);
   }
 
+  // Ejecuta la busqueda real en el backend usando el texto escrito.
   performSearch(query: string) {
     const cleanQuery = (query || '').trim();
     
@@ -67,7 +73,6 @@ export class NavbarComponent implements OnInit {
       return;
     }
     
-    // CAMBIO: Ahora llama al UserService para buscar en el Backend
     this.userService.buscarUsuariosPorNombre(cleanQuery).subscribe({
       next: (usuarios) => {
         this.searchResults = usuarios;
@@ -79,6 +84,7 @@ export class NavbarComponent implements OnInit {
     });
   }
 
+  // Cierra el buscador, oculta los resultados y borra el texto con retardo para evitar fallos.
   closeSearch() {
     setTimeout(() => {
       this.isSearchActive = false;
@@ -87,13 +93,15 @@ export class NavbarComponent implements OnInit {
     }, 200);
   }
 
-goToUserProfile(username: string) {
-  if (username) {
-    this.router.navigate(['/profile', username]);
-    this.closeSearch();
+  // Cierra el buscador y viaja a la pagina del perfil de la persona seleccionada.
+  goToUserProfile(username: string) {
+    if (username) {
+      this.router.navigate(['/profile', username]);
+      this.closeSearch();
+    }
   }
-}
 
+  // Viaja directamente a la pestaña de ajustes.
   goToSettings() {
     this.router.navigate(['/ajustes']);
   }

@@ -25,8 +25,8 @@ export class AccountComponent implements OnInit {
   
   isLoading = false; 
 
+  // Carga los datos del usuario al abrir la pantalla de cuenta.
   ngOnInit() {
-    // Cargar datos iniciales
     const user = this.userService.getUser();
     if (user) {
       this.userName = user.nombre || user.name || '';
@@ -35,6 +35,7 @@ export class AccountComponent implements OnInit {
     }
   }
   
+  // Valida y guarda los cambios del perfil del usuario en el servidor.
   saveProfile() {
     if (!this.userName.trim()) {
       this.notificationService.warning('El nombre no puede estar vacío.');
@@ -49,7 +50,6 @@ export class AccountComponent implements OnInit {
       bio: this.bio
     };
 
-    // Llamada REAL al Back
     this.userService.updateUser(updatedData).subscribe({
       next: () => {
         this.isLoading = false;
@@ -63,6 +63,7 @@ export class AccountComponent implements OnInit {
     });
   }
   
+  // Solicita y simula el cambio de la contraseña del usuario.
   changePassword() {
     // TODO: Conectar con endpoint real cuando exista
     const newPassword = prompt('Introduce tu nueva contraseña:');
@@ -73,6 +74,7 @@ export class AccountComponent implements OnInit {
     }
   }
   
+  // Cierra la sesión del usuario tras pedir confirmación.
   logout() {
     if (confirm('¿Cerrar sesión?')) {
       this.authService.logout();

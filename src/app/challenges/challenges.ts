@@ -11,7 +11,7 @@ interface ChallengeState extends Challenge {
   completed: boolean;
   inProgress: boolean;
   progress?: number;
-  completedAt?: string; // AÑADIDO: Fecha de completado para ordenar
+  completedAt?: string; 
 }
 
 interface DailyChallengeState extends DailyChallengeDef {
@@ -57,11 +57,10 @@ export class ChallengesComponent implements OnInit {
   
   dailyTip = "Completa tu primer reto para desbloquear consejos personalizados.";
   
-  // ACTUALIZADO: Añadidos filtros 'available' y 'completed'
   filters: Filter[] = [
     { id: 'all', label: 'Todos' },
-    { id: 'available', label: 'Disponibles' },     // NUEVO
-    { id: 'completed', label: 'Completados' },     // NUEVO
+    { id: 'available', label: 'Disponibles' },
+    { id: 'completed', label: 'Completados' },
     { id: 'mental', label: 'Mental' },
     { id: 'physical', label: 'Físico' },
     { id: 'mindfulness', label: 'Mindfulness' },
@@ -76,39 +75,32 @@ export class ChallengesComponent implements OnInit {
   showCustomConfirmModal = false;
   challengeToConfirm: ChallengeState | null = null;
   
+  // Devuelve la lista de retos que el usuario ha empezado pero aun no ha terminado.
   get inProgressChallenges(): ChallengeState[] {
     return this.challenges.filter(c => c.inProgress && !c.completed);
   }
   
-  // ACTUALIZADO: Getter para manejar los nuevos filtros
+  // Filtra y ordena los retos de la pantalla principal segun el filtro seleccionado.
   get filteredChallenges(): ChallengeState[] {
-    // Excluimos los que están en progreso de la lista principal
     let filtered = this.challenges.filter(c => !c.inProgress || c.completed);
     
     if (this.activeFilter !== 'all') {
       if (this.activeFilter === 'available') {
-        // Filtrar solo retos disponibles (no completados y no en progreso)
         filtered = filtered.filter(c => !c.completed && !c.inProgress);
       } else if (this.activeFilter === 'completed') {
-        // Filtrar solo retos completados
         filtered = filtered.filter(c => c.completed);
       } else {
-        // Filtro por categoría
         filtered = filtered.filter(c => c.category === this.activeFilter);
       }
     }
     
-    // Ordenar según el filtro activo
     if (this.activeFilter === 'all') {
-      // Para todos: no completados primero, completados al final
       const completed = filtered.filter(c => c.completed);
       const notCompleted = filtered.filter(c => !c.completed);
       return [...notCompleted, ...completed];
     } else if (this.activeFilter === 'available') {
-      // Para disponibles, ordenar por puntos (de mayor a menor)
       return filtered.sort((a, b) => b.points - a.points);
     } else if (this.activeFilter === 'completed') {
-      // Para completados, ordenar por fecha (más recientes primero)
       return filtered.sort((a, b) => {
         if (!a.completedAt) return 1;
         if (!b.completedAt) return -1;
@@ -119,6 +111,7 @@ export class ChallengesComponent implements OnInit {
     return filtered;
   }
   
+  // Carga el progreso del usuario y prepara la pantalla al iniciar el componente.
   ngOnInit() {
     const email = this.authService.getCurrentUserEmail();
     this.currentUserId = email ? email.replace(/[.#$[\]]/g, '_') : 'anonymous';
@@ -129,6 +122,7 @@ export class ChallengesComponent implements OnInit {
     setTimeout(() => this.checkForFocusedChallenge(), 500);
   }
 
+  // Obtiene todos los retos disponibles desde el servicio y los prepara por defecto.
   private initializeFromService() {
     this.challenges = this.challengeService.getAllChallenges().map(c => ({
       ...c, 
@@ -141,12 +135,12 @@ export class ChallengesComponent implements OnInit {
     }));
   }
 
-  // ACTUALIZADO: Añadidos iconos para los nuevos filtros
+  // Devuelve el icono correspondiente para cada boton de filtro del menu.
   getFilterIcon(filterId: string): string {
     const icons: Record<string, string> = {
       'all': '⟡', 
-      'available': '○',           // NUEVO
-      'completed': '✓',            // NUEVO
+      'available': '○', 
+      'completed': '✓', 
       'mental': '⚛︎', 
       'physical': '⚡︎', 
       'mindfulness': '☘︎', 
@@ -155,11 +149,13 @@ export class ChallengesComponent implements OnInit {
     return icons[filterId] || '📋';
   }
 
+  // Limpia los filtros seleccionados para volver a mostrar todos los retos.
   resetFilters() {
     this.activeFilter = 'all';
     this.notificationService.info('🌿 Mostrando todos los retos de bienestar');
   }
 
+  // Devuelve el icono adecuado segun la categoria del reto.
   getCategoryIcon(category: string): string {
     const icons: Record<string, string> = { 
       mental: '⚛︎', physical: '⚡︎', mindfulness: '☘︎', nutrition: '❧' 
@@ -167,6 +163,7 @@ export class ChallengesComponent implements OnInit {
     return icons[category] || '🌟';
   }
   
+  // Traduce el nombre tecnico de la categoria a un nombre mas legible.
   getCategoryName(category: string): string {
     const names: Record<string, string> = { 
       mental: 'Mental', 
@@ -177,6 +174,7 @@ export class ChallengesComponent implements OnInit {
     return names[category] || 'Bienestar';
   }
 
+  // Recupera el progreso guardado localmente y lo aplica a la vista.
   private loadUserProgress() {
     const saved = localStorage.getItem(`pearly-wellness-progress-${this.currentUserId}`);
     if (saved) {
@@ -208,7 +206,7 @@ export class ChallengesComponent implements OnInit {
               completed: s.completed, 
               inProgress: s.inProgress,
               progress: s.progress || this.calculateProgress(c.category, s.inProgress),
-              completedAt: s.completedAt // AÑADIDO: Cargar fecha de completado
+              completedAt: s.completedAt 
             };
           }
           return c;
@@ -239,6 +237,7 @@ export class ChallengesComponent implements OnInit {
     }
   }
 
+  // Asigna un porcentaje de progreso inicial dependiendo del tipo de reto comenzado.
   private calculateProgress(category: string, inProgress: boolean): number {
     if (!inProgress) return 0;
     
@@ -251,6 +250,7 @@ export class ChallengesComponent implements OnInit {
     }
   }
 
+  // Recalcula los porcentajes de salud general basandose en los retos completados.
   private updateScoresFromService() {
     const scores = this.challengeService.calculateWellnessScores(this.challenges);
     this.mentalHealth = scores.mental;
@@ -261,6 +261,7 @@ export class ChallengesComponent implements OnInit {
     this.completedChallenges = this.challenges.filter(c => c.completed).length;
   }
 
+  // Guarda todo el progreso actual del usuario en el almacenamiento local.
   private saveProgress() {
     const data = {
       energyPoints: this.energyPoints,
@@ -276,7 +277,7 @@ export class ChallengesComponent implements OnInit {
         completed: c.completed, 
         inProgress: c.inProgress,
         progress: c.progress,
-        completedAt: c.completedAt // AÑADIDO: Guardar fecha de completado
+        completedAt: c.completedAt 
       })),
       dailyChallenges: this.dailyChallenges.map(d => ({
         id: d.id,
@@ -288,9 +289,13 @@ export class ChallengesComponent implements OnInit {
     localStorage.setItem(`pearly-wellness-progress-${this.currentUserId}`, JSON.stringify(data));
   }
 
+  // Cambia el filtro activo de los retos segun lo que pulse el usuario.
   setFilter(id: string) { this.activeFilter = id; }
+  
+  // Calcula y guarda la cantidad total de retos que hay en la plataforma.
   private calculateTotalChallenges() { this.totalChallenges = this.challenges.length; }
 
+  // Decide que hacer al pulsar un reto: completarlo o abrir confirmacion para iniciarlo.
   handleChallengeAction(challenge: ChallengeState) {
     if (challenge.completed) return;
     
@@ -303,6 +308,7 @@ export class ChallengesComponent implements OnInit {
     this.showCustomConfirmModal = true;
   }
 
+  // Confirma el inicio o finalizacion de un reto desde la ventana emergente.
   confirmChallengeStart() {
     if (!this.challengeToConfirm) return;
     const c = this.challenges.find(x => x.id === this.challengeToConfirm!.id);
@@ -320,19 +326,20 @@ export class ChallengesComponent implements OnInit {
     this.closeConfirmModal();
   }
 
+  // Cierra la ventana emergente de confirmacion de los retos.
   closeConfirmModal() { 
     this.showCustomConfirmModal = false; 
     this.challengeToConfirm = null; 
   }
 
-  // ACTUALIZADO: Guardar fecha de completado
+  // Marca un reto normal como completado, suma los puntos y guarda el progreso.
   completeChallenge(id: string) {
     const c = this.challenges.find(x => x.id === id);
     if (c && !c.completed) {
       c.completed = true;
       c.inProgress = false;
       c.progress = 100;
-      c.completedAt = new Date().toISOString(); // AÑADIDO: Guardar fecha
+      c.completedAt = new Date().toISOString(); 
       this.energyPoints += c.points;
       this.totalPoints += c.points;
       
@@ -342,6 +349,7 @@ export class ChallengesComponent implements OnInit {
     }
   }
 
+  // Marca un reto diario como completado, suma los puntos y guarda el progreso.
   completeDailyChallenge(id: string) {
     const d = this.dailyChallenges.find(x => x.id === id);
     if (d && !d.completed) {
@@ -352,11 +360,13 @@ export class ChallengesComponent implements OnInit {
     }
   }
 
+  // Carga un nuevo consejo de bienestar aleatorio en la cabecera.
   refreshTip() {
     this.dailyTip = this.challengeService.getRandomTip();
     this.notificationService.info('💡 Nuevo consejo de bienestar cargado', { duration: 2000 });
     this.saveProgress();
   }
 
+  // Funcion auxiliar para enfocar elementos especificos al cargar.
   private checkForFocusedChallenge() {}
 }

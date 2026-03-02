@@ -1,5 +1,5 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http'; // Añadimos HttpHeaders
+import { HttpClient, HttpHeaders } from '@angular/common/http'; 
 import { Observable, tap, catchError, throwError } from 'rxjs';
 import { environment } from '../../environments/environment';
 
@@ -16,6 +16,7 @@ export class SupportService {
   private apiUrl = `${environment.apiUrl}/soportes`;
   private ticketsSignal = signal<any[]>([]);
 
+  // Envia un formulario de ayuda tecnica a la base de datos de soporte.
   createTicket(data: CreateTicketDto): Observable<any> {
     const userIdStr = localStorage.getItem('idUsuario') || localStorage.getItem('userId');
     const userId = userIdStr ? parseInt(userIdStr, 10) : null;
@@ -46,5 +47,6 @@ export class SupportService {
     );
   }
 
+  // Devuelve la variable que avisa si se han creado nuevos tickets.
   getTicketsSignal() { return this.ticketsSignal; }
 }

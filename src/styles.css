@@ -7,45 +7,39 @@
   transition: background-color 0.2s ease, border-color 0.2s ease;
 }
 
-/* ===== NUEVO SISTEMA DE DISEÑO MINIMALISTA ===== */
 :root {
-  /* Paleta Light (Fresca, limpia, piedra y agua) */
-  --bg-primary: #F8FAFC;       /* Gris muy claro, casi blanco */
-  --bg-secondary: #FFFFFF;     /* Blanco puro para tarjetas */
-  --bg-tertiary: #F1F5F9;      /* Gris para hovers y fondos secundarios */
+  --bg-primary: #F8FAFC;
+  --bg-secondary: #FFFFFF;
+  --bg-tertiary: #F1F5F9;
   
-  --text-primary: #0F172A;     /* Pizarra muy oscuro (no negro puro) */
-  --text-secondary: #64748B;   /* Gris pizarra suave */
+  --text-primary: #0F172A;
+  --text-secondary: #64748B;
   --text-muted: #94A3B8;
   
-  --border-color: #E2E8F0;     /* Bordes muy sutiles */
-  --border-radius: 12px;       /* Bordes ligeramente redondeados, más maduros */
+  --border-color: #E2E8F0;
+  --border-radius: 12px;
   
-  --accent-color: #3B82F6;     /* Azul océano limpio */
+  --accent-color: #3B82F6;
   --accent-hover: #2563EB;
   --accent-light: #EFF6FF;
   
-  --danger-color: #EF4444;     /* Coral suave para errores */
+  --danger-color: #EF4444;
   
-  /* Componentes */
   --card-bg: #FFFFFF;
   --input-bg: #F8FAFC;
   --navbar-bg: rgba(255, 255, 255, 0.85);
   --settings-menu-bg: #FFFFFF;
   
-  /* Sombras minimalistas (estilo Apple/Notion) */
   --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
   --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
   --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.05), 0 4px 6px -2px rgba(0, 0, 0, 0.03);
   
-  /* Botones (Sólidos y elegantes) */
   --btn-primary-bg: #0F172A;
   --btn-primary-text: #FFFFFF;
   --btn-secondary-bg: #F1F5F9;
 }
 
 [data-theme="dark"] {
-  /* Paleta Dark (Elegante, carbón y pizarra) */
   --bg-primary: #0B0F19;
   --bg-secondary: #111827;
   --bg-tertiary: #1F2937;
@@ -89,7 +83,6 @@ body {
 
 .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
 
-/* Global components */
 input, textarea, select {
   background-color: var(--input-bg);
   color: var(--text-primary);
@@ -116,29 +109,24 @@ input:focus, textarea:focus, select:focus {
 .btn-secondary:hover { background: var(--border-color); }
 hr, .divider { border-color: var(--border-color); }
 
-/* Arreglo para palabras larguísimas que rompen el diseño */
 p, h1, h2, h3, h4, span, div, .post-text, .comment-text {
   word-wrap: break-word !important;
   overflow-wrap: break-word !important;
   word-break: break-word !important;
 }
 
-/* Arreglo para las cajas de estadísticas del perfil */
 .stat-item {
-  flex: 1; /* Hace que se repartan el ancho a partes iguales */
+  flex: 1;
   min-width: 80px;
 }
 
-/* Evitar que la imagen en "crear post" se vuelva gigante (Arreglo #13) */
 .image-preview img {
   width: 100%;
   max-height: 400px;
-  object-fit: contain; /* Contain impide que la imagen se recorte o deforme */
+  object-fit: contain;
   border-radius: 12px;
 }
-/* =========================================
-   PARCHE NUCLEAR: BOTONES DEL PERFIL
-   ========================================= */
+
 .profile-actions-center {
   display: flex !important;
   flex-direction: column !important;
@@ -146,16 +134,15 @@ p, h1, h2, h3, h4, span, div, .post-text, .comment-text {
   margin-top: 20px !important;
 }
 
-/* Aplicamos margen obligatorio a cualquier botón dentro de esa caja */
 .profile-actions-center > * {
   display: block !important;
   width: 100% !important;
   position: relative !important;
   top: 0 !important;
   bottom: 0 !important;
-  transform: none !important; /* Evita que un hover antiguo los desplace */
+  transform: none !important;
   margin-top: 0 !important;
-  margin-bottom: 20px !important; /* ESPACIO DE 20PX HACIA ABAJO */
+  margin-bottom: 20px !important;
   box-sizing: border-box !important;
 }
 

@@ -35,10 +35,12 @@ export class AuthService {
     withCredentials: true 
   };
 
+  // Comprueba si hay una sesion guardada al abrir la aplicacion.
   constructor() {
     this.checkSession();
   }
 
+  // Verifica los datos del almacenamiento local para mantener iniciada la sesion.
   private checkSession() {
     this.isAuthenticated = localStorage.getItem('isLoggedIn') === 'true';
     if (this.isAuthenticated) {
@@ -57,6 +59,7 @@ export class AuthService {
     }
   }
 
+  // Valida el email y contraseña con el servidor para iniciar sesion.
   async login(email: string, password: string): Promise<boolean> {
     if (!email || !password) return false;
 
@@ -73,7 +76,6 @@ export class AuthService {
         const userFound = usuarios.find(u => u.email === email);
 
         if (userFound) {
-          // ✅ MAPEADO SEGÚN TU CONSOLA: El back envía 'id', nosotros guardamos 'idUsuario'
           const realId = userFound.id || userFound.idUsuario || userFound.userId;
 
           const usuarioMapeado: Usuario = {
@@ -110,6 +112,7 @@ export class AuthService {
     }
   }
 
+  // Crea una cuenta nueva en el servidor y automaticamente inicia sesion.
   async register(nombre: string, email: string, password: string): Promise<boolean> {
     try {
       const newUser = { nombre, email, password };
@@ -123,6 +126,7 @@ export class AuthService {
     }
   }
 
+  // Borra los datos del usuario y cierra la sesion actual.
   logout() {
     this.isAuthenticated = false;
     this.user.set(null);
@@ -130,6 +134,7 @@ export class AuthService {
     this.router.navigate(['/login']);
   }
 
+  // Guarda los datos del usuario en el navegador para no tener que iniciar sesion cada vez.
   private saveSession(user: Usuario) {
     this.isAuthenticated = true;
     localStorage.setItem('isLoggedIn', 'true');
@@ -147,15 +152,27 @@ export class AuthService {
     this.user.set(user);
   }
 
+  // Limpia el almacenamiento del navegador al cerrar la aplicacion o salir.
   private clearSessionData() {
     localStorage.clear();
   }
 
+  // Devuelve si el usuario tiene una sesion activa.
   isLoggedIn(): boolean { return this.isAuthenticated; }
+  
+  // Obtiene el nombre del usuario guardado en la sesion actual.
   getCurrentUserName(): string { return localStorage.getItem('userName') || ''; }
+  
+  // Obtiene el email del usuario guardado en la sesion actual.
   getCurrentUserEmail(): string { return localStorage.getItem('userEmail') || ''; }
+  
+  // Funcion auxiliar (actualmente vacia) para obtener usuarios registrados.
   getRegisteredUsers(): Usuario[] { return []; }
+  
+  // Funcion auxiliar (actualmente vacia) para comprobar si un nombre ya existe.
   isUserTaken(n: string): boolean { return false; }
+  
+  // Actualiza los datos guardados del usuario en la sesion activa.
   updateRegisteredUser(o: string, n: Partial<Usuario>) { 
     if(this.user()) this.saveSession({ ...this.user()!, ...n }); 
   }

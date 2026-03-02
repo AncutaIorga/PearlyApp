@@ -99,15 +99,12 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Ajuste para centrar contenido en el botón */
 .btn-primary {
   display: flex;
   justify-content: center;
   align-items: center;
-  /* Asegura que tus otros estilos se mantengan, solo añade estos si no los tienes */
 }
 
-/* Estilo cuando está deshabilitado/cargando */
 .btn-primary:disabled {
   opacity: 0.7;
   cursor: not-allowed;

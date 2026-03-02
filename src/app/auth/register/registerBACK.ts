@@ -16,13 +16,11 @@ export class RegisterComponent {
   emailError = '';
   passwordError = '';
   
-  // Variables para feedback del servidor
   serverError = ''; 
   isLoading = false; 
   
   showPassword = false;
 
-  // Validaciones en tiempo real
   hasMinLength = false;
   hasUpperCase = false;
   hasLowerCase = false;
@@ -31,6 +29,7 @@ export class RegisterComponent {
 
   constructor(private auth: AuthService) {}
 
+  // Verifica que el correo ingresado tenga un formato de email valido.
   validateEmail() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (this.email && !emailRegex.test(this.email)) {
@@ -40,6 +39,7 @@ export class RegisterComponent {
     }
   }
 
+  // Comprueba que la contraseña cumpla con los requisitos de seguridad.
   validatePassword() {
     this.hasMinLength = this.password.length >= 8;
     this.hasUpperCase = /[A-Z]/.test(this.password);
@@ -48,14 +48,16 @@ export class RegisterComponent {
     this.hasSymbol = /[!@#$%^&*(),.?":{}|<>_\-+=[\]\\/]/.test(this.password);
   }
 
+  // Muestra u oculta la contraseña escrita en el formulario.
   togglePasswordVisibility() {
     this.showPassword = !this.showPassword;
   }
 
+  // Valida los datos y envia la peticion al servidor para registrar un nuevo usuario.
   async register() {
     this.validateEmail();
     this.validatePassword();
-    this.serverError = ''; // Limpiamos errores previos
+    this.serverError = ''; 
     
     if (!this.emailError && 
         this.hasMinLength && 
@@ -64,14 +66,12 @@ export class RegisterComponent {
         this.hasNumber && 
         this.hasSymbol) {
           
-      this.isLoading = true; // Empezamos a cargar
+      this.isLoading = true; 
       
       try {
-        // Esperamos la respuesta del servidor
         const success = await this.auth.register(this.name, this.email, this.password);
         
         if (!success) {
-          // Si falla, el servicio ya habrá notificado, pero aseguramos mensaje aquí
           this.serverError = 'No se pudo completar el registro. Verifica si el correo ya existe.';
         }
       } catch (error) {

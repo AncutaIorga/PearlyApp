@@ -6,7 +6,7 @@ import { PostCardComponent } from '../shared/post-card/post-card';
 import { NavbarComponent } from '../shared/navbar/navbar';
 
 @Component({
-  selector: 'app-feed', // He añadido el selector por si acaso
+  selector: 'app-feed', 
   standalone: true,
   imports: [CommonModule, PostCardComponent, NavbarComponent],
   templateUrl: './feed.html',
@@ -16,10 +16,9 @@ export class FeedComponent implements OnInit {
   private postService = inject(PostService);
   private blockService = inject(BlockService);
 
-  // Variable que controla si se muestra o no el popup del tutorial
   showTutorial = false;
 
-  // Calculamos los posts excluyendo a los usuarios bloqueados o silenciados
+  // Obtiene y filtra las publicaciones excluyendo las de usuarios bloqueados.
   posts = computed(() => {
     const allPosts = this.postService.getAllPosts();
     const blocks = this.blockService.blockedUsers();
@@ -31,21 +30,18 @@ export class FeedComponent implements OnInit {
     );
   });
 
+  // Comprueba si el usuario acaba de registrarse para mostrar el tutorial.
   ngOnInit() {
-    // CAMBIO CLAVE: Ahora comprobamos si venimos de un REGISTRO reciente
     const isNew = localStorage.getItem('isNewUser');
     
     if (isNew === 'true') {
       this.showTutorial = true;
-      // IMPORTANTE: Borramos la marca inmediatamente.
-      // Así, si el usuario recarga la página (F5), el tutorial no le vuelve a saltar.
       localStorage.removeItem('isNewUser');
     }
   }
 
+  // Cierra la ventana del tutorial introductorio.
   closeTutorial() {
     this.showTutorial = false;
-    // Ya no necesitamos guardar nada en localStorage aquí, 
-    // porque la lógica depende solo del momento del registro.
   }
 }

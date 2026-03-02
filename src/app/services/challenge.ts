@@ -73,23 +73,27 @@ export class ChallengeService {
 
   constructor() {}
 
+  // Devuelve la lista completa de todos los retos grandes de la aplicacion.
   getAllChallenges(): Challenge[] {
     return [...this.MASTER_CHALLENGES];
   }
 
+  // Devuelve la lista completa de los pequeños retos diarios.
   getAllDailyChallenges(): DailyChallengeDef[] {
     return [...this.MASTER_DAILY_CHALLENGES];
   }
 
+  // Busca los detalles de un reto especifico usando su ID.
   getChallengeById(id: string): Challenge | undefined {
     return this.MASTER_CHALLENGES.find(c => c.id === id);
   }
 
+  // Elige un consejo de bienestar al azar de la lista predefinida.
   getRandomTip(): string {
     return this.WELLNESS_TIPS[Math.floor(Math.random() * this.WELLNESS_TIPS.length)];
   }
 
-  // --- Lógica centralizada para actualizar el gráfico en tiempo real ---
+  // Calcula el porcentaje de salud de cada categoria para dibujar el grafico del perfil.
   calculateWellnessScores(challenges: {id: string, completed: boolean}[]) {
     const scores = { mental: 0, physical: 0, mindfulness: 0, nutrition: 0 };
     
@@ -97,7 +101,7 @@ export class ChallengeService {
       if (c.completed) {
         const def = this.getChallengeById(c.id);
         if (def) {
-          scores[def.category] += 20; // Cada reto suma un 20% en su categoría
+          scores[def.category] += 20; 
         }
       }
     });
@@ -110,17 +114,16 @@ export class ChallengeService {
     };
   }
 
-  // ✅ AQUÍ ESTÁ LA LÓGICA DE NIVELES QUE FALTABA
+  // Convierte los puntos totales del usuario en su Nivel y calcula la experiencia restante.
   getLevelInfo(totalPoints: number) {
     let level = 1;
-    let xpRequired = 500; // Nivel 1 cuesta 500 puntos
+    let xpRequired = 500; 
     let currentXP = totalPoints;
     
-    // Bucle para subir de nivel mientras tengamos puntos suficientes
     while (currentXP >= xpRequired) {
       currentXP -= xpRequired;
       level++;
-      xpRequired = Math.floor(xpRequired * 1.2); // Cada nivel cuesta un 20% más
+      xpRequired = Math.floor(xpRequired * 1.2); 
     }
 
     return {
@@ -131,34 +134,30 @@ export class ChallengeService {
     };
   }
 
-  // ✅ AQUÍ ESTÁN LOS COLORES DE LA RANKED (HIERRO, BRONCE, ETC.)
+  // Devuelve un color que representa el rango del usuario segun su nivel actual.
   getRankColor(level: number): string {
-    if (level < 5) return '#58595b'; // Hierro (Gris oscuro)
-    if (level < 10) return '#cd7f32'; // Bronce (Marrón)
-    if (level < 15) return '#c0c0c0'; // Plata (Gris claro)
-    if (level < 20) return '#ffd700'; // Oro (Amarillo)
-    if (level < 25) return '#20b2aa'; // Platino (Verde agua)
-    return '#b9f2ff'; // Diamante (Azul claro)
+    if (level < 5) return '#58595b'; 
+    if (level < 10) return '#cd7f32'; 
+    if (level < 15) return '#c0c0c0'; 
+    if (level < 20) return '#ffd700'; 
+    if (level < 25) return '#20b2aa'; 
+    return '#b9f2ff'; 
   }
 
-  // Devuelve TRUE si el reto debe resetearse (desbloquearse)
+  // Determina si un reto completado en el pasado ya puede volver a realizarse hoy.
   shouldResetDaily(lastCompletedDate: string | undefined): boolean {
-    if (!lastCompletedDate) return true; // Si nunca se hizo, está disponible
+    if (!lastCompletedDate) return true; 
 
     const last = new Date(lastCompletedDate);
     const now = new Date();
 
-    // Calculamos la "Hora de Corte" de hoy (Hoy a las 03:00 AM)
     const cutoffToday = new Date();
     cutoffToday.setHours(3, 0, 0, 0);
 
-    // Si ahora es antes de las 3 AM (ej: 01:00 AM), la hora de corte relevante fue AYER a las 3 AM
     if (now < cutoffToday) {
       cutoffToday.setDate(cutoffToday.getDate() - 1);
     }
 
-    // Si la fecha en que se completó es ANTERIOR a la hora de corte actual, 
-    // significa que ya ha pasado una "noche" (las 3 AM) y se puede repetir.
     return last < cutoffToday;
   }
 }

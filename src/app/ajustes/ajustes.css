@@ -5,7 +5,7 @@
 }
 
 .settings-content {
-  width: 80%; /* Aquí está el 80% que pediste */
+  width: 80%; 
   max-width: 800px;
   margin: 0 auto;
 }
@@ -68,7 +68,6 @@ h1 {
 input:checked + .slider { background: var(--text-primary); }
 input:checked + .slider:before { transform: translateX(24px); }
 
-/* --- BLOQUEADOS / SILENCIADOS --- */
 .blocked-users-list { display: flex; flex-direction: column; gap: 12px; }
 
 .blocked-user-item {
@@ -102,7 +101,6 @@ input:checked + .slider:before { transform: translateX(24px); }
   color: var(--text-primary); border-radius: 10px; cursor: pointer; font-weight: 600;
 }
 
-/* --- SOPORTE --- */
 .support-form {
   background: var(--bg-secondary); padding: 20px;
   border-radius: 12px; border: 1px solid var(--border-color);
@@ -114,7 +112,6 @@ input:checked + .slider:before { transform: translateX(24px); }
   border: 1px solid var(--border-color); border-radius: 8px; color: var(--text-primary);
 }
 
-/* BOTON ARREGLADO (Adiós degradado feo) */
 .submit-ticket-btn {
   width: 100%; padding: 14px; 
   background: var(--text-primary); 
@@ -124,7 +121,6 @@ input:checked + .slider:before { transform: translateX(24px); }
 .submit-ticket-btn:hover:not(:disabled) { opacity: 0.9; }
 .submit-ticket-btn:disabled { background: var(--text-muted); cursor: not-allowed; }
 
-/* --- MODAL Y BOTÓN CERRAR (X) --- */
 .modal-overlay {
   position: fixed; top: 0; left: 0; width: 100%; height: 100%;
   background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 2000;
@@ -160,7 +156,6 @@ input:checked + .slider:before { transform: translateX(24px); }
 
 .modal-scroll-area { padding: 20px; overflow-y: auto; flex: 1; }
 
-/* --- LOGOUT --- */
 .logout-btn {
   width: 100%; padding: 16px; border: 2px solid #e74c3c; border-radius: 12px;
   background: transparent; color: #e74c3c; font-weight: 700; cursor: pointer;

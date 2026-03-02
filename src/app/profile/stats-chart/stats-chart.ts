@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, OnChanges, SimpleChanges } from '@angular/core';
+import { Component, Input, OnInit, OnChanges, SimpleChanges, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { BaseChartDirective } from 'ng2-charts';
 import { ChartConfiguration, ChartData, ChartType } from 'chart.js';
@@ -33,6 +33,8 @@ export class StatsChartComponent implements OnInit, OnChanges {
   @Input() physical = 0;
   @Input() mindfulness = 0;
   @Input() nutrition = 0;
+
+  @ViewChild(BaseChartDirective) chart?: BaseChartDirective;
 
   public radarChartOptions: ChartConfiguration['options'] = {
     responsive: true,
@@ -69,15 +71,17 @@ export class StatsChartComponent implements OnInit, OnChanges {
 
   public radarChartType: ChartType = 'radar';
 
+  // Inicializa y dibuja el grafico de bienestar al cargar el componente.
   ngOnInit() {
     this.updateChart();
   }
 
-  // Esto es vital: actualiza el gráfico cuando Angular detecta cambios desde el componente padre
+  // Detecta si los puntos de salud han cambiado y actualiza el grafico.
   ngOnChanges(changes: SimpleChanges) {
     this.updateChart();
   }
 
+  // Inyecta los nuevos datos en el grafico y fuerza a redibujarlo visualmente.
   private updateChart() {
     this.radarChartData.datasets[0].data = [
       this.mental, 
@@ -85,7 +89,8 @@ export class StatsChartComponent implements OnInit, OnChanges {
       this.mindfulness, 
       this.nutrition
     ];
-    // Forzamos a Angular y a Chart.js a re-renderizar reasignando el objeto
+    
+    this.chart?.update();
     this.radarChartData = { ...this.radarChartData };
   }
 }

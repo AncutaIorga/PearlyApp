@@ -38,10 +38,12 @@ export class PostCreateComponent implements OnInit {
   isSubmitting = false;
   isImageProcessing = false;
 
+  // Carga los retos que el usuario ya ha completado al abrir el creador de publicaciones.
   ngOnInit() {
     this.loadAvailableChallenges();
   }
 
+  // Busca en el almacenamiento local los retos completados para mostrarlos en el desplegable.
   private loadAvailableChallenges() {
     const userData = this.userService.getUser();
     const userId = userData?.email ? userData.email.replace(/[.#$[\]]/g, '_') : 'anonymous';
@@ -68,6 +70,7 @@ export class PostCreateComponent implements OnInit {
     }
   }
 
+  // Autocompleta el texto de la publicacion cuando el usuario selecciona un reto.
   onChallengeSelected() {
     const found = this.availableChallenges.find(c => String(c.id) === String(this.selectedChallengeId));
     
@@ -79,16 +82,19 @@ export class PostCreateComponent implements OnInit {
     }
   }
 
+  // Obtiene el icono representativo segun la categoria del reto seleccionado.
   getCategoryIcon(category: string): string {
     const icons: Record<string, string> = { 'mental': '🧠', 'physical': '💪', 'mindfulness': '🌿', 'nutrition': '🍎' };
     return icons[category] || '🌟';
   }
 
+  // Obtiene el nombre en español de la categoria del reto seleccionado.
   getCategoryName(category: string): string {
     const names: Record<string, string> = { 'mental': 'Mental', 'physical': 'Físico', 'mindfulness': 'Mindfulness', 'nutrition': 'Nutrición' };
     return names[category] || 'Bienestar';
   }
 
+  // Recibe la imagen, comprueba su tamaño y la comprime para que no pese demasiado.
   onImageSelected(event: any) {
     const file = event.target.files[0];
     if (!file) return;
@@ -168,10 +174,12 @@ export class PostCreateComponent implements OnInit {
     });
   }
 
+  // Quita la imagen que el usuario habia seleccionado para publicar.
   removeImage() { 
     this.selectedImage = null; 
   }
 
+  // Valida los datos y envia la publicacion al servidor.
   async submit() {
     if (!this.selectedChallengeId) {
       this.notificationService.warning('Por favor selecciona el reto que has completado');
@@ -196,14 +204,12 @@ export class PostCreateComponent implements OnInit {
     this.isSubmitting = true;
 
     try {
-      // Ajuste para que coincida con la interfaz de PostService
       this.postService.addPost({
         image: this.selectedImage, 
         text: this.text,
         idRetoVinculado: this.selectedChallenge ? Number(this.selectedChallenge.id) : undefined
       });
 
-      // Pequeño delay para dejar que el service inicie la carga antes de navegar
       setTimeout(() => {
         this.router.navigate(['/feed']);
       }, 300);

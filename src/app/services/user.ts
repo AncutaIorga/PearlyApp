@@ -13,10 +13,12 @@ export class UserService {
 
   private userSignal = signal<Usuario>({ nombre: '', email: '' });
 
+  // Sincroniza los datos desde el principio usando la informacion del Login.
   constructor() {
     this.syncWithAuthData();
   }
 
+  // Actualiza la variable de usuario de este servicio copiando la de Auth.
   syncWithAuthData() {
     const current = this.authService.user();
     if (current) { 
@@ -25,11 +27,13 @@ export class UserService {
     }
   }
 
+  // Entrega los datos del usuario actual al componente que los pida.
   getUser(): Usuario {
     this.syncWithAuthData();
     return this.userSignal();
   }
 
+  // Envia al backend los nuevos datos de perfil como la bio o la foto.
   updateUser(data: Partial<Usuario>): Observable<Usuario> {
     const currentUser = this.getUser();
     
@@ -63,11 +67,12 @@ export class UserService {
     );
   }
 
+  // Actualiza en el servidor si la cuenta se vuelve publica o privada.
   updatePrivacy(isPrivate: boolean): Observable<any> {
     return this.updateUser({ isPrivate });
   }
 
-  // MÉTODO AÑADIDO PARA LA BÚSQUEDA
+  // Busca perfiles en la base de datos que coincidan con la palabra escrita.
   buscarUsuariosPorNombre(query: string): Observable<Usuario[]> {
     return this.http.get<Usuario[]>(`${this.apiUrl}/buscar`, {
       params: { nombre: query }

@@ -5,6 +5,7 @@ import { Pipe, PipeTransform } from '@angular/core';
   standalone: true
 })
 export class TimeAgoPipe implements PipeTransform {
+  // Convierte una fecha exacta en un texto de tiempo relativo.
   transform(value: Date | string | undefined): string {
     if (!value) return '';
     

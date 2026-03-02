@@ -1,6 +1,3 @@
-/* =========================================
-   1. CONTENEDOR Y FONDO (Estilo Nuevo y Limpio)
-   ========================================= */
 .profile-container {
   background: var(--bg-primary); 
   min-height: calc(100vh - 64px);
@@ -30,9 +27,6 @@
   gap: 24px; 
 }
 
-/* =========================================
-   2. CAJAS PRINCIPALES (Bordes redondeados modernos)
-   ========================================= */
 .profile-header, .challenges-section, .profile-right {
   background: var(--card-bg);
   padding: 32px 24px;
@@ -45,9 +39,6 @@
   text-align: center;
 }
 
-/* =========================================
-   3. AVATAR Y TEXTOS
-   ========================================= */
 .profile-avatar {
   width: 110px; 
   height: 110px; 
@@ -112,9 +103,6 @@
   padding: 0 10px; 
 }
 
-/* =========================================
-   4. ESTADÍSTICAS
-   ========================================= */
 .stats { 
   display: flex; 
   justify-content: space-around; 
@@ -144,9 +132,6 @@
   margin-top: 4px; 
 }
 
-/* =========================================
-   5. LOS BOTONES 
-   ========================================= */
 .profile-actions-center {
   display: flex;
   flex-direction: column;
@@ -187,9 +172,6 @@
   box-shadow: var(--shadow-sm);
 }
 
-/* =========================================
-   6. MODO EDICIÓN FORMULARIO
-   ========================================= */
 .edit-mode-form { 
   display: flex; 
   flex-direction: column; 
@@ -251,7 +233,6 @@
 .action-pill.cancel { background: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); }
 .action-pill.cancel:hover { background: var(--bg-tertiary); color: var(--text-primary); }
 
-/* Espaciado entre form groups */
 .form-group { margin-bottom: 20px; }
 .form-group label {
   display: block;
@@ -281,9 +262,6 @@
   font-style: italic;
 }
 
-/* =========================================
-   7. SECCIÓN DE ESTADÍSTICAS Y NIVELES
-   ========================================= */
 .challenges-section h3 { 
   font-size: 14px; 
   font-weight: 700; 
@@ -354,9 +332,6 @@
   font-size: 11px; 
 }
 
-/* =========================================
-   8. PUBLICACIONES GRID
-   ========================================= */
 .profile-right h3 { 
   margin: 0 0 20px 0; 
   font-size: 15px; 
@@ -406,9 +381,6 @@
 .mini-edit-btn:hover { background: #4a90e2; color: white; }
 .mini-delete-btn:hover { background: #e74c3c; color: white; }
 
-/* =========================================
-   9. ESTADOS VACÍOS
-   ========================================= */
 .no-posts {
   text-align: center;
   padding: 80px 20px;
@@ -427,10 +399,6 @@
   margin: 0;
 }
 
-
-/* =========================================
-   10. MODAL DE PUBLICACIONES Y COMENTARIOS
-   ========================================= */
 .image-modal {
   position: fixed;
   top: 0;
@@ -782,9 +750,6 @@
 .delete-post-btn { background: transparent; color: #e74c3c; border: 1px solid #e74c3c; }
 .delete-post-btn:hover { background: #e74c3c; color: white; }
 
-/* =========================================
-   MODAL DE EDICIÓN DE POST (DISEÑO PRO)
-   ========================================= */
 .edit-post-modal {
   position: fixed;
   top: 0; left: 0; right: 0; bottom: 0;
@@ -866,9 +831,6 @@
   margin: 0;
 }
 
-/* =========================================
-   RESPONSIVE FINAL
-   ========================================= */
 @media (max-width: 900px) {
   .profile-layout { grid-template-columns: 1fr; }
   .posts-grid { grid-template-columns: repeat(2, 1fr); }

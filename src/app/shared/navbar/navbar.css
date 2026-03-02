@@ -1,6 +1,3 @@
-/* =========================================
-   NAVBAR GENERAL
-   ========================================= */
 .navbar {
   background: var(--bg-primary); 
   backdrop-filter: blur(10px);
@@ -16,13 +13,11 @@
   transition: background 0.3s ease, border-color 0.3s ease;
 }
 
-/* LADO IZQUIERDO (BLINDADO) */
 .nav-left {
-  flex-shrink: 0; /* IMPIDE que el logo se aplaste */
-  width: 120px;   /* Mantiene un ancho fijo para empujar el buscador al centro */
+  flex-shrink: 0;
+  width: 120px;
 }
 
-/* LOGO ADAPTATIVO */
 .logo {
   font-size: 22px;
   font-weight: 700;
@@ -31,16 +26,13 @@
   letter-spacing: -0.5px;
 }
 
-/* =========================================
-   CONTENEDOR DEL BUSCADOR (BLINDADO)
-   ========================================= */
 .search-container {
-  flex: 1; /* Ocupa el espacio disponible en el centro */
+  flex: 1;
   display: flex;
-  justify-content: center; /* Centra la caja internamente */
+  justify-content: center;
   position: relative;
   width: 100%;
-  max-width: 400px; /* Tamaño máximo estricto */
+  max-width: 400px;
   margin: 0 20px;
 }
 
@@ -48,11 +40,11 @@
   display: flex;
   align-items: center;
   background: var(--bg-tertiary); 
-  border-radius: 8px; /* Mantenemos tu diseño original */
+  border-radius: 8px;
   padding: 8px 16px;
-  width: 100%; /* Obliga a ocupar el 100% del contenedor blindado */
-  height: 40px; /* Altura fija obligatoria */
-  box-sizing: border-box; /* Evita que el padding sume tamaño extra */
+  width: 100%;
+  height: 40px;
+  box-sizing: border-box;
   border: 1px solid transparent;
   transition: all 0.2s ease;
 }
@@ -66,11 +58,11 @@
   color: var(--text-secondary);
   margin-right: 8px;
   font-size: 14px;
-  flex-shrink: 0; /* Evita que el icono se deforme */
+  flex-shrink: 0;
 }
 
 .search-box input {
-  flex: 1; /* Toma todo el espacio disponible */
+  flex: 1;
   width: 100%;
   border: none;
   background: transparent;
@@ -91,15 +83,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0; /* Evita que la X se deforme */
+  flex-shrink: 0;
 }
 
-/* =========================================
-   RESULTADOS DROPDOWN
-   ========================================= */
 .search-results-dropdown {
   position: absolute;
-  top: 50px; /* Justo debajo de la caja de 40px + margen */
+  top: 50px;
   left: 0;
   width: 100%;
   background: var(--card-bg);
@@ -126,7 +115,6 @@
   background: var(--bg-tertiary);
 }
 
-/* AVATAR MINIATURA */
 .mini-avatar {
   width: 32px;
   height: 32px;
@@ -165,17 +153,13 @@
   font-size: 13px;
 }
 
-/* =========================================
-   BOTONES DE NAVEGACIÓN (BLINDADOS)
-   ========================================= */
 .nav-links {
   display: flex;
   align-items: center;
   gap: 8px;
-  flex-shrink: 0; /* IMPIDE que aplasten al buscador central */
+  flex-shrink: 0;
 }
 
-/* Estilo base para TODOS los botones (incluyendo ajustes) */
 .nav-links a, .settings-btn {
   color: var(--text-secondary);
   text-decoration: none;
@@ -192,13 +176,11 @@
   justify-content: center;
 }
 
-/* Hover - todos iguales */
 .nav-links a:hover, .settings-btn:hover {
   color: var(--text-primary);
   background: var(--bg-tertiary);
 }
 
-/* ===== PÁGINA ACTIVA DESTACADA EN NEGRO ===== */
 .nav-links a.active {
   background: var(--text-primary); 
   color: var(--bg-primary); 
@@ -207,7 +189,6 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* ===== BOTÓN RETOS - ESTILO ESPECIAL PERO SUTIL ===== */
 .nav-links a.highlight-btn {
   border: 1px solid var(--border-color);
   background: var(--bg-tertiary);
@@ -220,7 +201,6 @@
   border-color: transparent;
 }
 
-/* Cuando Retos es la página activa */
 .nav-links a.highlight-btn.active {
   background: var(--text-primary); 
   color: var(--bg-primary);
@@ -228,14 +208,12 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* ===== BOTÓN AJUSTES ===== */
 .settings-btn {
   font-size: 20px;
   padding: 8px 16px;
   margin-left: 5px;
 }
 
-/* Botón ajustes activo */
 .settings-btn.active {
   background: var(--text-primary);
   color: var(--bg-primary);
@@ -243,7 +221,6 @@
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
-/* Overlay */
 .overlay {
   position: fixed;
   top: 64px;
@@ -255,9 +232,6 @@
   z-index: 900;
 }
 
-/* =========================================
-   RESPONSIVE MÓVIL
-   ========================================= */
 @media (max-width: 768px) {
   .navbar {
     padding: 0 16px;
@@ -269,6 +243,6 @@
   }
   
   .nav-left {
-    width: auto; /* En móvil dejamos que el logo fluya normal */
+    width: auto;
   }
 }

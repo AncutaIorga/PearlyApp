@@ -19,6 +19,7 @@ export class LoginComponent {
   serverError = ''; 
   isLoading = false; 
 
+  // Comprueba que el formato del correo electronico ingresado sea correcto.
   validateEmail() {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (this.email && !emailRegex.test(this.email)) {
@@ -28,12 +29,12 @@ export class LoginComponent {
     }
   }
 
+  // Inicia el proceso de autenticacion validando credenciales contra el servidor.
   async login() {
     this.validateEmail();
     this.serverError = ''; 
 
     if (!this.emailError) {
-      // ✅ Parche para evitar Error NG0100
       setTimeout(() => {
         this.isLoading = true;
         this.cdr.detectChanges();
