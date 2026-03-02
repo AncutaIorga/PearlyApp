@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, effect } from '@angular/core'; 
+import { Component, OnInit, inject, effect, ChangeDetectorRef } from '@angular/core'; 
 import { Router, ActivatedRoute, RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -26,6 +26,9 @@ export class ProfileComponent implements OnInit {
   private authService = inject(AuthService);
   private challengeService = inject(ChallengeService);
   private router = inject(Router);
+  
+  // AÑADIDO: Herramienta para forzar el repintado de la pantalla inmediatamente
+  private cdr = inject(ChangeDetectorRef);
 
   user: any = {};
   isOwnProfile = true;
@@ -90,19 +93,39 @@ export class ProfileComponent implements OnInit {
     this.showFollowModal = false;
   }
 
-  // Carga la informacion publica de un perfil que no es el nuestro.
+  // Busca los datos reales del usuario en la base de datos para mostrar su foto y biografia.
   loadOtherUserProfile(username: string) {
-    const allUsers = this.authService.getRegisteredUsers();
-    const found = allUsers.find((u: any) => (u.nombre || u.name).toLowerCase() === username.toLowerCase());
-    
-    this.user = found ? { ...found } : { name: username, nombre: username, bio: 'Usuario Pearly', avatar: '' };
+    this.user = { name: username, nombre: username, bio: 'Cargando perfil...', avatar: '' };
 
-    const myEmail = this.authService.getCurrentUserEmail();
-    const myFollowing = JSON.parse(localStorage.getItem(`following-${myEmail}`) || '[]');
-    this.isFollowing = myFollowing.includes(this.user.nombre || this.user.name);
+    this.userService.buscarUsuariosPorNombre(username).subscribe({
+      next: (usuarios) => {
+        const found = usuarios.find(u => (u.nombre || u.name || '').toLowerCase() === username.toLowerCase());
+        
+        if (found) {
+          this.user = { ...found, name: found.nombre || found.name };
+        } else {
+          this.user.bio = 'Usuario Pearly';
+        }
+        
+        const myEmail = this.authService.getCurrentUserEmail();
+        const myFollowing = JSON.parse(localStorage.getItem(`following-${myEmail}`) || '[]');
+        this.isFollowing = myFollowing.includes(this.user.nombre || this.user.name);
 
-    this.loadUserPosts();
-    this.loadWellnessData();
+        this.loadUserPosts();
+        this.loadWellnessData();
+        
+        // AÑADIDO: Fuerza a Angular a mostrar la foto y los datos AHORA MISMO
+        this.cdr.detectChanges();
+      },
+      error: () => {
+        this.user.bio = 'Usuario Pearly';
+        this.loadUserPosts();
+        this.loadWellnessData();
+        
+        // AÑADIDO: Si falla también obligamos a refrescar
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   // Carga nuestros propios datos y progreso en el perfil.
