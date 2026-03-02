@@ -129,7 +129,6 @@ export class PostCardComponent implements OnInit, OnChanges {
   }
 
   toggleLike() {
-    // UI Optimista: Cambiamos visualmente antes de la respuesta del servidor
     this.isLiked = !this.isLiked;
     this.postService.toggleLike(this.post.id);
   }

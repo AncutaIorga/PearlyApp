@@ -141,21 +141,37 @@ export class PostService {
     });
   }
 
-  updatePost(postId: number, data: any) {
-    this.http.put(`${this.apiUrl}/${postId}`, data).subscribe({
-      next: () => {
-        this.notification.success('Publicación actualizada');
-        this.loadPostsFromBackend();
-      },
-      error: () => this.notification.error('Error al actualizar')
-    });
+updatePost(postId: number, data: any) {
+    // 1. Guardar la edición localmente en LocalStorage
+    const editedPosts = JSON.parse(localStorage.getItem('pearly_edited_posts') || '{}');
+    editedPosts[postId] = data;
+    localStorage.setItem('pearly_edited_posts', JSON.stringify(editedPosts));
+
+    // 2. Actualizar el Signal para que la vista cambie inmediatamente sin usar el Backend
+    this.rawPosts.update(posts => posts.map(p => {
+      if (p.id === postId) {
+        return { 
+          ...p, 
+          text: data.text !== undefined ? data.text : p.text,
+          image: data.image !== undefined ? data.image : p.image
+        };
+      }
+      return p;
+    }));
+
+    this.notification.success('Publicación actualizada');
   }
 
   deletePost(postId: number) {
-    this.http.delete(`${this.apiUrl}/${postId}`).subscribe({
-      next: () => this.loadPostsFromBackend(),
-      error: () => this.notification.error('Error al eliminar.')
-    });
+    // 1. Guardar el ID borrado localmente en LocalStorage
+    const deletedPosts = JSON.parse(localStorage.getItem('pearly_deleted_posts') || '[]');
+    if (!deletedPosts.includes(postId)) {
+      deletedPosts.push(postId);
+      localStorage.setItem('pearly_deleted_posts', JSON.stringify(deletedPosts));
+    }
+
+    // 2. Eliminar visualmente del Signal de inmediato sin usar el Backend
+    this.rawPosts.update(posts => posts.filter(p => p.id !== postId));
   }
 
   // --- GESTIÓN DE LIKES Y COMENTARIOS ---
